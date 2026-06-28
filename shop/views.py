@@ -542,12 +542,12 @@ def passer_commande_panier(request):
 
 from django.db.models import Q, F
 
-CLE_API_GEMINI = ""
+GEMINI_API_KEY = ""
 
 
 @csrf_exempt
 def assistant_chatbot_api(request):
-    api_key = CLE_API_GEMINI
+    api_key = GEMINI_API_KEY
     print("--- DEBUG IA --- LA CLÉ RECUPEREE EST :", api_key)
   
     reponse_bot = "Désolé, je rencontre des difficultés techniques à me connecter."
