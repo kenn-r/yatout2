@@ -547,7 +547,10 @@ GEMINI_API_KEY = ""
 
 @csrf_exempt
 def assistant_chatbot_api(request):
-    api_key = GEMINI_API_KEY
+    # Railway lira la clé directement depuis votre tableau de bord Variables
+    
+    api_key = os.environ.get("GEMINI_API_KEY")
+    
     print("--- DEBUG IA --- LA CLÉ RECUPEREE EST :", api_key)
   
     reponse_bot = "Désolé, je rencontre des difficultés techniques à me connecter."
