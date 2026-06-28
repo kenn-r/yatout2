@@ -1,0 +1,140 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}YaTout — Suivi de commande #{{ commande.id }}{% endblock %}
+
+{% block content %}
+<div class="yt-tracking-wrapper">
+    
+    <!-- CARTE PRINCIPALE DE STATUT LOGISTIQUE -->
+    <div class="yt-tracking-card yt-main-status">
+        <h2>Votre commande est en route !</h2>
+        <div class="yt-tracking-meta">
+            Commande <strong>#{{ commande.id }}</strong> • Enregistrée le {{ commande.date_commande|date:"d/m/Y à H:i" }}
+        </div>
+        
+        <!-- Barre de suivi logistique horizontale -->
+        <div class="yt-progressbar">
+            <div class="yt-step yt-step-active">
+                <div class="yt-step-bullet">📥</div>
+                <div class="yt-step-label">Reçue</div>
+            </div>
+            
+            <div class="yt-step {% if commande.statut == 'PREP' or commande.statut == 'EXPE' or commande.statut == 'LIVR' %}yt-step-active{% endif %}">
+                <div class="yt-step-bullet">📦</div>
+                <div class="yt-step-label">Préparation</div>
+            </div>
+            
+            <div class="yt-step {% if commande.statut == 'EXPE' or commande.statut == 'LIVR' %}yt-step-active{% endif %}">
+                <div class="yt-step-bullet">🚚</div>
+                <div class="yt-step-label">Expédiée</div>
+            </div>
+            
+            <div class="yt-step {% if commande.statut == 'LIVR' %}yt-step-active{% endif %}">
+                <div class="yt-step-bullet">🏠</div>
+                <div class="yt-step-label">Livrée</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOUBLE COLONNE : LIVRAISON VS RÉCAPITULATIF -->
+    <div class="yt-tracking-grid">
+        
+        <!-- COLONNE GAUCHE : INFOS DE LIVRAISON -->
+        <div class="yt-tracking-card yt-delivery-info">
+            <h4 class="yt-tracking-section-title">📍 Livraison</h4>
+            
+            <div class="yt-delivery-list">
+                <div class="yt-delivery-row">
+                    <span class="yt-row-label">Destinataire</span>
+                    <span class="yt-row-value yt-client-name">{{ commande.nom_client }}</span>
+                </div>
+                
+                <div class="yt-delivery-row">
+                    <span class="yt-row-label">Téléphone</span>
+                    <span class="yt-row-value yt-phone-highlight">{{ commande.telephone }}</span>
+                </div>
+                
+                <div class="yt-delivery-row">
+                    <span class="yt-row-label">Adresse</span>
+                    <span class="yt-row-value">{{ commande.adresse }}</span>
+                </div>
+                
+                <div class="yt-delivery-row">
+                    <span class="yt-row-label">E-mail</span>
+                    <span class="yt-row-value">{{ commande.email_client }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- COLONNE DROITE : RÉCAPITULATIF DES ARTICLES -->
+        <div class="yt-tracking-card yt-basket-summary">
+            <h4 class="yt-tracking-section-title">🛍️ Votre Panier</h4>
+            
+            <div class="yt-summary-list">
+                {% for item in commande.items.all %}
+                <div class="yt-summary-item">
+                    <div>
+                        <span class="yt-item-title">{{ item.produit.nom }}</span>
+                        <span class="yt-item-vendor">Boutique : {{ item.produit.vendeur.nom_boutique }}</span>
+                        <span class="yt-item-qty">Quantité : {{ item.quantite }} unité(s)</span>
+                    </div>
+                    <div class="yt-item-price-total">
+                        {{ item.get_cost }} <span class="yt-currency-small">{{ item.produit.vendeur.get_devise_display }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="yt-empty-text">Aucun article trouvé.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- BLOC TOTAL DU PANIER -->
+            <div class="yt-summary-total-box">
+                <span class="yt-total-label">Montant total</span>
+                <span class="yt-total-amount">
+                    {{ commande.get_total_cost }} <span class="yt-currency-small">{{ commande.items.all.first.produit.vendeur.get_devise_display }}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZONE DU REÇU OFFICIEL (S'affiche uniquement si livré) -->
+    {% if commande.statut == 'LIVR' %}
+    <div class="yt-tracking-card yt-receipt-card">
+        <h3 class="yt-receipt-title">Reçu officiel d'achat — YaTout</h3>
+        <div class="yt-receipt-meta">
+            <span><strong>N° Facture :</strong> PM-2026-{{ commande.id }}</span>
+            <span><strong>Client :</strong> {{ commande.nom_client }} ({{ commande.telephone }})</span>
+        </div>
+        
+        <table class="yt-receipt-table">
+            <thead>
+                <tr>
+                    <th>Désignation de l'article</th>
+                    <th style="text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in commande.items.all %}
+                <tr>
+                    <td>
+                        <strong style="color: #1e293b;">{{ item.produit.nom }}</strong>
+                        <span class="yt-receipt-shop-sub">Boutique : {{ item.produit.vendeur.nom_boutique }}</span>
+                    </td>
+                    <td class="yt-receipt-price-cell">
+                        {{ item.get_cost }} <span class="yt-currency-small">{{ item.produit.vendeur.get_devise_display }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="yt-receipt-final-row">
+            <span>Total Payé</span>
+            <span class="yt-receipt-final-amount">
+                {{ commande.get_total_cost }} <span class="yt-currency-small">{{ commande.items.all.first.produit.vendeur.get_devise_display }}</span>
+            </span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

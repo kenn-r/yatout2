@@ -1,0 +1,110 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Gestion des Impressions - YaTout{% endblock %}
+
+{% block content %}
+<style>
+    .admin-container { max-width: 1200px; margin: 40px auto; padding: 0 24px; font-family: system-ui, sans-serif; }
+    .admin-title { color: #2e0854; font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+    .admin-subtitle { color: #7b6f93; margin-bottom: 25px; }
+    
+    .admin-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(46,8,84,0.04); }
+    .admin-table th { background: #2e0854; color: white; padding: 16px; text-align: left; font-weight: 700; }
+    .admin-table td { padding: 16px; border-bottom: 1px solid #f0edf5; vertical-align: top; }
+    
+    .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; }
+    .status-waiting { background: #ffedd5; color: #c2410c; }
+    .status-valid { background: #dcfce7; color: #15803d; }
+    
+    .article-row { background: #fcfbfe; border: 1px solid #f0edf5; padding: 8px 12px; border-radius: 6px; margin-bottom: 5px; font-size: 0.9rem; }
+    
+    .btn-action-valider { background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; font-size: 0.85rem; margin-bottom: 5px; }
+    .btn-action-valider:hover { background: #059669; }
+    .btn-action-pdf { background: #7b24cc; color: white; padding: 8px 12px; border-radius: 6px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 0.85rem; margin-bottom: 5px; }
+    .btn-action-pdf:hover { background: #641ca8; }
+    
+    /* 🚚 NOUVEAU STYLE : Bouton sombre pour le Bon de Livraison */
+    .btn-action-livraison { background: #1e293b; color: white; padding: 8px 12px; border-radius: 6px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 0.85rem; }
+    .btn-action-livraison:hover { background: #0f172a; }
+    .btn-action-disabled { background: #cbd5e1; color: #94a3b8; padding: 8px 12px; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 0.85rem; cursor: not-allowed; }
+</style>
+
+<div class="admin-container">
+    <h1 class="admin-title">📦 Tableau de Bord des Demandes d'Impression</h1>
+    <p class="admin-subtitle">Suivez, validez et éditez les bons de commande de vos clients en direct.</p>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>N° Bon</th>
+                <th>Client / Contact</th>
+                <th>Liste des achats</th>
+                <th>Statut</th>
+                <th>Facturation (FCFA)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cmd in commandes %}
+            <tr>
+                <td><strong>{{ cmd.numero_bon }}</strong><br><small style="color:#7b6f93;">{{ cmd.date_commande|date:"d/m/Y H:i" }}</small></td>
+                <td>
+                    <strong>{{ cmd.nom_client }}</strong><br>
+                    <small>📞 {{ cmd.telephone }}</small><br>
+                    <small style="color:#7b6f93;">✉️ {{ cmd.email_client }}</small>
+                </td>
+                <td>
+                    {% for art in cmd.articles_liste %}
+                        <div class="article-row">
+                            <b>{{ art.titre|default:"Prestation" }}</b> (x{{ art.qte|default:1 }}) 
+{% if art.total %}
+    : {{ art.total }} FCFA
+{% elif art.prix and art.qte %}
+    : {{ art.prix }} FCFA
+{% else %}
+    : Tarif calculé
+{% endif %}
+
+                        </div>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% if cmd.statut == 'EN_ATTENTE' %}
+                        <span class="status-badge status-waiting">⏳ En attente</span>
+                    {% else %}
+                        <span class="status-badge status-valid">✅ Validé</span>
+                    {% endif %}
+                </td>
+                <td>
+                    Brut : {{ cmd.total_brut }} FCFA<br>
+                    <small style="color:#ef4444;">Remise (5%) : -{{ cmd.montant_remise }} FCFA</small><br>
+                    <strong style="color:#166534; font-size:1.1rem;">Net : {{ cmd.total_final }} FCFA</strong>
+                </td>
+                <td>
+                    <!-- 1. ACTION : VALIDER LA COMMANDE -->
+                    {% if cmd.statut == 'EN_ATTENTE' or cmd.statut == 'RECU' %}
+                        <a href="{% url 'valider_commande_impression' cmd.id %}" class="btn-action-valider">➔ Valider la commande</a><br>
+                    {% endif %}
+                    
+                    <!-- 2. ACTION : VOIR / IMPRIMER LE BON DE COMMANDE VIA VOTRE ROUTE EXISTANTE -->
+                    <a href="{% url 'voir_bon_commande' cmd.id %}" target="_blank" class="btn-action-pdf">📄 Voir / Imprimer le Bon</a><br>
+                    
+                    <!-- 3. ACTION DYNAMIQUE : BON DE LIVRAISON -->
+                    {% if cmd.statut == 'VALIDE' %}
+                        <!-- Si validé, le bouton noir s'affiche et est cliquable -->
+                        <a href="{% url 'voir_bon_livraison' cmd.id %}" target="_blank" class="btn-action-livraison">🚚 Bon de Livraison</a>
+                    {% else %}
+                        <!-- Si en attente, le bouton est grisé et affiche un message informatif -->
+                        <span class="btn-action-disabled" title="Validez d'abord la commande pour débloquer le Bon de Livraison">🚚 En attente de validation</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align:center; color:#7b6f93; padding:30px;">Aucun bon de commande reçu pour le moment.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

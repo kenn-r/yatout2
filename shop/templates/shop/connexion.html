@@ -1,0 +1,24 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}YaTout — Connexion Vendeur{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <h2>Espace Vendeur</h2>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Affiche proprement les champs de connexion -->
+            {{ form.as_p }}
+            
+            <button type="submit" class="btn-submit-login">🔑 Se connecter</button>
+        </form>
+        
+        <div class="login-footer">
+            Pas encore de compte ? <a href="{% url 'inscription_vendeur' %}">Devenir Vendeur</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

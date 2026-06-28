@@ -1,0 +1,171 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}{{ prestation.titre }} - Atelier d'Impression{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: system-ui, sans-serif;">
+    
+    <!-- Bouton Retour au Catalogue -->
+    <a href="{% url 'page_prestations' %}" style="color: #7c3aed; text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px;">
+        ⬅️ Retour aux prestations
+    </a>
+
+    <div style="border: 1px solid #e2e8f0; border-radius: 12px; background: white; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        
+        <!-- Titre et Description du produit -->
+        <h2 style="color: #2e0854; margin-top: 0; font-size: 1.8rem;">{{ prestation.titre }}</h2>
+        <p style="color: #4b5563; line-height: 1.6; font-size: 15px; white-space: pre-line;">{{ prestation.description }}</p>
+        
+        <!-- Rappel informatif du tarif unitaire de base -->
+        <p style="font-size: 14px; color: #6b7280; margin-top: 10px; background: #f8fafc; padding: 8px 12px; border-radius: 6px; display: inline-block;">
+            Tarif de base : <strong style="color: #7c3aed;">{{ prestation.prix_unitaire }} FCFA</strong> 
+            ({% if prestation.type_unite == 'M2' %}au m²{% elif prestation.type_unite == 'LOT_100' %}par lot de 100 flyers{% elif prestation.type_unite == 'UNITE' %}par unité{% else %}par lettre{% endif %})
+        </p>
+
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e7eb;">
+
+        <!-- UNIQUE FORMULAIRE HTML DE GESTION -->
+        <form method="POST" id="form-prestation">
+            {% csrf_token %}
+            
+            <!-- CAS DE SAISIE ADAPTATIF SELON LE TYPE D'UNITÉ -->
+            <div style="margin-bottom: 20px;">
+                
+                {% if prestation.type_unite == 'M2' %}
+                    <!-- CAS 1 : PRODUIT AU METRE CARRE (Bâche) -->
+                    <div style="display: flex; gap: 15px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">Longueur (mètres) :</label>
+                            <input type="number" name="longueur" id="js-longueur" value="1" min="0.1" step="any" required 
+                                   style="padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">Largeur (mètres) :</label>
+                            <input type="number" name="largeur" id="js-largeur" value="1" min="0.1" step="any" required 
+                                   style="padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
+                        </div>
+                    </div>
+                    <!-- On cache un champ quantité technique pour que votre backend Django reçoive une valeur par défaut si nécessaire -->
+                    <input type="hidden" name="quantite" id="js-quantite" value="1">
+
+                {% else %}
+                    <!-- CAS 2 : PRODUIT A L'UNITE, EN LOT OU PAR LETTRE -->
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">
+                        {% if prestation.type_unite == 'LOT_100' %}
+                            Entrez le nombre de flyers désiré (Ex: 6500) :
+                        {% elif prestation.type_unite == 'UNITE' %}
+                            Entrez la quantité souhaitée :
+                        {% else %}
+                            Entrez le nombre de lettres / autocollants requis :
+                        {% endif %}
+                    </label>
+                    <input type="number" name="quantite" id="js-quantite" value="{{ quantite_saisie|default:'1' }}" min="1" step="any" required 
+                           style="padding: 10px; width: 160px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
+                {% endif %}
+
+            </div>
+
+            <!-- BLOCS DE BOUTONS DE CALCUL INDÉPENDANTS -->
+            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+                <button type="submit" name="calculer" formnovalidate 
+                        style="flex: 1; background-color: #6b7280; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; transition: background 0.2s;">
+                    🔄 Mettre à jour le prix
+                </button>
+
+                <button type="submit" name="valider_commande" formnovalidate 
+                        style="flex: 1; background-color: #7c3aed; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; transition: background 0.2s;">
+                    🛒 Ajouter au panier boutique
+                </button>
+            </div>
+
+            <!-- BOÎTE D'AFFICHAGE DU PRIX RECALCULÉ (Mis à jour en JS ou par Python) -->
+            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: inset 0 2px 4px rgba(22,163,74,0.02);">
+                <span style="font-size: 12px; color: #16a34a; font-weight: bold; display: block; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Estimation brute actuelle
+                </span>
+                <strong style="font-size: 2rem; color: #15803d; display: block; margin-top: 5px; font-weight: 800;">
+                    <span id="js-prix-total">{{ prix_total|default:prestation.prix_unitaire }}</span> FCFA
+                </strong>
+            </div>
+
+            <!-- COORDONNÉES DE LIVRAISON -->
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 22px; border-radius: 10px; margin-bottom: 25px;">
+                <h3 style="color: #2e0854; font-size: 1rem; margin: 0 0 15px 0; font-weight: bold; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+                    📋 Coordonnées de livraison (Requises pour WhatsApp)
+                </h3>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Nom et Prénoms *</label>
+                    <input type="text" name="nom_client" placeholder="Ex: Kouassi Koffi Jean" required 
+                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Adresse E-mail (Optionnel)</label>
+                    <input type="email" name="email_client" placeholder="Ex: monadresse@gmail.com" 
+                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Numéro de téléphone portable *</label>
+                    <input type="tel" name="telephone_client" placeholder="Ex: 0574702092 (10 chiffres requis)" 
+                           required 
+                           pattern="[0-9]{10}" 
+                           maxlength="10"
+                           title="Veuillez entrer un numéro de téléphone mobile ivoirien composé exactement de 10 chiffres."
+                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none; font-weight: 600; letter-spacing: 0.02em;">
+                </div>
+            </div>
+
+            <!-- BOUTON DE SOUMISSION WHATSAPP -->
+            <button type="submit" name="valider_whatsapp" 
+                    style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background-color: #22c55e; color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px rgba(34,197,94,0.15);">
+                💬 Générer le Bon et valider sur WhatsApp
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- LE SCRIPT JAVASCRIPT DE CALCUL DYNAMIQUE EN DIRECT -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const typeUnite = "{{ prestation.type_unite }}";
+        const prixUnitaire = parseFloat("{{ prestation.prix_unitaire }}");
+        
+        const inputLongueur = document.getElementById("js-longueur");
+        const inputLargeur = document.getElementById("js-largeur");
+        const inputQuantite = document.getElementById("js-quantite");
+        const affichagePrix = document.getElementById("js-prix-total");
+
+        function recalculerPrixEnDirect() {
+            let total = 0;
+
+            if (typeUnite === "M2") {
+                const longueur = parseFloat(inputLongueur.value) || 0;
+                const largeur = parseFloat(inputLargeur.value) || 0;
+                const surface = longueur * largeur;
+                total = surface * prixUnitaire;
+            } else if (typeUnite === "LOT_100") {
+                const quantite = parseFloat(inputQuantite.value) || 0;
+                // Formule pour lot de 100 (Nombre de flyers / 100 * prix unitaire du lot)
+            total = (quantite / 100) * prixUnitaire;
+        } else {
+            // Pour UNITE et LETTRE (Quantité simple x Prix unitaire)
+            const quantite = parseInt(inputQuantite.value) || 0;
+            total = quantite * prixUnitaire;
+        }
+
+        // Arrondir pour les FCFA et mettre à jour le texte
+        affichagePrix.innerText = Math.round(total);
+    }
+
+    // Écouter les changements sur tous les champs de saisie pour réagir en direct
+    if (inputLongueur) inputLongueur.addEventListener("input", recalculerPrixEnDirect);
+    if (inputLargeur) inputLargeur.addEventListener("input", recalculerPrixEnDirect);
+    if (inputQuantite) inputQuantite.addEventListener("input", recalculerPrixEnDirect);
+});
+</script>
+{% endblock %}

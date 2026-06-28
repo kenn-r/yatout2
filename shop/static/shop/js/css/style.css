@@ -1,0 +1,1923 @@
+/* ==========================================
+   1. CONFIGURATION GÉNÉRALE & RESETS
+   ========================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+/* ==========================================
+   2. BARRE DE NAVIGATION (NAVBAR MAUVE)
+   ========================================== */
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Variante spécifique pour l'impression */
+.navbar-impression {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: none;
+}
+
+.navbar-impression .nav-logo {
+    color: #ffffff;
+}
+
+.navbar-impression .link-nav {
+    color: #cbd5e1;
+}
+
+.navbar .container, 
+.navbar-impression .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #6366f1; /* Mauve principal YaTout */
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-welcome {
+    font-size: 0.95rem;
+    color: #64748b;
+}
+
+.nav-welcome strong {
+    color: #1e293b;
+}
+
+/* Liens de navigation simples */
+.link-nav {
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.link-nav:hover {
+    color: #6366f1; /* Survol mauve */
+}
+
+/* ==========================================
+   3. BOUTONS GÉNÉRIQUES DE LA NAVIGATION
+   ========================================== */
+.btn-nav {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+/* Bouton Violet / Indigo Mauve (Dashboard, Ajouter produit) */
+.btn-nav-purple {
+    background-color: #6366f1;
+    color: #ffffff;
+    border: none;
+}
+
+.btn-nav-purple:hover {
+    background-color: #4f46e5; /* Mauve plus foncé au survol */
+}
+
+/* Bouton Blanc / Bordure (Inscription Vendeur) */
+.btn-nav-white {
+    background-color: #ffffff;
+    color: #475569;
+    border-color: #cbd5e1;
+}
+
+.btn-nav-white:hover {
+    background-color: #f8fafc;
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+/* Boutons spécifiques du bandeau Impression */
+.btn-prestations {
+    background-color: transparent;
+    color: #ffffff;
+    border-color: #475569;
+}
+
+.btn-prestations:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-conseiller {
+    background-color: #10b981;
+    color: #ffffff;
+}
+
+.btn-conseiller:hover {
+    background-color: #059669;
+}
+
+/* ==========================================
+   4. ASSISTANT FLOTTANT (CHAT ASSISTANT)
+   ========================================== */
+#yatout-chat-bubble {
+    background-color: #6366f1; /* Mauve YaTout */
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+}
+
+.chat-header {
+    background-color: #6366f1; /* Mauve YaTout */
+}
+
+/* ==========================================
+   5. SYSTEME DE MESSAGES FLASH (ALERTS)
+   ========================================== */
+.alert-container {
+    margin-top: 20px;
+}
+
+.alert-box {
+    background-color: #f5f3ff; /* Fond mauve très clair */
+    color: #5b21b6; /* Texte violet foncé */
+    border: 1px solid #ddd6fe;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================
+   6. RESPONSIVE DESIGN (MOBILE)
+   ========================================== */
+@media (max-width: 768px) {
+    .navbar .container, 
+    .navbar-impression .container {
+        flex-direction: column;
+        gap: 15px;
+        padding: 10px 20px;
+    }
+
+    .nav-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .btn-nav, .link-nav {
+        width: 100%;
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    .nav-welcome {
+        margin-bottom: 5px;
+    }
+}
+/* ==========================================
+   HEADER / NAVBAR EN COULEUR MAUVE CLAIR
+   ========================================== */
+.navbar {
+    /* Fond en dégradé de mauve/violet clair lumineux */
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+    border-bottom: 1px solid #9333ea;
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15);
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+/* Logo YaTout (Blanc brillant sur fond mauve) */
+.nav-logo {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Zone des boutons et liens */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Texte de bienvenue */
+.nav-welcome {
+    font-size: 0.95rem;
+    color: #f3e8ff;
+}
+
+.nav-welcome strong {
+    color: #ffffff;
+}
+
+/* Liens textuels adaptés pour le fond mauve clair */
+.link-nav {
+    color: #f3e8ff !important;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.link-nav:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.15); /* Brillance au survol */
+}
+
+/* Boutons de la navigation */
+.btn-nav {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Boutons secondaires (Dashboard, Ajouter produit) */
+.btn-nav-purple {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-nav-purple:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: #ffffff;
+}
+
+/* Bouton Blanc contrasté (Devenir Vendeur) */
+.btn-nav-white {
+    background-color: #ffffff;
+    color: #a855f7 !important; /* Écrit en mauve clair foncé pour trancher */
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-nav-white:hover {
+    background-color: #faf5ff;
+    color: #9333ea !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================
+   GRILLE ET CARTES DE PRODUITS ACCUEIL
+   ========================================== */
+.yt-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 20px 0 60px 0;
+}
+
+.yt-product-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #f3e8ff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.yt-product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(168, 85, 247, 0.1);
+    border-color: #e9d5ff;
+}
+
+/* Badge Promo Orange */
+.yt-card-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background-color: #f97316;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    z-index: 10;
+}
+
+/* Conteneur Image */
+.yt-card-img-wrapper {
+    background-color: #faf5ff;
+    height: 240px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f3e8ff;
+}
+
+.yt-card-img-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Contenu textuel de la carte */
+.yt-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.yt-card-vendor {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #c084fc; /* Mauve clair secondaire */
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.yt-card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+    line-height: 1.4;
+}
+
+/* Bloc Tarifs */
+.yt-card-price-box {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.yt-card-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #a855f7; /* Prix en vrai mauve clair */
+}
+
+.yt-card-old-price {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    text-decoration: line-through;
+}
+
+/* Badges Stock */
+.yt-card-stock {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.yt-card-stock.in {
+    background-color: #fdf4ff;
+    color: #a855f7;
+}
+
+.yt-card-stock.out {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+/* Bouton d'action Mauve Clair */
+.yt-card-btn {
+    display: block;
+    text-align: center;
+    background-color: #a855f7; /* Bouton mauve clair */
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: auto;
+    transition: background-color 0.2s ease;
+}
+
+.yt-card-btn:hover {
+    background-color: #9333ea; /* Survol mauve plus prononcé */
+}
+
+/* Assistant Flottant */
+#yatout-chat-bubble, .chat-header {
+    background-color: #a855f7 !important;
+}
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .navbar .container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .nav-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .btn-nav, .link-nav {
+        width: 100%;
+        justify-content: center;
+    }
+}
+/* ==========================================
+   PERSONNALISATION DES COULEURS ET TAILLES
+   ========================================== */
+
+/* Le nom de la boutique en BLEU */
+.yt-card-vendor {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #2563eb;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+/* Le prix en VERT */
+.yt-card-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #16a34a; 
+}
+
+/* Bloc d'alignement */
+.yt-card-price-box {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+/* La devise en JAUNE et en PETITS CARACTÈRES */
+.yt-card-price-currency {
+    color: #ca8a04; /* Jaune d'or lisible */
+    font-size: 0.75rem; /* Caractères nettement plus petits */
+    font-weight: 600; /* Moins épais pour alléger le visuel */
+    text-transform: uppercase;
+    margin-left: 2px;
+}
+/* ==========================================
+   ALIGNEMENT ET DOUBLE BOUTONS DES CARTES
+   ========================================== */
+.yt-card-actions-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: auto; /* Pousse les boutons tout en bas de la carte */
+    width: 100%;
+}
+
+.yt-card-form-left {
+    flex: 0 0 auto; /* Ne prend que la place nécessaire pour l'icône */
+}
+
+/* ==========================================
+   DOUBLE BOUTONS TEXTUELS CÔTE À CÔTE
+   ========================================== */
+.yt-card-actions-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: auto;
+    width: 100%;
+}
+
+.yt-card-form-left {
+    flex: 1; /* Prend exactement la moitié de l'espace */
+    width: 50%;
+}
+
+/* Bouton Ajouter au panier (Texte + petit panier) */
+.yt-card-btn-cart {
+    width: 100%;
+    background-color: #faf5ff;
+    border: 1px solid #e9d5ff;
+    color: #a855f7;
+    font-size: 0.82rem; /* Écrit plus petit pour que le texte tienne */
+    font-weight: 700;
+    padding: 10px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+/* Rend l'émoji du panier plus petit */
+.yt-small-basket {
+    font-size: 0.9rem;
+}
+
+.yt-card-btn-cart:hover:not(:disabled) {
+    background-color: #f3e8ff;
+    border-color: #c084fc;
+}
+
+.yt-card-btn-cart:disabled {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Bouton Voir l'article */
+.yt-card-btn-view {
+    flex: 1; /* Prend l'autre moitié de l'espace */
+    width: 50%;
+    text-align: center;
+    background-color: #a855f7;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 4px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.yt-card-btn-view:hover {
+    background-color: #9333ea;
+}
+/* ==========================================
+   PAGE CONNEXION / ESPACE VENDEUR
+   ========================================== */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    background-color: #f8fafc; /* Fond neutre clair */
+}
+
+.login-card {
+    background: #ffffff;
+    max-width: 450px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid #f3e8ff; /* Bordure mauve très subtile */
+    box-shadow: 0 10px 25px rgba(168, 85, 247, 0.05); /* Ombre douce mauve */
+    text-align: center;
+}
+
+.login-card h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 30px;
+}
+
+/* Stylisation automatique des champs générés par {{ form.as_p }} */
+.login-card form p {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.login-card form label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+
+.login-card form input[type="text"],
+.login-card form input[type="password"],
+.login-card form input[type="email"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+/* Effet de focus mauve clair lumineux sur les inputs */
+.login-card form input:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+}
+
+/* Bouton de soumission Mauve Clair */
+.btn-submit-login {
+    display: block;
+    width: 100%;
+    background-color: #a855f7; /* Vrai mauve clair */
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 25px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+}
+
+.btn-submit-login:hover {
+    background-color: #9333ea; /* Mauve plus soutenu au survol */
+}
+
+.btn-submit-login:active {
+    transform: scale(0.98);
+}
+
+/* Pied de page du formulaire */
+.login-footer {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.login-footer a {
+    color: #a855f7;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.login-footer a:hover {
+    color: #9333ea;
+    text-decoration: underline;
+}
+/* ==========================================
+   PAGE PANIER D'ACHAT (CART)
+   ========================================== */
+.cart-wrapper {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.cart-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 25px;
+}
+
+.cart-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #f3e8ff;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(168, 85, 247, 0.04);
+}
+
+/* Structure du tableau */
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.cart-table th, 
+.cart-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.cart-table th {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: #faf5ff;
+}
+
+/* Personnalisation de l'Article (Nom en vert) */
+.cart-item-name {
+    color: #1e293b;
+}
+
+/* Personnalisation de la Boutique (Nom en BLEU) */
+.cart-shop-name {
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.cart-quantity {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Prix total de la ligne en VERT */
+.cart-item-total {
+    color: #16a34a;
+    font-size: 1.1rem;
+}
+
+/* Extraction et style de la devise dans le tableau (JAUNE et PETIT) */
+.cart-table td, 
+.cart-table div {
+    font-size: 0.95rem;
+}
+
+/* Modifie la devise affichée (EUR, DH, etc.) en jaune et petit partout dans le tableau */
+.cart-table td::shadow,
+.cart-table td {
+    color: #1e293b;
+}
+
+/* Bouton Supprimer l'article */
+.btn-remove-item {
+    display: inline-flex;
+    align-items: center;
+    color: #dc2626;
+    background-color: #fee2e2;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.btn-remove-item:hover {
+    background-color: #fca5a5;
+    color: #991b1b;
+}
+
+/* Footer et totaux du panier */
+.cart-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 25px;
+    border-top: 2px solid #faf5ff;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.cart-total-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+/* Montant total global en VERT */
+.cart-total-amount {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #16a34a;
+    margin-left: 10px;
+}
+
+/* Groupe de boutons d'action */
+.cart-buttons-group {
+    display: flex;
+    gap: 15px;
+}
+
+/* Continuer les achats (Mauve clair discret / Fond blanc) */
+.btn-cart-continue {
+    display: inline-flex;
+    align-items: center;
+    background-color: #ffffff;
+    color: #a855f7;
+    border: 1px solid #e9d5ff;
+    padding: 14px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.btn-cart-continue:hover {
+    background-color: #faf5ff;
+    border-color: #c084fc;
+}
+
+/* Valider la commande (Mauve Clair intense) */
+.btn-cart-validate {
+    display: inline-flex;
+    align-items: center;
+    background-color: #a855f7;
+    color: #ffffff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-cart-validate:hover {
+    background-color: #9333ea;
+    box-shadow: 0 6px 15px rgba(168, 85, 247, 0.3);
+}
+
+/* État panier vide */
+.cart-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #f3e8ff;
+    box-shadow: 0 10px 25px rgba(168, 85, 247, 0.02);
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+.cart-empty-state h3 {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin: 20px 0 10px 0;
+}
+
+.cart-empty-state p {
+    color: #64748b;
+    margin-bottom: 25px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cart-table th:nth-child(2),
+    .cart-table td:nth-child(2) {
+        display: none; /* Cache la colonne Boutique sur mobile pour gagner de la place */
+    }
+    .cart-footer-actions {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+    .cart-buttons-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    .btn-cart-continue,
+    .btn-cart-validate {
+        width: 100%;
+        justify-content: center;
+    }
+}
+/* ==========================================
+   PAGE SUIVI DE COMMANDE (TRACKING)
+   ========================================== */
+.yt-tracking-wrapper {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.yt-tracking-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid #f3e8ff;
+    box-shadow: 0 10px 25px rgba(168, 85, 247, 0.03);
+}
+
+.yt-main-status h2 {
+    color: #9333ea; /* Écrit avec le mauve foncé */
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.yt-tracking-meta {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 15px;
+}
+
+/* --- BARRE DE PROGRESSION LOGISTIQUE --- */
+.yt-progressbar {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin: 20px 0;
+}
+
+/* Ligne grise en arrière plan */
+.yt-progressbar::before {
+    content: "";
+    position: absolute;
+    top: 25px;
+    left: 5%;
+    width: 90%;
+    height: 4px;
+    background-color: #e2e8f0;
+    z-index: 1;
+}
+
+.yt-step {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.yt-step-bullet {
+    width: 54px;
+    height: 54px;
+    background-color: #ffffff;
+    border: 3px solid #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px auto;
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
+}
+
+.yt-step-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* État actif de la barre logistique (Mauve clair) */
+.yt-step-active .yt-step-bullet {
+    border-color: #a855f7;
+    background-color: #faf5ff;
+    box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15);
+}
+
+.yt-step-active .yt-step-label {
+    color: #a855f7;
+    font-weight: 700;
+}
+
+/* --- GRILLE ET COLONNES INFOS --- */
+.yt-tracking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 35px;
+    align-items: start;
+}
+
+.yt-delivery-info {
+    border-top: 4px solid #a855f7; /* Bordure mauve clair */
+}
+
+.yt-basket-summary {
+    border-top: 4px solid #9333ea; /* Bordure mauve foncé */
+}
+
+.yt-tracking-section-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #faf5ff;
+}
+
+/* Colonne Livraison */
+.yt-delivery-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.yt-delivery-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-bottom: 1px solid #f8fafc;
+    padding-bottom: 8px;
+}
+
+.yt-row-label {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.yt-row-value {
+    font-weight: 500;
+    color: #334155;
+}
+
+/* Numéro de téléphone mis en valeur en Mauve */
+.yt-phone-highlight {
+    font-weight: 700;
+    color: #a855f7;
+}
+
+/* Colonne Panier Récapitulatif */
+.yt-summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 25px;
+}
+
+.yt-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.yt-item-title {
+    font-weight: 700;
+    color: #1e293b;
+    display: block;
+    font-size: 0.95rem;
+}
+
+/* Nom de la boutique en BLEU */
+.yt-item-vendor, .yt-receipt-shop-sub {
+    font-size: 0.8rem;
+    color: #2563eb !important;
+    font-weight: 700;
+    display: block;
+    margin-top: 2px;
+}
+
+.yt-item-qty {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: block;
+}
+
+/* Prix des articles en VERT */
+.yt-item-price-total, .yt-receipt-price-cell {
+    font-weight: 800;
+    color: #16a34a !important;
+    font-size: 1.05rem;
+}
+
+/* Devise en JAUNE et PETIT */
+.yt-currency-small {
+    color: #ca8a04 !important;
+    font-size: 0.72rem !important;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Boîte Montant Total globale en VERT */
+.yt-summary-total-box {
+    background: #fdf4ff;
+    padding: 18px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #f3e8ff;
+}
+
+.yt-total-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+}
+
+.yt-total-amount {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #16a34a;
+}
+
+/* --- ZONE FACTURE / REÇU --- */
+.yt-receipt-card {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.yt-receipt-title {
+    color: #9333ea;
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+}
+
+.yt-receipt-meta {
+    color: #64748b;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 15px;
+}
+
+.yt-receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 25px;
+}
+
+.yt-receipt-table th {
+    border-bottom: 2px solid #a855f7;
+    color: #475569;
+    padding: 12px 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.yt-receipt-table td {
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.yt-receipt-final-row {
+    border-top: 2px solid #e2e8f0;
+    padding-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #475569;
+}
+
+.yt-receipt-final-amount {
+    color: #16a34a;
+    font-size: 1.3rem;
+}
+/* ==========================================
+   PAGE FINALISATION DE COMMANDE (CHECKOUT)
+   ========================================== */
+.checkout-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Sections principales de formulaires et résumés */
+.checkout-form-section, 
+.checkout-summary-section {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid #f3e8ff;
+    box-shadow: 0 10px 25px rgba(168, 85, 247, 0.03);
+}
+
+.checkout-form-section {
+    border-top: 4px solid #a855f7; /* Bordure distinctive mauve clair */
+}
+
+.checkout-summary-section {
+    border-top: 4px solid #9333ea; /* Bordure distinctive mauve foncé */
+    position: sticky;
+    top: 100px;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #faf5ff;
+}
+
+/* --- STRUCTURES DES CHAMPS DE SAISIE --- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background-color: #ffffff;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+textarea.form-input {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Effet de focus mauve clair */
+.form-input:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+}
+
+/* Bouton de confirmation Mauve Clair intense */
+.btn-submit-order {
+    display: block;
+    width: 100%;
+    background-color: #a855f7;
+    color: #ffffff;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 25px;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-submit-order:hover {
+    background-color: #9333ea;
+    box-shadow: 0 6px 15px rgba(168, 85, 247, 0.3);
+}
+
+/* --- COLONNE RÉCAPITULATIF MINIATURE --- */
+.prod-mini-card {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background-color: #faf5ff;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #f3e8ff;
+    margin-bottom: 20px;
+}
+
+.prod-mini-img {
+    width: 50px;
+    height: 50px;
+    background: #ffffff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.prod-mini-img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.prod-mini-details h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 3px;
+}
+
+/* Nom de la boutique en BLEU */
+.prod-mini-shop {
+    font-size: 0.8rem;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+/* Lignes de prix */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed #edf2f7;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+/* Montants financiers en VERT */
+.checkout-price-amount {
+    font-weight: 700;
+    color: #16a34a;
+}
+
+.checkout-free-delivery {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+/* Devise en JAUNE et PETIT */
+.checkout-currency-small {
+    color: #ca8a04;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Rangée du total final */
+.summary-total {
+    border-bottom: none;
+    margin-top: 10px;
+    padding-top: 15px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.summary-total .checkout-price-amount {
+    font-size: 1.3rem;
+}
+
+/* Responsive Mobile */
+@media (max-width: 850px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+    .checkout-summary-section {
+        position: static;
+    }
+}
+.card-commande {
+    max-width: 500px;
+    margin: 24px auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    border: 1px solid #f3f4f6;
+    font-family: sans-serif;
+}
+.header-commande {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+.grid-statuts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+.btn-statut {
+    display: block;
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+.btn-blue { color: #2563eb; border-color: #bfdbfe; }
+.btn-blue.active { background: #2563eb; color: #fff; }
+/* Répéter la logique pour yellow, indigo, green */
+
+
+/* --- COMPOSANT CARTE COMMANDE --- */
+.card-commande {
+    max-width: 500px;
+    margin: 24px auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    border: 1px solid #f3f4f6;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.header-commande {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.titre-commande {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1f2937;
+    margin: 0;
+}
+
+.date-commande {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 4px 0 0 0;
+}
+
+.details-commande {
+    margin-bottom: 20px;
+}
+
+.texte-details {
+    font-size: 15px;
+    color: #4b5563;
+    margin: 6px 0;
+}
+
+/* Badges de statut actuel */
+.badge {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.statut-recue { background: #dbeafe; color: #1e40af; }
+.statut-preparee { background: #fef3c7; color: #92400e; }
+.statut-expediee { background: #e0e7ff; color: #3730a3; }
+.statut-livree { background: #dcfce7; color: #166534; }
+
+/* Grille d'actions */
+.section-actions {
+    margin-top: 24px;
+}
+
+.titre-section {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9ca3af;
+    margin-bottom: 12px;
+}
+
+.grid-statuts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (min-width: 640px) {
+    .grid-statuts {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Boutons d'action */
+.btn-statut {
+    display: block;
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.btn-recue { color: #2563eb; border-color: #bfdbfe; }
+.btn-recue.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+.btn-preparee { color: #d97706; border-color: #fde68a; }
+.btn-preparee.active { background: #d97706; color: #fff; border-color: #d97706; }
+
+.btn-expediee { color: #4f46e5; border-color: #c7d2fe; }
+.btn-expediee.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+.btn-livree { color: #16a34a; border-color: #bbf7d0; }
+.btn-livree.active { background: #16a34a; color: #fff; border-color: #16a34a; }
+
+/* Bloc de messages Django (Succès / Erreur) */
+.django-messages {
+    max-width: 500px;
+    margin: 12px auto;
+}
+.message-item {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.message-item.success { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.message-item.error { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+
+/* --- AMÉLIORATION DU COMPOSANT PAGE IMPRESSION --- */
+.main-container {
+    display: flex;
+    gap: 30px;
+    padding: 40px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.section-articles {
+    flex: 2;
+}
+
+.titre-liste {
+    font-size: 22px;
+    color: #1f2937;
+    margin-bottom: 24px;
+    font-weight: 700;
+}
+
+.grid-articles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+/* Design des fiches articles */
+.card-article {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease-in-out;
+}
+
+.card-article:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.card-article.selected {
+    border-color: #9333ea;
+    box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
+}
+
+/* Simulation des images de votre capture */
+.image-placeholder {
+    height: 140px;
+    background-color: #f3f4f6;
+    background-size: cover;
+    background-position: center;
+}
+.bg-bache { background-color: #fce7f3; }
+.bg-affiche { background-color: #e0f2fe; }
+.bg-photocopie { background-color: #f3e8ff; }
+.bg-vinyle { background-color: #dcfce7; }
+.bg-autocollant { background-color: #fef9c3; }
+.bg-tasse { background-color: #ffe4e6; }
+
+.card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+.nom-article {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.prix-container {
+    margin-bottom: 14px;
+    min-height: 38px;
+}
+
+.prix-principal {
+    font-size: 15px;
+    font-weight: 700;
+    color: #4b5563;
+    display: block;
+}
+
+.prix-m2 {
+    font-size: 12px;
+    color: #9333ea;
+    font-weight: 500;
+    margin-top: 4px;
+    display: block;
+}
+
+.btn-choisir {
+    align-self: flex-start;
+    background: #f3e8ff;
+    color: #9333ea;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.card-article:hover .btn-choisir {
+    background: #9333ea;
+    color: #ffffff;
+}
+
+/* Barre latérale droite - Facture */
+.sidebar-commande {
+    flex: 1;
+    background: #fcfbfe;
+    border: 1px solid #f3e8ff;
+    border-radius: 16px;
+    padding: 24px;
+    height: fit-content;
+}
+
+.facture-box {
+    background: #ffffff;
+    border: 1px solid #f3f4f6;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.row-facture {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #4b5563;
+}
+.row-facture.remise {
+    color: #dc2626;
+}
+.row-facture.net {
+    border-top: 1px dashed #e5e7eb;
+    padding-top: 10px;
+    margin-bottom: 0;
+    font-size: 16px;
+    color: #111827;
+}
+
+/* Formulaire */
+.form-validation h3 {
+    font-size: 16px;
+    color: #111827;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+.form-group {
+    margin-bottom: 12px;
+}
+.form-validation input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+.form-validation input:focus {
+    outline: none;
+    border-color: #9333ea;
+}
+
+.btn-valider {
+    width: 100%;
+    background: #9333ea;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    font-size: 14px;
+}
+.btn-valider:hover {
+    background: #7e22ce;
+}
+
+.hidden { display: none !important; }
+.style-dimensions {
+    background: #fdf8f2;
+    border: 1px dashed #f59e0b;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+}
+.style-dimensions h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #b45309;
+}
+.inputs-inline {
+    display: flex;
+    gap: 12px;
+}
+.inputs-inline label {
+    font-size: 13px;
+    color: #4b5563;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.inputs-inline input {
+    margin-top: 4px;
+    padding: 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Animation de chargement dans le bouton */
+.btn-valider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-valider:disabled {
+    background: #a855f7 !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- AMÉLIORATION DU CHAT ASSISTANT --- */
+#yatout-chat-window {
+    flex-direction: column;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+#chat-messages-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: #fdfcfa;
+}
+
+/* Bulles de discussion */
+.bot-message, .user-message {
+    max-width: 85%;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.bot-message {
+    align-self: flex-start;
+    background: #f3f4f6;
+    color: #1f2937;
+    border-radius: 14px 14px 14px 0px;
+}
+
+.user-message {
+    align-self: flex-end;
+    background: #9333ea;
+    color: white;
+    border-radius: 14px 14px 0px 14px;
+    text-align: left;
+}
+
+/* Boutons d'action WhatsApp */
+.btn-whatsapp-chat {
+    display: inline-block;
+    background-color: #22c55e;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 12px;
+    transition: background 0.2s;
+    border: none;
+    cursor: pointer;
+}
+.btn-whatsapp-chat:hover {
+    background-color: #16a34a;
+}
+
+/* Animation de saisie (Typing Indicator) */
+.bot-message.typing {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+}
+.bot-message.typing span {
+    width: 6px;
+    height: 6px;
+    background: #9ca3af;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.bot-message.typing span:nth-child(1) { animation-delay: -0.32s; }
+.bot-message.typing span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}
+
+/* Permet un défilement automatique fluide lors du clic sur l'ancre HTML */
+html {
+    scroll-behavior: smooth;
+}

@@ -1,0 +1,117 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}YaTout — Devenir Vendeur{% endblock %}
+
+{% block content %}
+<!-- Style de secours intégré directement pour la page inscription -->
+<style>
+    .register-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 40px 20px;
+        background-color: #f8fafc;
+        font-family: Arial, sans-serif;
+    }
+
+    .register-card {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        max-width: 500px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .register-card h2 {
+        color: #2e0854; /* Violet historique de YaTout */
+        font-size: 1.8rem;
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .register-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    /* Style pour habiller les champs du formulaire form.as_p de Django */
+    .register-card form p {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .register-card form label {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .register-card form input, 
+    .register-card form select, 
+    .register-card form textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    .register-card form input:focus {
+        border-color: #7b24cc;
+    }
+
+    /* Bouton d'envoi Mauve YaTout */
+    .btn-submit-register {
+        display: block;
+        width: 100%;
+        background-color: #7b24cc;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        margin-top: 25px;
+    }
+
+    .btn-submit-register:hover {
+        background-color: #2e0854;
+    }
+
+    .btn-submit-register:active {
+        transform: scale(0.98);
+    }
+</style>
+
+<div class="register-wrapper">
+    <div class="register-card">
+        <h2>Rejoignez-nous</h2>
+        <p class="register-subtitle">Créez votre espace vendeur en quelques clics et commencez à vendre sur YaTout.</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Affichage propre du formulaire généré par Django -->
+            {{ form.as_p }}
+            
+            <button type="submit" class="btn-submit-register">🔮 Créer ma boutique</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

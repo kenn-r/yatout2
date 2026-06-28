@@ -1,0 +1,166 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Atelier d'Impression - YaTout{% endblock %}
+
+{% block content %}
+<style>
+    .print-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; font-family: system-ui, sans-serif; }
+    .print-title-box { text-align: center; margin-bottom: 40px; }
+    .print-title-box h1 { color: #2e0854; font-size: 2.2rem; }
+    
+    .print-layout { display: flex; gap: 30px; align-items: flex-start; }
+    .products-column { flex: 1.3; } 
+    .cart-column { flex: 1.7; min-width: 450px; display: flex; flex-direction: column; gap: 25px; } 
+    
+    .catalog-list { display: flex; flex-direction: column; gap: 12px; }
+    .item-list-row { 
+        background: white; 
+        border: 1px solid #e8e3f0; 
+        border-radius: 8px; 
+        padding: 14px 20px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+    }
+    
+    .btn-link-prestation { 
+        background: #f3e8ff; 
+        color: #7b24cc; 
+        border: 1px solid #7b24cc; 
+        padding: 8px 16px; 
+        font-weight: bold; 
+        border-radius: 6px; 
+        text-decoration: none; 
+        font-size: 0.9rem; 
+        transition: all 0.2s; 
+    }
+    .btn-link-prestation:hover { background: #7b24cc; color: white; }
+
+    .cart-sticky { background: white; border: 1px solid #e8e3f0; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+    .cart-item { background: #faf8ff; border: 1px solid #e8e3f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+    
+    .select-support { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 600; color: #2e0854; margin-bottom: 15px; }
+    .qte-input { width: 65px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-size: 0.95rem; font-weight: bold; }
+    
+    .financial-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 0.95rem; }
+    .financial-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .final-total { border-top: 1px solid #cbd5e1; padding-top: 8px; font-weight: 800; color: #166534; font-size: 1.2rem; }
+    
+    .input-field { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px; box-sizing: border-box; }
+    .btn-submit-order { width: 100%; padding: 14px; background: #166534; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+</style>
+
+<div class="print-container">
+    <div class="print-title-box">
+        <h1>🖨️ Espace Impression Professionnel YaTout</h1>
+        <p>Découvrez nos offres à gauche et configurez votre estimation en temps réel à droite.</p>
+    </div>
+
+    <div class="print-layout">
+        
+        <!-- 📋 COLONNE GAUCHE : LIENS AVEC ANCRES -->
+        <div class="products-column">
+            <h2>📋 Nos supports d'impression</h2><br>
+            <div class="catalog-list">
+                {% for prest in prestations %}
+                    <div class="item-list-row">
+                        <h3>🖨️ {{ prest.titre }}</h3>
+                        <a href="{% url 'page_prestations' %}#prestation-{{ prest.id }}" class="btn-link-prestation">
+                            👁️ Voir nos supports
+                        </a>
+                    </div>
+                {% empty %}
+                    <p>Aucun support configuré.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 🧮 COLONNE DROITE : LE SIMULATEUR COMPLET -->
+        <div class="cart-column">
+            <div class="cart-sticky">
+                
+                <!-- ✨ RETOUR DE LA GALERIE DES RÉALISATIONS RÉELLES -->
+                <h3 style="color: #2e0854; margin: 0 0 12px 0; font-size: 1.05rem; display: flex; align-items: center; gap: 6px; font-weight: bold;">
+                    ✨ Galerie Réalisations Réelles
+                </h3>
+                <div class="carousel-container" style="position: relative; width: 100%; height: 165px; overflow: hidden; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                    {% for produit in exemples_realisations %}
+                        <div class="carousel-slide" style="display: {% if forloop.first %}block{% else %}none{% endif %}; width: 100%; height: 100%; position: relative;">
+                            <!-- SÉCURITÉ : On vérifie si l'image existe avant d'appeler .url -->
+                            {% if produit.image %}
+                                <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #4b5563;">📷 Image non disponible</div>
+                            {% endif %}
+                            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.75)); padding: 10px 15px; color: white; font-size: 0.85rem; font-weight: bold;">
+                                🔥 {{ produit.nom }} — Qualité Premium YaTout
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #7b24cc, #2e0854); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.95rem; text-align: center; padding: 20px; box-sizing: border-box;">
+                            🎯 YaTout Impression<br><span style="font-size: 0.75rem; font-weight: normal; opacity: 0.9;">Commandes professionnelles & Finitions Premium</span>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- ZONE DU SELECT ET DU SIMULATEUR -->
+                <h2 style="color: #2e0854; font-size: 1.3rem;">🧮 Simulateur & Prise de Commande</h2><br>
+                
+                <form method="POST" style="margin-bottom: 20px;">
+                    {% csrf_token %}
+                    <label style="font-weight: bold; font-size: 0.9rem; color: #2e0854; display: block; margin-bottom: 5px;">Choisir un support à simuler :</label>
+                    <select name="prestation_id" class="select-support" onchange="this.form.submit()">
+                        <option value="">-- Sélectionnez un support --</option>
+                        {% for prest in prestations %}
+                            <option value="{{ prest.id }}" {% if item_selectionne.id == prest.id %}selected{% endif %}>
+                                {{ prest.titre }} ({{ prest.prix_unitaire }} FCFA / unité)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+
+                {% if item_selectionne %}
+                    <div class="cart-item">
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #2e0854; margin-bottom: 10px;">
+                            🎯 {{ item_selectionne.titre }}
+                        </div>
+                        <form method="POST" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                            {% csrf_token %}
+                            <input type="hidden" name="prestation_id" value="{{ item_selectionne.id }}">
+                            <span style="font-size: 0.85rem; font-weight: bold; color: #1e293b;">Quantité requise :</span>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <input type="number" name="quantite" value="{{ quantite_actuelle|default:1 }}" min="1" class="qte-input">
+                                <button type="submit" name="maj_quantite" style="background: #f3e8ff; color: #7b24cc; border: 1px solid #7b24cc; padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer;">🔄 Recalculer</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="financial-box">
+                        <div class="financial-row"><span>Total Brut :</span><span>{{ total_brut|default:0 }} FCFA</span></div>
+                        <div class="financial-row" style="color:#ef4444;"><span>Remise Spéciale (5%) :</span><span>{{ montant_remise|default:0 }} FCFA</span></div>
+                        <div class="financial-row final-total"><span>Net à payer :</span><span>{{ total_final|default:0 }} FCFA</span></div>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- SCRIPT POUR FAIRE TOURNER LE CAROUSEL AUTOMATIQUEMENT -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        if (slides.length > 1) {
+            let currentIndex = 0;
+            setInterval(() => {
+                slides[currentIndex].style.display = 'none';
+                currentIndex = (currentIndex + 1) % slides.length;
+                slides[currentIndex].style.display = 'block';
+            }, 3500); // Change de photo toutes les 3.5 secondes
+        }
+    });
+</script>
+{% endblock %}

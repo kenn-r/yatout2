@@ -1,0 +1,247 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}{{ produit.nom }} - Détails{% endblock %}
+
+{% block content %}
+<style>
+    /* Styles isolés par namespace avec la charte graphique mauve de YaTout */
+    .yt-detail-card {
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .yt-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 40px;
+    }
+
+    .yt-img-box {
+        position: relative;
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 350px;
+    }
+
+    .yt-img-box img {
+        max-width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: contain;
+    }
+
+    .yt-badge-promo {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background-color: #ea580c; /* Orange vif pour la promo */
+        color: #ffffff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+
+    .yt-info-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .yt-vendor-label {
+        display: block;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #8b5cf6; /* Mauve pour le nom de la boutique */
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .yt-title-text {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0 0 15px 0;
+        color: #111827;
+    }
+
+    .yt-price-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .yt-current-price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6366f1; /* Mauve principal YaTout */
+    }
+
+    .yt-old-price {
+        font-size: 1.4rem;
+        color: #9ca3af;
+        text-decoration: line-through;
+    }
+
+    .yt-stock-indicator {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 25px;
+    }
+
+    .yt-in-stock {
+        background-color: #f5f3ff; /* Fond mauve très clair */
+        color: #7c3aed; /* Texte mauve foncé */
+    }
+
+    .yt-out-stock {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+
+    .yt-desc-section {
+        margin-bottom: 30px;
+        color: #4b5563;
+        line-height: 1.6;
+    }
+
+    .yt-desc-section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: #1f2937;
+    }
+
+    .yt-btn-submit {
+        display: block;
+        width: 100%;
+        text-align: center;
+        background-color: #6366f1; /* Mauve YaTout */
+        color: #ffffff;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+    }
+
+    .yt-btn-submit:hover:not(:disabled) {
+        background-color: #4f46e5; /* Mauve plus sombre au survol */
+    }
+
+    .yt-btn-submit:disabled {
+        background-color: #cbd5e1;
+        color: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .yt-return-link {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 20px;
+        color: #6b7280;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .yt-return-link:hover {
+        color: #6366f1; /* Survol mauve */
+    }
+
+    @media (max-width: 768px) {
+        .yt-detail-grid {
+            grid-template-columns: 1fr;
+        }
+        .yt-detail-card {
+            padding: 15px;
+            margin: 15px 0;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="yt-detail-card">
+        
+        <!-- Navigation retour -->
+        <a href="{% url 'panier_detail' %}" class="yt-return-link">← Retour aux produits</a>
+
+        <div class="yt-detail-grid">
+            <!-- Zone Image -->
+            <div class="yt-img-box">
+                {% if produit.reduction_pourcentage > 0 %}
+                    <span class="yt-badge-promo">-{{ produit.reduction_pourcentage }}%</span>
+                {% endif %}
+
+                {% if produit.image %}
+                    <img src="{{ produit.image.url }}" alt="{{ produit.nom }}">
+                {% else %}
+                    <img src="https://placeholder.com" alt="Image indisponible">
+                {% endif %}
+            </div>
+
+            <!-- Zone Commerciale -->
+            <div class="yt-info-box">
+                <div>
+                    <span class="yt-vendor-label">Boutique : {{ produit.vendeur.nom_boutique }}</span>
+                    <h1 class="yt-title-text">{{ produit.nom }}</h1>
+                    
+                    <!-- Tarification et Devise Vendeur -->
+                    <div class="yt-price-row">
+                        <span class="yt-current-price">
+                            {{ produit.prix }} {{ produit.vendeur.get_devise_display }}
+                        </span>
+                        {% if produit.ancien_prix %}
+                            <span class="yt-old-price">
+                                {{ produit.ancien_prix }} {{ produit.vendeur.get_devise_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- État des stocks -->
+                    <div>
+                        {% if produit.stock > 0 %}
+                            <span class="yt-stock-indicator yt-in-stock">En stock ({{ produit.stock }} restants)</span>
+                        {% else %}
+                            <span class="yt-stock-indicator yt-out-stock">Rupture de stock</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="yt-desc-section">
+                        <h3>Description du produit</h3>
+                        <p>{{ produit.description|linebreaksbr }}</p>
+                    </div>
+                </div>
+
+                <!-- Formulaire d'ajout au panier -->
+                <form action="{% url 'panier_ajouter' produit.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="yt-btn-submit" {% if produit.stock == 0 %}disabled{% endif %}>
+                        {% if produit.stock > 0 %}
+                            Ajouter au panier
+                        {% else %}
+                            Produit indisponible
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

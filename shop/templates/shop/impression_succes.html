@@ -1,0 +1,68 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container-commande">
+
+    <!-- Gestion et affichage des messages d'erreur ou de succès -->
+    {% if messages %}
+    <div class="django-messages">
+        {% for message in messages %}
+        <div class="message-item {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Carte principale de la commande -->
+    <div class="card-commande">
+        <div class="header-commande">
+            <div>
+                <h3 class="titre-commande">Commande #{{ commande.id }}</h3>
+                <p class="date-commande">{{ commande.date_creation|date:"d/m/Y H:i" }}</p>
+            </div>
+            
+            <span class="badge 
+                {% if commande.statut == 'Reçue' %}statut-recue
+                {% elif commande.statut == 'Préparée' %}statut-preparee
+                {% elif commande.statut == 'Expédiée' %}statut-expediee
+                {% elif commande.statut == 'Livrée' %}statut-livree
+                {% endif %}">
+                {{ commande.statut }}
+            </span>
+        </div>
+
+        <div class="details-commande">
+            <p class="texte-details">Produit : <strong>{{ commande.produit.nom }}</strong></p>
+            <p class="texte-details">Client : <span>{{ commande.acheteur.username }}</span></p>
+        </div>
+
+        <div class="section-actions">
+            <p class="titre-section">Modifier le statut :</p>
+            <div class="grid-statuts">
+                
+                <a href="{% url 'modifier_statut_commande' pk=commande.pk nouveau_statut='Reçue' %}" 
+                   class="btn-statut btn-recue {% if commande.statut == 'Reçue' %}active{% endif %}">
+                    Reçue
+                </a>
+
+                <a href="{% url 'modifier_statut_commande' pk=commande.pk nouveau_statut='Préparée' %}" 
+                   class="btn-statut btn-preparee {% if commande.statut == 'Préparée' %}active{% endif %}">
+                    Préparée
+                </a>
+
+                <a href="{% url 'modifier_statut_commande' pk=commande.pk nouveau_statut='Expédiée' %}" 
+                   class="btn-statut btn-expediee {% if commande.statut == 'Expédiée' %}active{% endif %}">
+                    Expédiée
+                </a>
+
+                <a href="{% url 'modifier_statut_commande' pk=commande.pk nouveau_statut='Livrée' %}" 
+                   class="btn-statut btn-livree {% if commande.statut == 'Livrée' %}active{% endif %}">
+                    Livrée
+                </a>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

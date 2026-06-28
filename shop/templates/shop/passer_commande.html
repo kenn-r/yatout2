@@ -1,0 +1,97 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}YaTout — Finaliser votre commande{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-layout">
+        
+        <!-- Colonne de Gauche : Formulaire de livraison -->
+        <div class="checkout-form-section">
+            <h2 class="section-title">Informations de livraison</h2>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Champ Nom complet -->
+                <div class="form-group">
+                    <label class="form-label" for="nom">Nom complet</label>
+                    <input class="form-input" type="text" id="nom" name="nom" placeholder="Ex: Kouassi Koffi" required>
+                </div>
+                
+                <!-- Champ Adresse e-mail -->
+                <div class="form-group">
+                    <label class="form-label" for="email">Adresse e-mail</label>
+                    <input class="form-input" type="email" id="email" name="email" placeholder="Ex: kouassi@mail.com" required>
+                </div>
+                
+                <!-- Champ Téléphone à 10 chiffres (Côte d'Ivoire) -->
+                <div class="form-group">
+                    <label class="form-label" for="telephone">Numéro de téléphone mobile (10 chiffres)</label>
+                    <input 
+                        class="form-input" 
+                        type="tel" 
+                        id="telephone" 
+                        name="telephone" 
+                        placeholder="Ex: 0701020304" 
+                        pattern="[0-9]{10}" 
+                        maxlength="10"
+                        title="Veuillez entrer un numéro de téléphone ivoirien valide à 10 chiffres" 
+                        required>
+                </div>
+                
+                <!-- Champ Adresse descriptive avec points de repère -->
+                <div class="form-group">
+                    <label class="form-label" for="adresse">Adresse complète (Commune, Quartier, Repères précis)</label>
+                    <textarea 
+                        class="form-input" 
+                        id="adresse" 
+                        name="adresse" 
+                        placeholder="Ex: Cocody, Angré Django, non loin de la pharmacie des Allées, immeuble bleu au 2ème étage." 
+                        required></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit-order">🚀 Valider et payer à la livraison</button>
+            </form>
+        </div>
+
+        <!-- Colonne de Droite : Récapitulatif de commande -->
+        <div class="checkout-summary-section">
+            <h3 class="section-title" style="font-size: 1.1rem; margin-bottom: 20px;">Résumé de la commande</h3>
+            
+            <div class="prod-mini-card">
+                <div class="prod-mini-img">
+                    {% if produit.image %}
+                        <img src="{{ produit.image.url }}" alt="{{ produit.nom }}">
+                    {% else %}
+                        <span style="font-size: 1.8rem;">📦</span>
+                    {% endif %}
+                </div>
+                <div class="prod-mini-details">
+                    <h4>{{ produit.nom }}</h4>
+                    <span class="prod-mini-shop">🏪 {{ produit.vendeur.nom_boutique }}</span>
+                </div>
+            </div>
+            
+            <div class="summary-row">
+                <span>Article</span>
+                <span class="checkout-price-amount">
+                    1 x {{ produit.prix }} <span class="checkout-currency-small">{{ produit.vendeur.get_devise_display }}</span>
+                </span>
+            </div>
+            <div class="summary-row">
+                <span>Livraison</span>
+                <span class="checkout-free-delivery">Gratuite</span>
+            </div>
+            
+            <div class="summary-row summary-total">
+                <span>Total :</span>
+                <span class="checkout-price-amount">
+                    {{ produit.prix }} <span class="checkout-currency-small">{{ produit.vendeur.get_devise_display }}</span>
+                </span>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

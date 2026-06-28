@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bon de Commande {{ commande.numero_bon }}</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; }
+        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        .logo { max-height: 70px; width: auto; object-fit: contain; }
+        .title { font-size: 26px; font-weight: bold; color: #1e293b; text-transform: uppercase; text-align: right; }
+        .info-section { width: 100%; margin-bottom: 30px; }
+        .info-box { width: 45%; vertical-align: top; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .items-table th { background-color: #7c3aed; color: white; padding: 12px; text-align: left; font-size: 14px; }
+        .items-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        .total-box { margin-top: 30px; text-align: right; font-size: 18px; }
+        .total-box strong { color: #15803d; font-size: 22px; }
+        
+        /* Boutons et formulaires masqués lors de l'impression PDF */
+        @media print { 
+            .btn-print, .admin-box { display: none !important; } 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BOUTON IMPRIMER -->
+    <button class="btn-print" onclick="window.print()" style="padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 20px;">
+        🖨️ Imprimer / Sauvegarder en PDF
+    </button>
+
+    <!-- EN-TÊTE AVEC LOGO -->
+    <table class="header-table">
+        <tr>
+            <td>
+                <img src="{% static 'shop/js/images/logo.png' %}" alt="Logo YaTout" class="logo">
+            </td>
+            <td class="title">Bon de Commande</td>
+        </tr>
+    </table>
+
+    <!-- COORDONNÉES DES PARTIES -->
+    <table class="info-section">
+        <tr>
+            <td class="info-box">
+                <strong>ÉMETTEUR :</strong><br>
+                <strong>YaTout Impression</strong><br>
+                Abidjan, Côte d'Ivoire<br>
+                Téléphone : +225 05 74 70 20 92
+            </td>
+            <td style="width: 10%;"></td>
+            <td class="info-box">
+                <strong>DESTINATAIRE :</strong><br>
+                Client : {{ commande.nom_client }}<br>
+                Téléphone : {{ commande.telephone }}<br>
+                Date : {{ commande.date_commande|date:"d/m/Y H:i" }}<br>
+                <strong>Référence : {{ commande.numero_bon }}</strong>
+            </td>
+        </tr>
+    </table>
+
+    <!-- TABLEAU DES PRESTATIONS -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Désignation de la prestation</th>
+                <th style="text-align: center; width: 100px;">Quantité</th>
+                <th style="text-align: right; width: 150px;">Prix unitaire</th>
+                <th style="text-align: right; width: 150px;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in articles_liste %}
+            <tr>
+                <td>{{ item.titre }}</td>
+                <td style="text-align: center;">{{ item.qte }}</td>
+                <td style="text-align: right;">{{ item.prix }} FCFA</td>
+                <td style="text-align: right; font-weight: bold;">{{ item.total }} FCFA</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- MESSAGES DE SUCCÈS OU D'ERREUR (S'AFFICCHENT APPRÈS UNE MODIFICATION) -->
+    {% if messages %}
+        <div class="btn-print" style="margin-top: 20px;">
+            {% for message in messages %}
+                <div style="padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- BLOC ADMINISTRATION (Remise + Statut de Livraison) -->
+    <div class="admin-box" style="margin-top: 30px; display: flex; gap: 20px; flex-wrap: wrap;">
+        
+        <!-- Formulaire de modification de la remise -->
+        <div style="background-color: #f8fafc; border: 1px dashed #7c3aed; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
+            <form method="POST">
+                {% csrf_token %}
+                <label style="font-weight: bold; font-size: 13px; color: #4c1d95; display: block; margin-bottom: 5px;">
+                    🛠️ Ajuster la remise commerciale :
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" name="pourcentage_remise" value="{{ pourcentage_actuel }}" min="0" max="100" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
+                    <span style="align-self: center; font-weight: bold;">%</span>
+                    <button type="submit" name="changer_remise" style="background-color: #7c3aed; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                        Appliquer et recalculer
+                    </button>
+                </div>
+            </form>
+        </div>
+<!-- Bloc de transfert direct en BL -->
+<div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
+    <label style="font-weight: bold; font-size: 13px; color: #1e293b; display: block; margin-bottom: 8px;">
+        🔄 Évolution du document :
+    </label>
+    
+    {% if not commande.bl_genere %}
+        <!-- LE FORMULAIRE MANQUANT QUI ENVOIE L'ACTION -->
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" name="generer_bl" style="background-color: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; width: 100%; text-align: center;">
+                🔄 Transformer en Bon de Livraison (BL)
+            </button>
+        </form>
+    {% else %}
+        <div style="margin-bottom: 10px; color: #2563eb; font-weight: bold; font-size: 13px;">
+            ℹ️ Le Bon de Livraison a déjà été généré.
+        </div>
+        <a href="{% url 'voir_bon_livraison' commande.id %}" style="display: block; text-align: center; background-color: #2563eb; color: white; padding: 10px 15px; border-radius: 4px; font-weight: bold; text-decoration: none; font-size: 13px;">
+            👉 Voir / Imprimer le BL
+        </a>
+    {% endif %}
+</div>
+        </div>
+    </div>
+
+    <!-- TOTAL GENERAL -->
+    <div class="total-box" style="margin-top: 30px; text-align: right; font-size: 16px; line-height: 1.6;">
+        <div style="color: #64748b;">Total Brut : {{ commande.total_brut }} FCFA</div>
+        <div style="color: #dc2626;">Remise Appliquée ({{ pourcentage_actuel }}%) : -{{ commande.montant_remise }} FCFA</div>
+        <hr style="width: 250px; margin: 10px 0 10px auto; border: 0; border-top: 1px solid #e2e8f0;">
+        <div style="font-size: 18px; font-weight: bold;">
+            Montant Net à Payer : <strong style="color: #15803d; font-size: 24px;">{{ commande.total_final }} FCFA</strong>
+        </div>
+    </div>
+
+</body>
+</html>

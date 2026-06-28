@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}YaTout Ci{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
+</head>
+<body>
+
+    <!-- 1. SÉPARATION DES HEADERS VIA DJANGO (SANS JS) -->
+    {% if "impression" in request.path %}
+        
+        <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
+        <nav class="navbar navbar-impression">
+            <div class="container">
+                <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Impression</a>
+                <div class="nav-actions">
+                    <a href="{% url 'page_prestations' %}" class="btn-nav btn-prestations">Nos Prestations</a>
+                    <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                        💬 Parler à un conseiller
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+    {% else %}
+        
+        <!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
+        <nav class="navbar">
+            <div class="container">
+                <a href="{% url 'accueil' %}" class="nav-logo">🔮 YaTout Ci</a>
+                <div class="nav-actions" style="display: flex; align-items: center; gap: 10px;">
+                    <a href="{% url 'panier_detail' %}" class="link-nav" style="margin-right: 10px;">🛒 Mon Panier</a>
+                    {% if user.is_authenticated %}
+                        <span class="nav-welcome">Bonjour, <strong>{{ user.username }}</strong></span>
+                        <a href="{% url 'dashboard_vendeur' %}" class="btn-nav btn-nav-purple">Tableau de bord</a>
+                        <a href="{% url 'ajouter_produit' %}" class="btn-nav btn-nav-purple">＋ Ajouter produit</a>
+                        
+                        <!-- 🔴 AJOUT DU BOUTON DE DÉCONNEXION SÉCURISÉ (POST) -->
+                        <form method="POST" action="{% url 'deconnexion_vendeur' %}" style="margin: 0; display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-nav" style="background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                                🚪 Déconnexion
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'connexion' %}" class="link-nav">Connexion</a>
+                        <a href="{% url 'inscription_vendeur' %}" class="btn-nav btn-nav-white">Devenir Vendeur</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    {% endif %}
+
+    <!-- 2. AFFICHAGE DES MESSAGES -->
+    {% if messages %}
+    <div class="container alert-container">
+        {% for message in messages %}
+            <div class="alert-box">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 3. ZONE DYNAMIQUE D'INJECTION DES PAGES -->
+    <div class="flex-grow">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- 🤖 ASSISTANT CHATBOT FLOTTANT GEMINI IA (VISIBLE PARTOUT)             -->
+    <!-- ===================================================================== -->
+    
+    <!-- Bouton rond avec l'émoji robot -->
+    <div id="btn-flottant-ia" onclick="basculerFenetreChat()" style="position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: #7c3aed; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(124,58,237,0.4); z-index: 999999; transition: transform 0.2s;">
+        🤖
+    </div>
+
+    <!-- Fenêtre de tchat masquée par défaut -->
+    <div id="fenetre-chat-ia" style="display: none; position: fixed; bottom: 95px; right: 25px; width: 380px; height: 460px; background: white; border: 1px solid #e8e3f0; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); overflow: hidden; flex-direction: column; z-index: 999999; font-family: system-ui, sans-serif;">
+        
+        <!-- En-tête de la fenêtre -->
+        <div style="background: #1e293b; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">🤖</span>
+                <div>
+                    <h4 style="margin: 0; font-size: 0.9rem; font-weight: bold;">Assistant IA YaTout</h4>
+                    <p style="margin: 0; font-size: 0.7rem; color: #22c55e;">● En ligne</p>
+                </div>
+            </div>
+            <span onclick="basculerFenetreChat()" style="cursor: pointer; font-weight: bold; font-size: 16px; padding: 0 5px;">✕</span>
+        </div>
+        
+        <!-- Zone de messages -->
+        <div id="chat-box-global" style="flex-grow: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+            <div style="align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 85%; font-size: 0.85rem; line-height: 1.4;">
+                Bonjour ! ✨ Je suis l'IA officielle de YaTout. Je connais nos stocks, nos promos et nos supports d'impression en temps réel. Posez-moi votre question !
+            </div>
+        </div>
+
+        <!-- Zone de saisie -->
+        <div style="background: white; padding: 10px 15px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px;">
+            <input type="text" id="global-message-input" placeholder="Posez votre question..." style="flex-grow: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.85rem;" onkeypress="if(event.key === 'Enter') envoyerMessageGlobalIA()">
+            <button type="button" onclick="envoyerMessageGlobalIA()" style="background: #7b24cc; color: white; border: none; padding: 8px 12px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DU COMPORTEMENT DE L'IA -->
+    <script>
+        function basculerFenetreChat() {
+            const tchat = document.getElementById('fenetre-chat-ia');
+            const bouton = document.getElementById('btn-flottant-ia');
+            if (tchat.style.display === 'none' || tchat.style.display === '') {
+                tchat.style.display = 'flex';
+                bouton.style.transform = 'scale(0.9)';
+                const box = document.getElementById('chat-box-global');
+                box.scrollTop = box.scrollHeight;
+            } else {
+                tchat.style.display = 'none';
+                bouton.style.transform = 'scale(1)';
+            }
+        }
+
+        function envoyerMessageGlobalIA() {
+            const chatBox = document.getElementById('chat-box-global');
+            const inputField = document.getElementById('global-message-input');
+            const messageText = inputField.value.trim();
+            
+            if (!messageText) return;
+
+            inputField.value = '';
+            chatBox.innerHTML += `
+                <div style="align-self: flex-end; background: #7c3aed; color: white; padding: 10px 14px; border-radius: 12px 12px 0 12px; max-width: 85%; font-size: 0.85rem;">
+                    ${messageText}
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const idAttente = 'msg-attente-glom-' + Date.now();
+            chatBox.innerHTML += `
+                <div id="${idAttente}" style="align-self: flex-start; background: #f1f5f9; color: #64748b; padding: 8px 12px; border-radius: 12px; font-size: 0.8rem; font-style: italic;">
+                    🤖 Analyse en cours...
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            fetch("{% url 'assistant_chat_api' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: messageText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const elAttente = document.getElementById(idAttente);
+                if(elAttente) elAttente.remove();
+                
+                if (data.reponse) {
+                    const reponseFormatee = data.reponse.replace(/\n/g, "<br>");
+                    chatBox.innerHTML += `
+                        <div style="align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 85%; font-size: 0.85rem; line-height: 1.4;">
+                            ${reponseFormatee}
+                        </div>
+                    `;
+                } else {
+                    chatBox.innerHTML += `
+                        <div style="align-self: flex-start; background: #fef2f2; color: #991b1b; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem;">
+                            ❌ Erreur de lecture de l'assistant.
+                        </div>
+                    `;
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(error => {
+                const elAttente = document.getElementById(idAttente);
+                if(elAttente) elAttente.remove();
+                chatBox.innerHTML += `
+                    <div style="align-self: flex-start; background: #fef2f2; color: #991b1b; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem;">
+                        ❌ Erreur réseau de connexion à l'IA.
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+    </script>
+
+</body>
+</html>

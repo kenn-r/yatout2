@@ -1,0 +1,129 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}YaTout — Ajouter un nouveau produit{% endblock %}
+
+{% block content %}
+<!-- Style de secours intégré directement pour la page d'ajout de produit -->
+<style>
+    .add-product-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 75vh;
+        padding: 40px 20px;
+        background-color: #f8fafc;
+        font-family: Arial, sans-serif;
+    }
+
+    .add-product-card {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        max-width: 550px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .add-product-card h2 {
+        color: #2e0854; /* Violet historique de YaTout */
+        font-size: 1.8rem;
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .add-product-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    /* Habillage des paragraphes form.as_p générés par Django */
+    .add-product-card form p {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .add-product-card form label {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Habillage global des entrées du formulaire */
+    .add-product-card form input, 
+    .add-product-card form select, 
+    .add-product-card form textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    .add-product-card form input:focus,
+    .add-product-card form select:focus,
+    .add-product-card form textarea:focus {
+        border-color: #7b24cc;
+    }
+
+    /* Style spécifique pour le champ d'envoi de fichier (image) */
+    .add-product-card form input[type="file"] {
+        padding: 8px;
+        border: 2px dashed #cbd5e1;
+        background-color: #f8fafc;
+        cursor: pointer;
+    }
+
+    /* Bouton de mise en ligne mauve */
+    .btn-submit-product {
+        display: block;
+        width: 100%;
+        background-color: #7b24cc;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        margin-top: 25px;
+    }
+
+    .btn-submit-product:hover {
+        background-color: #2e0854;
+    }
+
+    .btn-submit-product:active {
+        transform: scale(0.98);
+    }
+</style>
+
+<div class="add-product-wrapper">
+    <div class="add-product-card">
+        <h2>Ajouter un article</h2>
+        <p class="add-product-subtitle">Remplissez les détails ci-dessous pour mettre instantanément votre produit en vente.</p>
+        
+        <!-- L'attribut enctype="multipart/form-data" reste obligatoire ici pour l'upload d'images -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Rendu automatique et verticalisé des champs du formulaire -->
+            {{ form.as_p }}
+            
+            <button type="submit" class="btn-submit-product">✨ Mettre en ligne sur le marché</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

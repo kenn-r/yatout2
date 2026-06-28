@@ -1,0 +1,279 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="main-container">
+    
+    <section class="section-articles">
+        
+        <!-- Repère absolu pour le bouton du menu -->
+        <span id="catalogue-prestations" style="display: block; position: relative; top: -20px;"></span>
+
+        <h2 class="titre-liste">Nos Prestations d'Impression</h2>
+        
+        <!-- GRILLE DYNAMIQUE CONNECTÉE À DJANGO -->
+        <div class="grid-articles">
+            {% for prest in prestations %}
+                <!-- Chaque carte appelle dynamiquement la fonction JavaScript avec ses propres données de la BDD -->
+                <div class="card-article" 
+                     onclick="selectionnerArticle(this, '{{ prest.titre|escapejs }}', {{ prest.prix_unitaire }}, {% if prest.type_unite == 'M2' %}true{% else %}false{% endif %}, {{ prest.prix_unitaire }})"
+                     style="cursor: pointer;">
+                    
+                    {% if prest.image %}
+                        <div class="image-placeholder" style="background-image: url('{{ prest.image.url }}'); background-size: cover; background-position: center;"></div>
+                    {% else %}
+                        <div class="image-placeholder" style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">🖨️</div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h3 class="nom-article">{{ prest.titre }}</h3>
+                        <div class="prix-container">
+                            <span class="prix-principal">{{ prest.prix_unitaire }} FCFA</span>
+                            <span class="prix-m2">
+                                {% if prest.type_unite == 'M2' %}
+                                    au m²
+                                {% elif prest.type_unite == 'LOT_100' %}
+                                    le lot de 100
+                                {% else %}
+                                    l'unité
+                                {% endif %}
+                            </span>
+                        </div>
+                        <button class="btn-choisir">+ Choisir</button>
+                    </div>
+                </div>
+            {% empty %}
+                <p>Aucune prestation disponible pour le moment.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- SECTION DROITE : CALCULATEUR ET VALIDATION DU BON -->
+    <aside class="sidebar-commande">
+        
+        <!-- Bloc de notification AJAX (Succès / Erreur) -->
+        <div id="ajax-message-box" class="hidden"></div>
+
+        <!-- Calculateur de Dimensions m² -->
+        <div id="calculateur-dimensions" class="hidden style-dimensions">
+            <h4>📐 Dimensions du support (en mètres)</h4>
+            <div class="inputs-inline">
+                <label>Largeur : <input type="number" id="saisie-largeur" value="1" min="0.1" step="0.1" oninput="calculerPrixSurMesure()"></label>
+                <label>Hauteur : <input type="number" id="saisie-hauteur" value="1" min="0.1" step="0.1" oninput="calculerPrixSurMesure()"></label>
+            </div>
+        </div>
+
+        <!-- Ticket de caisse -->
+        <div class="facture-box">
+            <div class="row-facture">
+                <span>Total Brut :</span> 
+                <span id="facture-brut">0 FCFA</span>
+            </div>
+            <div class="row-facture remise">
+                <span>Remise Spéciale (5%) :</span> 
+                <span id="facture-remise">0 FCFA</span>
+            </div>
+            <div class="row-facture net">
+                <span>Net à Payer :</span> 
+                <strong id="facture-net">0 FCFA</strong>
+            </div>
+        </div>
+
+        <!-- Formulaire de validation -->
+        <form id="form-bon-commande" class="form-validation" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h3>Validation du Bon</h3>
+            
+            <input type="hidden" name="article_selectionne" id="input-article" value="">
+            <input type="hidden" name="total_net" id="input-total" value="0">
+
+            <div class="form-group">
+                <input type="text" name="nom_complet" placeholder="Votre Nom Complet *" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Votre Adresse Email *" required>
+            </div>
+            <div class="form-group">
+                <input type="tel" name="telephone" placeholder="Téléphone de contact *" required>
+            </div>
+            
+            <!-- Zone d'upload de la maquette -->
+            <div class="form-group style-upload">
+                <label for="fichier-maquette" class="label-upload">
+                    <span>📁 Joindre votre fichier / maquette</span>
+                    <input type="file" id="fichier-maquette" name="maquette" accept="image/*,application/pdf">
+                </label>
+                <div id="nom-fichier-valide" class="nom-fichier-texte">Aucun fichier sélectionné</div>
+            </div>
+            
+            <button type="submit" class="btn-valider">
+                🔒 Générer mon Bon de Commande
+            </button>
+        </form>
+    </aside>
+</div>
+
+<!-- SCRIPT COMPLET ET CORRIGÉ DU TEMPLATE -->
+<script>
+    // ==========================================
+    // 1. GESTION DE LA SÉLECTION ET DU CALCUL EN DIRECT
+    // ==========================================
+    let prixUnitaireGlobal = 0;
+    let estSurMesureGlobal = false;
+
+    function selectionnerArticle(element, nomArticle, prix, estM2, prixUnitaire) {
+        // Supprimer la classe active de toutes les autres cartes
+        document.querySelectorAll('.card-article').forEach(card => card.classList.remove('active'));
+        // Ajouter la classe active sur la carte cliquée
+        element.classList.add('active');
+
+        // Configurer les variables globales pour le calcul
+        prixUnitaireGlobal = prixUnitaire;
+        estSurMesureGlobal = estM2;
+
+        // Stocker le nom de l'article dans le formulaire caché
+        document.getElementById('input-article').value = nomArticle;
+
+        // Afficher ou masquer le calculateur de dimensions
+        const blocDimensions = document.getElementById('calculateur-dimensions');
+        if (estM2) {
+            blocDimensions.classList.remove('hidden');
+            calculerPrixSurMesure();
+        } else {
+            blocDimensions.classList.add('hidden');
+            mettreAJourTicket(prix);
+        }
+    }
+
+    function calculerPrixSurMesure() {
+        if (!estSurMesureGlobal) return;
+        const largeur = parseFloat(document.getElementById('saisie-largeur').value) || 1;
+        const hauteur = parseFloat(document.getElementById('saisie-hauteur').value) || 1;
+        const surface = largeur * hauteur;
+        const totalBrut = Math.round(surface * prixUnitaireGlobal);
+        mettreAJourTicket(totalBrut);
+    }
+
+    function mettreAJourTicket(totalBrut) {
+        const montantRemise = Math.round(totalBrut * 0.05);
+        const totalFinal = totalBrut - montantRemise;
+
+        // Mettre à jour l'affichage du ticket à droite
+        document.getElementById('facture-brut').innerText = totalBrut + " FCFA";
+        document.getElementById('facture-remise').innerText = montantRemise + " FCFA";
+        document.getElementById('facture-net').innerText = totalFinal + " FCFA";
+
+        // Mettre à jour la valeur dans le formulaire caché pour l'envoi Django
+        document.getElementById('input-total').value = totalFinal;
+    }
+
+    // Gestion de l'affichage du nom du fichier sélectionné
+    const inputFichier = document.getElementById('fichier-maquette');
+    if (inputFichier) {
+        inputFichier.addEventListener('change', function() {
+            const nomFichier = this.files && this.files.length > 0 ? this.files[0].name : "Aucun fichier sélectionné";
+            document.getElementById('nom-fichier-valide').innerText = nomFichier;
+        });
+    }
+
+    // ==========================================
+    // 2. SOUMISSION DU FORMULAIRE EN AJAX
+    // ==========================================
+    document.getElementById('form-bon-commande').addEventListener('submit', function(e) {
+        e.preventDefault(); // Bloque le rechargement classique de la page
+
+        const articleInput = document.getElementById('input-article').value;
+        const messageBox = document.getElementById('ajax-message-box');
+        const btnValider = this.querySelector('.btn-valider');
+
+        // Sécurité : vérifier qu'un produit a bien été cliqué
+        if (!articleInput) {
+            messageBox.className = "message-item error";
+            messageBox.textContent = "Veuillez sélectionner un article avant de valider.";
+            messageBox.classList.remove('hidden');
+            return;
+        }
+
+        // Activation de l'indicateur de chargement visuel
+        const texteBoutonOrigine = btnValider.innerHTML;
+        btnValider.disabled = true;
+        btnValider.innerHTML = `<span class="spinner"></span> Traitement en cours...`;
+
+        // Compilation des fichiers et données texte (FormData obligatoire pour l'upload)
+        const formData = new FormData(this);
+
+        // Si c'est du sur-mesure (bâche), on ajoute les dimensions au FormData pour que Django puisse les lire
+        if (estSurMesureGlobal) {
+            formData.append('largeur', document.getElementById('saisie-largeur').value);
+            formData.append('hauteur', document.getElementById('saisie-hauteur').value);
+        }
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest' // Indique à Django que c'est une requête AJAX
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Réactivation du bouton après réponse du serveur
+            btnValider.disabled = false;
+            btnValider.innerHTML = texteBoutonOrigine;
+            
+            messageBox.classList.remove('hidden');
+            
+            if (data.status === 'success') {
+                messageBox.className = "message-item success";
+                messageBox.innerHTML = `✨ <strong>Succès !</strong> Bon de commande #${data.bon_id} généré.`;
+                
+                // Préparation du texte récapitulatif pour le conseiller WhatsApp
+                const nomClient = formData.get('nom_complet');
+                const telClient = formData.get('telephone');
+                const prixFinal = document.getElementById('facture-net').textContent;
+                
+                // Construction des détails de quantité/dimensions à insérer dans le message
+                let detailsMessage = `• *Prestation* : ${articleInput}\n`;
+                if (estSurMesureGlobal) {
+                    const larg = formData.get('largeur');
+                    const haut = formData.get('hauteur');
+                    detailsMessage += `• *Dimensions* : ${larg}m × ${haut}m (${(larg * haut).toFixed(2)} m²)\n`;
+                }
+
+                const messageWhatsApp = `Bonjour, je viens de générer un bon de commande sur le site.\n\n` +
+                                        `• *Bon n°* : #${data.bon_id}\n` +
+                                        `• *Client* : ${nomClient}\n` +
+                                        `• *Téléphone* : ${telClient}\n` +
+                                        detailsMessage +
+                                        `• *Net à payer* : ${prixFinal}\n\n` +
+                                        `Merci de prendre en charge ma demande !`;
+                
+                // Correction du lien de redirection (Ajout du "/" manquant avant le numéro d'entreprise)
+                const numeroEntreprise = "2250574702092"; 
+                const urlWhatsApp = `https://wa.me{numeroEntreprise}?text=${encodeURIComponent(messageWhatsApp)}`;
+                
+                // Réinitialisation du formulaire à l'écran
+                this.reset(); 
+                document.getElementById('nom-fichier-valide').textContent = "Aucun fichier sélectionné";
+                document.getElementById('calculateur-dimensions').classList.add('hidden');
+                mettreAJourTicket(0);
+                
+                // Ouverture instantanée de la discussion WhatsApp dans un nouvel onglet
+                window.open(urlWhatsApp, '_blank');
+                
+            } else {
+                messageBox.className = "message-item error";
+                messageBox.textContent = data.message || "Une erreur est survenue.";
+            }
+        })
+        .catch(error => {
+            btnValider.disabled = false;
+            btnValider.innerHTML = texteBoutonOrigine;
+            
+            messageBox.className = "message-item error";
+            messageBox.textContent = "Erreur de connexion avec le serveur.";
+            messageBox.classList.remove('hidden');
+        });
+    });
+</script>
+{% endblock %}

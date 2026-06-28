@@ -1,0 +1,6 @@
+venv/node_modules/.Ds_Store__pycache__*.pyc.env
+venv/
+node_modules/
+s__pycache__/
+__pycache__/
+.Ds_Store

@@ -1,0 +1,87 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}YaTout — Votre Panier{% endblock %}
+
+{% block content %}
+<div class="cart-wrapper">
+    <h2 class="cart-title">Votre Panier d'achat</h2>
+
+    {% if cart %}
+        <div class="cart-card">
+            <table class="cart-table">
+                <thead>
+                    <tr class="cart-table-head">
+                        <th>Article</th>
+                        <th>Boutique</th>
+                        <th style="text-align: center;">Quantité</th>
+                        <th style="text-align: right;">Prix total</th>
+                        <th style="text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart %}
+                    {% with produit=item.produit %}
+                    <tr>
+                        <td class="cart-item-name">
+                            <div style="font-weight: bold;">{{ produit.nom }}</div>
+                            
+                            <!-- 💡 Affichage du prix unitaire et de la promotion sous le nom -->
+                            <div style="font-size: 0.85rem; color: #4a5568; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                                <span>Prix unitaire : {{ item.price }} {{ produit.vendeur.devise }}</span>
+                                
+                                {% if produit.ancien_prix %}
+                                    <span style="text-decoration: line-through; color: #a0aec0;">
+                                        {{ produit.ancien_prix }} {{ produit.vendeur.devise }}
+                                    </span>
+                                    <span style="color: #e53e3e; font-weight: bold; font-size: 0.8rem;">
+                                        (-{{ produit.reduction_pourcentage }}%)
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="cart-shop-name">🏪 {{ produit.vendeur.nom_boutique }}</td>
+                        <td class="cart-quantity" style="text-align: center;">{{ item.quantity }}</td>
+                        <td class="cart-item-total" style="text-align: right; font-weight: bold;">
+                            {{ item.total_price }} {{ produit.vendeur.devise }}
+                        </td>
+                        <td class="cart-action-cell" style="text-align: center;">
+                            <a href="{% url 'panier_supprimer' produit.id %}" class="btn-remove-item">✕ Retirer</a>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="cart-footer-actions">
+                <div>
+                    <span class="cart-total-label">Total estimé :</span>
+                    <!-- Note : cart.get_total_price fonctionne parfaitement si tous les articles ont la même devise. 
+                         Si vos vendeurs ont des devises différentes, le total global brut peut mélanger les chiffres. -->
+                    <span class="cart-total-amount">{{ cart.get_total_price }}</span>
+                </div>
+                
+                <div class="cart-buttons-group">
+                    <!-- Bouton pour continuer à regarder les produits -->
+                    <a href="{% url 'accueil' %}" class="btn-cart-continue">
+                        Continuer mes achats
+                    </a>
+                    
+                    <!-- Bouton pour passer au formulaire de livraison -->
+                    <a href="{% url 'passer_commande_panier' %}" class="btn-cart-validate">
+                        🚀 Valider ma commande
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- État d'affichage lorsque le panier est vide -->
+        <div class="cart-empty-state">
+            <span style="font-size: 4rem;">🛒</span>
+            <h3>Votre panier est actuellement vide.</h3>
+            <p>Découvrez nos articles exceptionnels en ligne pour commencer vos achats.</p>
+            <a href="{% url 'accueil' %}" class="btn-cart-validate" style="display: inline-block;">Retourner à l'accueil</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

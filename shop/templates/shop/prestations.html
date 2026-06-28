@@ -1,0 +1,73 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Nos Supports & Tarifs - YaTout{% endblock %}
+
+{% block content %}
+<!-- EFFET DE DÉFILEMENT FLUIDE INSTANTANÉ AU CHARGEMENT DE L'ANCRE -->
+<style>
+    html { scroll-behavior: smooth; }
+    /* Neutralise le style des liens pour que la carte garde son design propre */
+    .lien-carte {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+</style>
+
+<div class="container" style="max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif;">
+    
+    <div style="text-align: center; margin-bottom: 45px;">
+        <h1 style="color: #2e0854; font-size: 2.3rem; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #7c3aed; padding-bottom: 15px; display: inline-block;">
+            📋 Notre Catalogue de Supports
+        </h1>
+        <p style="color: #64748b; font-size: 1.05rem; margin-top: 10px;">
+            Cliquez sur le support de votre choix pour découvrir ses caractéristiques techniques, ses finitions et ses tarifs.
+        </p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 30px;">
+        {% for prestation in prestations %}
+            <!-- 🔗 REND LA CARTE ENTIÈREMENT CLIQUABLE VERS LE FORMULAIRE DE CALCUL -->
+            <a href="{% url 'detail_prestation' prestation.id %}" class="lien-carte">
+                
+                <!-- CONFIGURATION DE L'ID DE L'ANCRE DYNAMIQUE -->
+                <div id="prestation-{{ prestation.id }}" style="border: 1px solid #e8e3f0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; height: 100%; cursor: pointer;" 
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 20px rgba(123,36,204,0.08)'; this.style.borderColor='#7c3aed';" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.02)'; this.style.borderColor='#e8e3f0';">
+                    
+                    <div style="background-color: #f8fafc; height: 190px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border-bottom: 1px solid #f0edf5;">
+                        {% if prestation.image %}
+                            <img src="{{ prestation.image.url }}" alt="{{ prestation.titre }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <span style="font-size: 52px; color: #cbd5e1;">🖨️</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div style="padding: 22px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 15px;">
+                        <div>
+                            <h3 style="margin: 0 0 8px 0; color: #2e0854; font-size: 1.15rem; font-weight: 700;">{{ prestation.titre }}</h3>
+                            <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5; margin: 0;">
+                                {% if prestation.description %}
+                                    {{ prestation.description|truncatewords:12 }}
+                                {% else %}
+                                    Aucune spécification technique renseignée pour ce support.
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <span style="display: block; text-align: center; background-color: #f3e8ff; color: #7c3aed; border: 1px solid #7c3aed; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.95rem;">
+                            💰 Prix Base : {{ prestation.prix_unitaire }} FCFA
+                        </span>
+                    </div>
+                </div>
+
+            </a>
+        {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #64748b; background: white; border: 1px dashed #cbd5e1; border-radius: 12px;">
+                💡 Aucun support d'impression n'est disponible dans le catalogue pour le moment.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

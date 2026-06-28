@@ -1,0 +1,126 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Accueil - YaTout Ci{% endblock %}
+
+{% block content %}
+<div class="container text-center" style="margin-top: 40px; margin-bottom: 20px;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Découvrez nos articles</h1>
+    <p style="color: #64748b; font-size: 1.1rem;">Le meilleur des produits multi-vendeurs sélectionnés pour vous.</p>
+</div>
+
+<!-- 🔍 SECTION BARRE DE RECHERCHE -->
+<div class="container" style="max-width: 600px; margin-bottom: 40px;">
+    <form method="GET" action="." style="display: flex; gap: 10px; align-items: center; background: #ffffff; padding: 6px; border-radius: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+        <span style="margin-left: 15px; font-size: 1.2rem; color: #94a3b8;">🔍</span>
+        <input 
+            type="search" 
+            name="q" 
+            value="{{ query|default:'' }}" 
+            placeholder="Rechercher un produit, une marque..." 
+            style="flex: 1; border: none; outline: none; font-size: 1rem; color: #334155; background: transparent; padding: 8px 5px;"
+            aria-label="Rechercher un article"
+        >
+        {% if query %}
+            <a href="." style="text-decoration: none; color: #94a3b8; font-size: 1.1rem; padding: 0 10px; font-weight: bold;" title="Effacer la recherche">✕</a>
+        {% endif %}
+        <button type="submit" style="background-color: #1e293b; color: #ffffff; border: none; padding: 10px 24px; font-weight: 600; border-radius: 20px; cursor: pointer; transition: background 0.2s;">
+            Rechercher
+        </button>
+    </form>
+</div>
+
+<div class="container">
+    <!-- Grille de produits -->
+    <div class="yt-products-grid">
+        {% for produit in produits %}
+            <div class="yt-product-card" style="position: relative;">
+                
+                <!-- 🎯 BARRE DES BADGES EXTENSIBLE : RÉDUCTION À GAUCHE, STOCK À L'AUTRE BOUT (DROITE) -->
+                <div style="position: absolute; top: 12px; left: 12px; width: calc(100% - 24px); display: flex; justify-content: space-between; align-items: center; z-index: 5;">
+                    
+                    <!-- Bloc de gauche : Badge réduction -->
+                    <div>
+                        {% if produit.reduction_pourcentage > 0 %}
+                            <span class="yt-card-badge" style="position: static; margin: 0; display: inline-block;">-{{ produit.reduction_pourcentage }}%</span>
+                        {% else %}
+                            <!-- Un bloc vide pour maintenir le stock à droite s'il n'y a pas de réduction -->
+                            <span></span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Bloc de droite : Badge stock restant vert collé à l'autre bout -->
+                    <div>
+                        {% if produit.stock > 0 %}
+                            <span style="background-color: #22c55e; color: white; padding: 4px 8px; font-weight: bold; border-radius: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em; box-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1; display: inline-block;">
+                                Stock: {{ produit.stock }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                </div>
+                
+                <!-- Zone Image du produit -->
+                <div class="yt-card-img-wrapper">
+                    {% if produit.image %}
+                        <img src="{{ produit.image.url }}" alt="{{ produit.nom }}">
+                    {% else %}
+                        <img src="https://placeholder.com" alt="Image indisponible">
+                    {% endif %}
+                </div>
+                
+                <!-- Corps de la carte -->
+                <div class="yt-card-body">
+                    <span class="yt-card-vendor">{{ produit.vendeur.nom_boutique }}</span>
+                    <h2 class="yt-card-title">{{ produit.nom }}</h2>
+                    
+                    <!-- Ligne des prix et devises corrigée -->
+                    <div class="yt-card-price-box">
+                        <span class="yt-card-price">
+                            {{ produit.prix }} 
+                            <span class="yt-card-price-currency">{{ produit.vendeur.get_devise_display }}</span>
+                        </span>
+                        {% if produit.ancien_prix %}
+                            <span class="yt-card-old-price">
+                                {{ produit.ancien_prix }} {{ produit.vendeur.get_devise_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- État du stock rapide -->
+                    <div style="margin-bottom: 15px;">
+                        {% if produit.stock > 0 %}
+                            <span class="yt-card-stock in">En stock</span>
+                        {% else %}
+                            <span class="yt-card-stock out">Rupture</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Double boutons d'action : Panier à gauche, Voir à droite -->
+                    <div class="yt-card-actions-row">
+                        <form action="{% url 'panier_ajouter' produit.id %}" method="POST" class="yt-card-form-left">
+                            {% csrf_token %}
+                            <button type="submit" class="yt-card-btn-cart" {% if produit.stock == 0 %}disabled{% endif %}>
+                                <span class="yt-small-basket">🛒</span> Ajouter au panier
+                            </button>
+                        </form>
+                        
+                        <a href="{% url 'detail_produit' produit.pk %}" class="yt-card-btn-view">
+                            Voir l'article
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b;">
+                {% if query %}
+                    <h3>Aucun produit ne correspond à votre recherche "{{ query }}".</h3>
+                    <p style="margin-top: 10px;"><a href="." style="color: #1e293b; font-weight: bold; text-decoration: underline;">Voir tous les articles</a></p>
+                {% else %}
+                    <h3>Aucun produit n'est disponible pour le moment.</h3>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

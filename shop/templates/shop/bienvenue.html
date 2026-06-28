@@ -1,0 +1,123 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Bienvenue sur YaTout{% endblock %}
+
+{% block content %}
+<!-- =====================================================================
+   STYLE CSS REPLONGÉ ICI POUR ÉVITER LES ERREURS DE CHARGEMENT DJANGO
+   ===================================================================== -->
+<style>
+    /* Masque proprement le reste du site pendant le choix de démarrage */
+    .welcome-screen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #2e0854; /* Violet profond historique de YaTout */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999; /* Bloque l'affichage par-dessus la navbar et le chatbot */
+    }
+
+    /* Boîtier central blanc aéré */
+    .welcome-card {
+        background: #ffffff;
+        padding: 45px 50px;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        max-width: 480px;
+        width: 90%;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    .welcome-title {
+        color: #2e0854;
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .welcome-subtitle {
+        color: #64748b;
+        font-size: 1.05rem;
+        margin-bottom: 35px;
+        line-height: 1.5;
+    }
+
+    .welcome-buttons-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* Structure de base commune des boutons */
+    .w-btn {
+        display: block;
+        padding: 16px 20px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .w-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* 🟢 BOUTON ARTICLES : Thématique Vert Moderne */
+    .btn-green-shop {
+        background-color: #10b981;
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-green-shop:hover {
+        background-color: #059669;
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+    }
+
+    /* 🔵 BOUTON IMPRESSIONS : Thématique Bleu Professionnel */
+    .btn-blue-print {
+        background-color: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-blue-print:hover {
+        background-color: #1d4ed8;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+    }
+</style>
+
+<!-- =====================================================================
+   SUPERPOSITION ET LOGIQUE VISUELLE DE L'ÉCRAN DE BIENVENUE
+   ===================================================================== -->
+<div class="welcome-screen-overlay">
+    <div class="welcome-card">
+        
+        <h1 class="welcome-title">🔮 Bienvenue sur YaTout Ci</h1>
+        <p class="welcome-subtitle">Que souhaitez-vous découvrir aujourd'hui ?</p>
+        
+        <div class="welcome-buttons-container">
+            <!-- 🟢 Bouton Vert : Redirection vers la boutique d'articles principale -->
+            <a href="{% url 'accueil' %}" class="w-btn btn-green-shop">
+                🛍️ Cliquez ici pour voir les articles
+            </a>
+            
+            <!-- 🔵 Bouton Bleu : Redirection vers l'espace atelier d'impression -->
+            <a href="{% url 'page_impressions' %}" class="w-btn btn-blue-print">
+                🖨️ Voir nos prestations d'impression
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

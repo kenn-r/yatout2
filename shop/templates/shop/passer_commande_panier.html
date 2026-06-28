@@ -1,0 +1,74 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}YaTout — Finaliser votre panier{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-layout">
+        
+        <!-- Formulaire de livraison (Achat global du panier) -->
+        <div class="checkout-form-section">
+            <h2 class="section-title">Informations de livraison</h2>
+            <form method="POST" action="{% url 'passer_commande_panier' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="nom">Nom complet</label>
+                    <input class="form-input" type="text" id="nom" name="nom" placeholder="Ex: Kouassi Koffi" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="email">Adresse e-mail</label>
+                    <input class="form-input" type="email" id="email" name="email" placeholder="Ex: kouassi@mail.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="telephone">Numéro de téléphone mobile (10 chiffres)</label>
+                    <input class="form-input" type="tel" id="telephone" name="telephone" placeholder="Ex: 0701020304" pattern="[0-9]{10}" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="adresse">Adresse complète (Commune, Quartier, Repères)</label>
+                    <textarea class="form-input" id="adresse" name="adresse" placeholder="Ex: Cocody, Angré Django, non loin de la pharmacie..." required></textarea>
+                </div>
+                <button type="submit" class="btn-submit-order">🚀 Confirmer et payer à la livraison</button>
+            </form>
+        </div>
+
+        <!-- Liste complète des articles du panier sur la droite -->
+        <div class="checkout-summary-section">
+            <h3 class="section-title" style="font-size: 1.1rem; margin-bottom: 20px;">Résumé de la commande</h3>
+            
+            {% for item in cart %}
+            <div class="prod-mini-card">
+                <div class="prod-mini-details">
+                    <h4>{{ item.produit.nom }}</h4>
+                    <span class="prod-mini-shop">🏪 {{ item.produit.vendeur.nom_boutique }}</span>
+                    <div style="font-size: 0.85rem; margin-top: 4px; color: #625770;">
+                        Quantité : <strong>{{ item.quantity }}</strong>
+                    </div>
+                </div>
+                <div style="margin-left: auto; font-weight: 700; color: #2e0854; font-size: 0.95rem;">
+                    {{ item.total_price }} {{ item.produit.vendeur.get_devise_display }}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="summary-row" style="margin-top: 20px;">
+                <span>Livraison</span>
+                <span style="color: #1e7e43; font-weight: 700;">Gratuite</span>
+            </div>
+            
+            <!-- Bloc du Total Général -->
+            <div class="summary-row summary-total">
+                <span>Prix Total: </span>
+                <span>
+                     {{ cart.get_total_price }} 
+                    {% for item in cart %}
+                        {% if forloop.first %}
+                            {{ item.produit.vendeur.get_devise_display }}
+                        {% endif %}
+                    {% endfor %}
+                </span>
+            </div>
+        </div>
+
+    </div> <!-- Balise de fermeture ajoutée pour corriger la structure du layout -->
+</div>
+{% endblock %}

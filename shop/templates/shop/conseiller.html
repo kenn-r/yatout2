@@ -1,0 +1,17 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; text-align: center; background: white;">
+    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
+        <p style="font-size: 16px; margin: 0;">
+            🤖 <strong>Assistant YaTout :</strong><br><br>
+            Bonjour ! Pour parler à notre conseiller commercial, veuillez cliquer sur le bouton de redirection ci-dessous.
+        </p>
+    </div>
+    
+    <!-- Lien de redirection direct -->
+    <a href="{{ lien_whatsapp }}" target="_blank" style="display: inline-block; background-color: #22c55e; color: white; padding: 14px 28px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 16px;">
+        🟢 Ouvrir la discussion WhatsApp
+    </a>
+</div>
+{% endblock %}
