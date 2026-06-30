@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
     'yatout2-production.up.railway.app', 
     'yatoutci.up.railway.app', 
     'yatoutci.com', 
-    '://yatoutci.com', 
+    'www.yatoutci.com', 
     'localhost', 
     '127.0.0.1'
 ]
