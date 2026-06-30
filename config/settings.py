@@ -183,4 +183,8 @@ REST_FRAMEWORK = {
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost',
     'http://127.0.0.1',
+    'https://railway.app',
+    'https://railway.app',
+    'https://yatoutci.com',
+    'https://yatoutci.com'
 ]
