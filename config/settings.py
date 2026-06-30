@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-g8wr(37(o=(s*etln^v+g7vv&r$$86mp_%t9)dnhj#we$=_+@^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['yatoutci.com', '://yatoutci.com', 'localhost', '127.0.0.1.8000/']
 
 
 # Application definition
@@ -129,27 +129,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 
-# Utiliser le backend SMTP pour envoyer de vrais e-mails
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+import os
 
-# Adresse correcte du serveur SMTP de Gmail
-EMAIL_HOST = 'smtp.gmail.com'
-
-# Port recommandé pour TLS
+# Configuration de l'envoi d'e-mails (SMTP Brevo)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '://brevo.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# Django cherchera les identifiants sur Render en production
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'yatoutci2@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'hfnwcnrnfvhuayoh')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# Vos accès de connexion Brevo
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'hfnwcnrnfvhuayohO') 
 
-# Adresse par défaut qui apparaîtra comme expéditeur
-DEFAULT_FROM_EMAIL = 'yatoutci2@gmail.com'
-
-
-CORS_ALLOW_ALL_ORIGINS = True
-
+# Votre expéditeur par défaut (à modifier en contact@yatoutci.com dès que cPanel sera débloqué)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Yatout Ci <yatoutci2@gmail.com>')
 
 # Permet de valider les sessions même sur les navigateurs mobiles stricts
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -166,9 +159,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', ""
 )
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://onrender.com',
-]
+CSRF_TRUSTED_ORIGINS = ['https://yatoutci.com', 'https://yatoutci.com']
 
 
 REST_FRAMEWORK = {
