@@ -26,7 +26,15 @@ SECRET_KEY = 'django-insecure-g8wr(37(o=(s*etln^v+g7vv&r$$86mp_%t9)dnhj#we$=_+@^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['yatoutci.com', '://yatoutci.com', 'localhost', '127.0.0.1.8000/']
+ALLOWED_HOSTS = [
+    'yatout2-production.up.railway.app', 
+    'yatoutci.up.railway.app', 
+    'yatoutci.com', 
+    '://yatoutci.com', 
+    'localhost', 
+    '127.0.0.1'
+]
+
 
 
 # Application definition
