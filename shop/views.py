@@ -661,55 +661,54 @@ def assistant_chatbot_api(request):
                 "parts": [{"text": msg.message}]
             })
 
-        # 4. REQUÊTE SÉCURISÉE VERS L'API GOOGLE GEMINI
+       # 4. REQUÊTE SÉCURISÉE VERS L'API GOOGLE GEMINI
+        url_api = "https://googleapis.com"
+        date_aujourdhui = now().strftime("%A %d %B %Y")
+        
+        instructions_systeme = (
+            "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' et de son atelier 'YaTout Impression'. "
+            "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et concision. "
+            f"Information temporelle : Nous sommes aujourd'hui le {date_aujourdhui}. "
+            "Règles strictes de l'atelier d'imprimerie à connaître : "
+            "1. Pour l'atelier, le client sélectionne son support à gauche, ajuste ses options (finitions, délais) et remplit le formulaire à droite pour simuler son devis en direct. "
+            "2. La remise commerciale standard de l'atelier est de 5% incluse sur le Net à payer. "
+            "3. Les finitions disponibles sont : Standard/Brillante, Mate (+10%) et Vernis sélectif. Les délais sont Normal ou Urgent/Express 24h. "
+            "\n--- CATALOGUE DES SUPPORTS D'IMPRESSION RÉELS ---\n"
+            f"{contexte_impressions}\n"
+            "\n--- ARTICLES EN STOCK DE LA BOUTIQUE E-COMMERCE ---\n"
+            f"{contexte_produits}\n"
+            "Règle d'or : Ne vends et n'invente jamais de supports ou de prix imaginaires. Utilise STRICTEMENT les listes ci-dessus. "
+            "Réponds toujours en français avec des émojis appropriés et reste amical."
+        )
+
+        payload = {
+            "contents": historique_payload,
+            "systemInstruction": {"parts": [{"text": instructions_systeme}]},
+            "generationConfig": {
+                "maxOutputTokens": 300,
+                "temperature": 0.7
+            }
+        }
+
+        headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': api_key
+        }
+        
         try:
-            url_api = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-            date_aujourdhui = now().strftime("%A %d %B %Y")
-            
-            instructions_systeme = (
-                "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' et de son atelier 'YaTout Impression'. "
-                "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et concision. "
-                f"Information temporelle : Nous sommes aujourd'hui le {date_aujourdhui}. "
-                "Règles strictes de l'atelier d'imprimerie à connaître : "
-                "1. Pour l'atelier, le client sélectionne son support à gauche, ajuste ses options (finitions, délais) et remplit le formulaire à droite pour simuler son devis en direct. "
-                "2. La remise commerciale standard de l'atelier est de 5% incluse sur le Net à payer. "
-                "3. Les finitions disponibles sont : Standard/Brillante, Mate (+10%) et Vernis sélectif. Les délais sont Normal ou Urgent/Express 24h. "
-                "\n--- CATALOGUE DES SUPPORTS D'IMPRESSION RÉELS ---\n"
-                f"{contexte_impressions}\n"
-                "\n--- ARTICLES EN STOCK DE LA BOUTIQUE E-COMMERCE ---\n"
-                f"{contexte_produits}\n"
-                "Règle d'or : Ne vends et n'invente jamais de supports ou de prix imaginaires. Utilise strictement les listes ci-dessus. "
-                "Réponds toujours en français avec des émojis appropriés et reste amical."
-            )
-
-            payload = {
-                "contents": historique_payload,
-                "systemInstruction": {"parts": [{"text": instructions_systeme}]},
-                "generationConfig": {
-                    "maxOutputTokens": 300,
-                    "temperature": 0.7
-                }
-            }
-
-            headers = {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': CLE_API_GEMINI
-            }
-            
             response = requests.post(url_api, json=payload, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 resultat = response.json()
                 reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
             elif response.status_code == 503:
-                reponse_bot = "Oups ! Je suis un peu surchargé par les demandes en ce moment. 🤖 Pouvez-vous répéter votre question dans quelques secondes ?"
-            elif response.status_code == 429:
-                reponse_bot = "Vous allez un peu trop vite pour moi ! ⚡ Laissez-moi respirer quelques instants avant de poser votre prochaine question."
+                reponse_bot = "Oups ! Je suis un peu surchargé par les demandes."
             else:
-                reponse_bot = "Je rencontre une petite difficulté à joindre mes serveurs centraux. Réessayez d'ici un instant !"
-
-        except Exception as e:
-            reponse_bot = f"Une erreur technique est survenue lors de la communication avec l'IA : {e}"
+                print(f"Erreur API (Status {response.status_code}): {response.text}")
+                reponse_bot = "Désolé, je rencontre des difficultés techniques."
+        except requests.exceptions.RequestException as e:
+            print(f"Erreur réseau : {e}")
+            reponse_bot = "Désolé, une erreur réseau est survenue."
 
         # 5. Sauvegarde de la réponse finale de l'IA en BDD
         try:
