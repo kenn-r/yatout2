@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'api',
     'corsheaders',
+    'anymail', 
 ]
 
 MIDDLEWARE = [
@@ -137,11 +138,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Configuration de l'envoi d'e-mails via l'API HTTP de Brevo
-INSTALLED_APPS = [
-    # ... gardez vos applications existantes ...
-    'anymail', 
-]
-
 EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
 DEFAULT_FROM_EMAIL = 'yatoutci2@gmail.com'
 
