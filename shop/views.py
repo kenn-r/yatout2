@@ -660,13 +660,14 @@ def assistant_chatbot_api(request):
         )
 
         payload = {
-            "contents": historique_payload,
-            "systemInstruction": {"parts": [{"text": instructions_systeme}]},
-            "generationConfig": {
-                "maxOutputTokens": 300,
-                "temperature": 0.7
-            }
-        }
+    # On envoie uniquement le message en cours au format attendu par Gemini
+    "contents": [{"role": "user", "parts": [{"text": message_client}]}],
+    "systemInstruction": {"parts": [{"text": instructions_systeme}]},
+    "generationConfig": {
+        "maxOutputTokens": 300,
+        "temperature": 0.7
+    }
+}
 
         headers = {
             'Content-Type': 'application/json',
