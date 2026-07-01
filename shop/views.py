@@ -542,28 +542,15 @@ def passer_commande_panier(request):
 
 from django.db.models import Q, F
 
-GEMINI_API_KEY = ""
-
-
 @csrf_exempt
 def assistant_chatbot_api(request):
-    # CORRECTION 1 : Récupérer le bon nom de variable configuré sur Railway
     api_key = os.environ.get("CLE_API_GEMINI")
+    url_api = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     
     print("--- DEBUG IA --- LA CLÉ RECUPEREE EST :", api_key)
   
     reponse_bot = "Désolé, je rencontre des difficultés techniques à me connecter."
     session_key = ''
-
-    # ... [Le reste de votre code reste identique (POST, BDD, Historique, Payload...)] ...
-
-            # Vers la fin de votre fonction, remplacez les headers par ceci :
-    headers = {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': api_key  # CORRECTION 2 : On utilise la variable Python locale "api_key"
-            }
-            
-    response = requests.post(url_api, json=payload, headers=headers, timeout=10)
 
     if request.method == 'POST':
         try:
@@ -591,9 +578,7 @@ def assistant_chatbot_api(request):
         except Exception as e:
             print(f"Erreur BDD Client: {e}")
 
-       # =====================================================================
-        # 2. 🔍 RECHERCHE EN BDD : BOUTIQUE (PRODUITS) + IMPRIMERIE (PRESTATIONS)
-        # =====================================================================
+        # 2. RECHERCHE EN BDD : BOUTIQUE (PRODUITS) + IMPRIMERIE (PRESTATIONS)
         contexte_produits = "Aucun article spécifique trouvé dans la boutique."
         contexte_impressions = "Aucun support d'impression spécifique trouvé pour cette demande."
         
@@ -620,33 +605,28 @@ def assistant_chatbot_api(request):
                     liste_p.append(info_p)
                 contexte_produits = "Articles boutique trouvés :\n" + "\n".join(liste_p)
 
-        # --- B. 🖨️ NOUVEAU : RECHERCHE CÔTÉ ATELIER D'IMPRESSION ---
-        from .models import Prestation # Assurez-vous que l'import est fait
+        # --- B. RECHERCHE CÔTÉ ATELIER D'IMPRESSION ---
+        from .models import Prestation
         mots_cles_impression = ['impression', 'imprimer', 'affiche', 'bache', 'bâche', 'flyer', 'support', 'autocollant', 'lettre', 'f cfa', 'fcfa']
         besoin_impression = any(mot in message_client.lower() for mot in mots_cles_impression)
 
         if besoin_impression or len(message_client) > 2:
-            # On cherche si un support d'impression correspond au message
             prestations_trouvees = Prestation.objects.filter(
                 Q(titre__icontains=message_client) | Q(description__icontains=message_client)
             ).distinct()[:4]
             
-            # Si le client demande globalement les prix ou les supports de l'atelier
             if 'support' in message_client.lower() or 'tarifs' in message_client.lower() or 'prix' in message_client.lower() or not prestations_trouvees.exists():
-                # Par défaut, on lui donne les 4 supports principaux si sa recherche est trop floue
                 prestations_trouvees = Prestation.objects.all()[:4]
 
             if prestations_trouvees.exists():
                 liste_i = []
                 for prest in prestations_trouvees:
-                    # Extraction propre du choix d'unité (ex: Au mètre carré, par lot de 100...)
                     unite = prest.get_type_unite_display() if hasattr(prest, 'get_type_unite_display') else prest.type_unite
                     liste_i.append(f"- {prest.titre} : {prest.prix_unitaire} FCFA ({unite})")
                 contexte_impressions = "Supports d'imprimerie disponibles à l'atelier YaTout :\n" + "\n".join(liste_i)
 
         # 3. CONSTITUTION DE L'HISTORIQUE CHRONOLOGIQUE
         try:
-            # Tri par 'id' décroissant pour capter les derniers échanges, puis inversion
             anciens_messages = MessageAssistant.objects.filter(session_key=session_key).order_by('-id')[:10]
             anciens_messages = reversed(anciens_messages)
         except Exception as e:
@@ -661,10 +641,8 @@ def assistant_chatbot_api(request):
                 "parts": [{"text": msg.message}]
             })
 
-       # 4. REQUÊTE SÉCURISÉE VERS L'API GOOGLE GEMINI
-        url_api = "https://googleapis.com"
+        # 4. REQUÊTE VERS L'API GOOGLE GEMINI
         date_aujourdhui = now().strftime("%A %d %B %Y")
-        
         instructions_systeme = (
             "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' et de son atelier 'YaTout Impression'. "
             "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et concision. "
@@ -677,7 +655,7 @@ def assistant_chatbot_api(request):
             f"{contexte_impressions}\n"
             "\n--- ARTICLES EN STOCK DE LA BOUTIQUE E-COMMERCE ---\n"
             f"{contexte_produits}\n"
-            "Règle d'or : Ne vends et n'invente jamais de supports ou de prix imaginaires. Utilise STRICTEMENT les listes ci-dessus. "
+            "Règle d'or : Ne vends et n'invente jamais de supports ou de prix imaginaires. Utilise strictement les listes ci-dessus. "
             "Réponds toujours en français avec des émojis appropriés et reste amical."
         )
 
@@ -697,20 +675,15 @@ def assistant_chatbot_api(request):
         
         try:
             response = requests.post(url_api, json=payload, headers=headers, timeout=10)
-            
             if response.status_code == 200:
                 resultat = response.json()
                 reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
-            elif response.status_code == 503:
-                reponse_bot = "Oups ! Je suis un peu surchargé par les demandes."
             else:
-                print(f"Erreur API (Status {response.status_code}): {response.text}")
-                reponse_bot = "Désolé, je rencontre des difficultés techniques."
-        except requests.exceptions.RequestException as e:
-            print(f"Erreur réseau : {e}")
-            reponse_bot = "Désolé, une erreur réseau est survenue."
+                print(f"Erreur API Gemini (Status {response.status_code}): {response.text}")
+        except Exception as e:
+            print(f"Erreur réseau API: {e}")
 
-        # 5. Sauvegarde de la réponse finale de l'IA en BDD
+        # 5. SAUVEGARDE DE LA RÉPONSE DU BOT
         try:
             MessageAssistant.objects.create(
                 user=request.user if request.user.is_authenticated else None,
@@ -721,9 +694,7 @@ def assistant_chatbot_api(request):
         except Exception as e:
             print(f"Erreur BDD Assistant: {e}")
 
-        return JsonResponse({'reponse': reponse_bot})
-
-    return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
+        return JsonResponse({'message': reponse_bot})
 
 
 
