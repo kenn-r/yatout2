@@ -547,14 +547,23 @@ GEMINI_API_KEY = ""
 
 @csrf_exempt
 def assistant_chatbot_api(request):
-    # Railway lira la clé directement depuis votre tableau de bord Variables
-    
-    api_key = os.environ.get("GEMINI_API_KEY")
+    # CORRECTION 1 : Récupérer le bon nom de variable configuré sur Railway
+    api_key = os.environ.get("CLE_API_GEMINI")
     
     print("--- DEBUG IA --- LA CLÉ RECUPEREE EST :", api_key)
   
     reponse_bot = "Désolé, je rencontre des difficultés techniques à me connecter."
     session_key = ''
+
+    # ... [Le reste de votre code reste identique (POST, BDD, Historique, Payload...)] ...
+
+            # Vers la fin de votre fonction, remplacez les headers par ceci :
+    headers = {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': api_key  # CORRECTION 2 : On utilise la variable Python locale "api_key"
+            }
+            
+    response = requests.post(url_api, json=payload, headers=headers, timeout=10)
 
     if request.method == 'POST':
         try:
