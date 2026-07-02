@@ -650,7 +650,7 @@ def assistant_chatbot_api(request):
             "parts": [{"text": message_client}]
         })
 
-        # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI
+       # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI
         date_aujourdhui = now().strftime("%A %d %B %Y")
         instructions_systeme = (
             "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' et de son atelier 'YaTout Impression'. "
@@ -668,9 +668,12 @@ def assistant_chatbot_api(request):
             "Réponds toujours en français avec des émojis appropriés et reste amical."
         )
 
+        # Structure exacte validée par l'API Gemini
         payload = {
             "contents": historique_payload,
-            "systemInstruction": {"parts": [{"text": instructions_systeme}]},
+            "systemInstruction": {
+                "parts": [{"text": instructions_systeme}]
+            },
             "generationConfig": {
                 "maxOutputTokens": 300,
                 "temperature": 0.7
@@ -678,11 +681,9 @@ def assistant_chatbot_api(request):
         }
 
         headers = {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': api_key
+            'Content-Type': 'application/json'
         }
         
-        # Liste des modèles par ordre de priorité en cas d'erreur 503 / 429
         modeles_repli = ["gemini-2.5-flash", "gemini-1.5-flash"]
         requete_reussie = False
 
@@ -690,24 +691,21 @@ def assistant_chatbot_api(request):
             if requete_reussie:
                 break
                 
-            url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent"
+            # Utilisation du paramètre ?key= à la fin de l'URL (Méthode officielle et la plus stable pour Gemini)
+            url_api_dynamique = f"https://googleapis.com{modele}:generateContent?key={api_key}"
             
             try:
                 response = requests.post(url_api_dynamique, json=payload, headers=headers, timeout=12)
                 
                 if response.status_code == 200:
                     resultat = response.json()
-                    # Parsing sécurisé de la réponse Gemini
                     reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
                     requete_reussie = True
-                elif response.status_code in [429, 503]:
-                    print(f"Modèle {modele} surchargé ou quotas dépassés (Status {response.status_code}). Passage au modèle suivant...")
                 else:
+                    # Permet de voir précisément le rejet de Google dans vos Deploy Logs
                     print(f"Erreur API Gemini sur {modele} (Status {response.status_code}): {response.text}")
-                    break  # Erreur d'authentification ou de syntaxe (400, 403) : inutile de tester un autre modèle
             except Exception as e:
                 print(f"Erreur réseau / timeout sur le modèle {modele} : {e}")
-
         # 5. SAUVEGARDE DE LA RÉPONSE DU BOT
         try:
             MessageAssistant.objects.create(
