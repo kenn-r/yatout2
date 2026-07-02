@@ -670,6 +670,7 @@ def assistant_chatbot_api(request):
             "Réponds toujours en français avec des émojis appropriés et reste amical."
         )
 
+                # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI
         payload = {
             "contents": historique_payload,
             "systemInstruction": {"parts": [{"text": instructions_systeme}]},
@@ -679,10 +680,10 @@ def assistant_chatbot_api(request):
             }
         }
 
-        # Structure d'authentification OAuth2 exigée pour les clés AQ.
+        # CONFIGURATION EXIGÉE POUR LES CLÉS 'AQ.' SUR L'API PUBLIQUE
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}'
+            'x-goog-api-key': api_key  # On passe la clé dans ce header spécifique
         }
         
         modeles_repli = ["gemini-2.5-flash", "gemini-1.5-flash"]
@@ -692,24 +693,21 @@ def assistant_chatbot_api(request):
             if requete_reussie:
                 break
                 
-            # Point d'accès Vertex AI compatible avec les jetons d'accès Google Cloud (Bearer AQ.)
+            # URL standard ÉPURÉE (interdiction absolue de mettre ?key= à la fin pour les clés AQ.)
             url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent"
             
-            # NOTE SI BESOIN : Si vous ne connaissez pas votre 'YOUR_PROJECT_ID', utilisez l'URL ci-dessous 
-            # qui accepte les tokens Bearer sur l'API publique standard :
-            # url_api_dynamique = f"https://googleapis.com{modele}:generateContent"
-
             try:
                 response = requests.post(url_api_dynamique, json=payload, headers=headers, timeout=12)
                 
                 if response.status_code == 200:
                     resultat = response.json()
-                    reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
+                    reponse_bot = resultat['candidates']['content']['parts']['text']
                     requete_reussie = True
                 else:
                     print(f"Erreur API Gemini sur {modele} (Status {response.status_code}): {response.text}")
             except Exception as e:
                 print(f"Erreur réseau / timeout sur le modèle {modele} : {e}")
+
         # 5. SAUVEGARDE DE LA RÉPONSE DU BOT
         try:
             MessageAssistant.objects.create(
