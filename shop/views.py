@@ -650,24 +650,7 @@ def assistant_chatbot_api(request):
             "parts": [{"text": message_client}]
         })
 
-       # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI
-        date_aujourdhui = now().strftime("%A %d %B %Y")
-        instructions_systeme = (
-            "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' et de son atelier 'YaTout Impression'. "
-            "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et concision. "
-            f"Information temporelle : Nous sommes aujourd'hui le {date_aujourdhui}. "
-            "Règles strictes de l'atelier d'imprimerie à connaître : "
-            "1. Pour l'atelier, le client sélectionne son support à gauche, ajuste ses options (finitions, délais) et remplit le formulaire à droite pour simuler son devis en direct. "
-            "2. La remise commerciale standard de l'atelier est de 5% incluse sur le Net à payer. "
-            "3. Les finitions disponibles sont : Standard/Brillante, Mate (+10%) et Vernis sélectif. Les délais sont Normal ou Urgent/Express 24h. "
-            "\n--- CATALOGUE DES SUPPORTS D'IMPRESSION RÉELS ---\n"
-            f"{contexte_impressions}\n"
-            "\n--- ARTICLES EN STOCK DE LA BOUTIQUE E-COMMERCE ---\n"
-            f"{contexte_produits}\n"
-            "Règle d'or : Ne vends et n'invente jamais de supports ou de prix imaginaires. Utilise strictement les listes ci-dessus. "
-            "Réponds toujours en français avec des émojis appropriés et reste amical."
-        )
-
+       # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI (Version OAuth2 / Vertex AI)
         payload = {
             "contents": historique_payload,
             "systemInstruction": {"parts": [{"text": instructions_systeme}]},
@@ -677,10 +660,10 @@ def assistant_chatbot_api(request):
             }
         }
 
-        # CONFIGURATION OBLIGATOIRE POUR LES CLÉS COMMENÇANT PAR 'AQ.'
+        # Structure d'authentification OAuth2 exigée pour les clés AQ.
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {api_key}'  # <-- Changement crucial ici
+            'Authorization': f'Bearer {api_key}'
         }
         
         modeles_repli = ["gemini-2.5-flash", "gemini-1.5-flash"]
@@ -690,10 +673,13 @@ def assistant_chatbot_api(request):
             if requete_reussie:
                 break
                 
-            # On retire le ?key= de l'URL car l'authentification passe désormais par le Bearer Token
-
-            url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent?key={api_key}"
+            # Point d'accès Vertex AI compatible avec les jetons d'accès Google Cloud (Bearer AQ.)
+            url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent"
             
+            # NOTE SI BESOIN : Si vous ne connaissez pas votre 'YOUR_PROJECT_ID', utilisez l'URL ci-dessous 
+            # qui accepte les tokens Bearer sur l'API publique standard :
+            # url_api_dynamique = f"https://googleapis.com{modele}:generateContent"
+
             try:
                 response = requests.post(url_api_dynamique, json=payload, headers=headers, timeout=12)
                 
