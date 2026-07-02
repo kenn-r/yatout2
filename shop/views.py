@@ -540,12 +540,18 @@ def passer_commande_panier(request):
 
 
 
+import os
+import json
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, F
+from django.utils.timezone import now
+from .models import MessageAssistant, Produit, Prestation  # Adaptez les imports selon votre structure
 
 @csrf_exempt
 def assistant_chatbot_api(request):
     api_key = os.environ.get("CLE_API_GEMINI")
-    url_api = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     
     print("--- DEBUG IA --- LA CLÉ RECUPEREE EST :", api_key)
   
@@ -606,7 +612,6 @@ def assistant_chatbot_api(request):
                 contexte_produits = "Articles boutique trouvés :\n" + "\n".join(liste_p)
 
         # --- B. RECHERCHE CÔTÉ ATELIER D'IMPRESSION ---
-        from .models import Prestation
         mots_cles_impression = ['impression', 'imprimer', 'affiche', 'bache', 'bâche', 'flyer', 'support', 'autocollant', 'lettre', 'f cfa', 'fcfa']
         besoin_impression = any(mot in message_client.lower() for mot in mots_cles_impression)
 
@@ -625,10 +630,16 @@ def assistant_chatbot_api(request):
                     liste_i.append(f"- {prest.titre} : {prest.prix_unitaire} FCFA ({unite})")
                 contexte_impressions = "Supports d'imprimerie disponibles à l'atelier YaTout :\n" + "\n".join(liste_i)
 
-        # 3. CONSTITUTION DE L'HISTORIQUE CHRONOLOGIQUE
+        # 3. CONSTITUTION DE L'HISTORIQUE CHRONOLOGIQUE SÉCURISÉ
         try:
-            anciens_messages = MessageAssistant.objects.filter(session_key=session_key).order_by('-id')[:10]
-            anciens_messages = reversed(anciens_messages)
+            # On récupère les 11 derniers pour exclure le message qu'on vient d'enregistrer et garder 10 anciens messages max
+            tous_les_messages = MessageAssistant.objects.filter(session_key=session_key).order_by('-id')[:11]
+            if tous_les_messages.exists():
+                # On retire le premier élément de la liste ordonnée par '-id' (qui est le message actuel de l'user)
+                anciens_messages = list(tous_les_messages)[1:]
+                anciens_messages.reverse()  # On remet l'historique dans le sens chronologique
+            else:
+                anciens_messages = []
         except Exception as e:
             print(f"Erreur historique : {e}")
             anciens_messages = []
@@ -640,8 +651,14 @@ def assistant_chatbot_api(request):
                 "role": role,
                 "parts": [{"text": msg.message}]
             })
+            
+        # RÈGLE D'OR GEMINI : On injecte manuellement le message actuel à la toute fin de 'contents'
+        historique_payload.append({
+            "role": "user",
+            "parts": [{"text": message_client}]
+        })
 
-        # 4. REQUÊTE VERS L'API GOOGLE GEMINI
+        # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI
         date_aujourdhui = now().strftime("%A %d %B %Y")
         instructions_systeme = (
             "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' et de son atelier 'YaTout Impression'. "
@@ -660,29 +677,44 @@ def assistant_chatbot_api(request):
         )
 
         payload = {
-    # On envoie uniquement le message en cours au format attendu par Gemini
-    "contents": [{"role": "user", "parts": [{"text": message_client}]}],
-    "systemInstruction": {"parts": [{"text": instructions_systeme}]},
-    "generationConfig": {
-        "maxOutputTokens": 300,
-        "temperature": 0.7
-    }
-}
+            "contents": historique_payload,
+            "systemInstruction": {"parts": [{"text": instructions_systeme}]},
+            "generationConfig": {
+                "maxOutputTokens": 300,
+                "temperature": 0.7
+            }
+        }
 
         headers = {
             'Content-Type': 'application/json',
             'x-goog-api-key': api_key
         }
         
-        try:
-            response = requests.post(url_api, json=payload, headers=headers, timeout=10)
-            if response.status_code == 200:
-                resultat = response.json()
-                reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
-            else:
-                print(f"Erreur API Gemini (Status {response.status_code}): {response.text}")
-        except Exception as e:
-            print(f"Erreur réseau API: {e}")
+        # Liste des modèles par ordre de priorité en cas d'erreur 503 / 429
+        modeles_repli = ["gemini-2.5-flash", "gemini-1.5-flash"]
+        requete_reussie = False
+
+        for modele in modeles_repli:
+            if requete_reussie:
+                break
+                
+            url_api_dynamique = f"https://googleapis.com{modele}:generateContent"
+            
+            try:
+                response = requests.post(url_api_dynamique, json=payload, headers=headers, timeout=12)
+                
+                if response.status_code == 200:
+                    resultat = response.json()
+                    # Parsing sécurisé de la réponse Gemini
+                    reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
+                    requete_reussie = True
+                elif response.status_code in [429, 503]:
+                    print(f"Modèle {modele} surchargé ou quotas dépassés (Status {response.status_code}). Passage au modèle suivant...")
+                else:
+                    print(f"Erreur API Gemini sur {modele} (Status {response.status_code}): {response.text}")
+                    break  # Erreur d'authentification ou de syntaxe (400, 403) : inutile de tester un autre modèle
+            except Exception as e:
+                print(f"Erreur réseau / timeout sur le modèle {modele} : {e}")
 
         # 5. SAUVEGARDE DE LA RÉPONSE DU BOT
         try:
@@ -696,7 +728,6 @@ def assistant_chatbot_api(request):
             print(f"Erreur BDD Assistant: {e}")
 
         return JsonResponse({'message': reponse_bot})
-
 
 
 
