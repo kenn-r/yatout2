@@ -692,7 +692,7 @@ def assistant_chatbot_api(request):
                 break
                 
             # Utilisation du paramètre ?key= à la fin de l'URL (Méthode officielle et la plus stable pour Gemini)
-            url_api_dynamique = f"https://googleapis.com{modele}:generateContent?key={api_key}"
+            url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent?key={api_key}"
             
             try:
                 response = requests.post(url_api_dynamique, json=payload, headers=headers, timeout=12)
