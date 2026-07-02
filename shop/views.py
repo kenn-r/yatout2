@@ -540,14 +540,6 @@ def passer_commande_panier(request):
 
 
 
-import os
-import json
-import requests
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q, F
-from django.utils.timezone import now
-from .models import MessageAssistant, Produit, Prestation  # Adaptez les imports selon votre structure
 
 @csrf_exempt
 def assistant_chatbot_api(request):
@@ -698,7 +690,7 @@ def assistant_chatbot_api(request):
             if requete_reussie:
                 break
                 
-            url_api_dynamique = f"https://googleapis.com{modele}:generateContent"
+            url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent"
             
             try:
                 response = requests.post(url_api_dynamique, json=payload, headers=headers, timeout=12)
