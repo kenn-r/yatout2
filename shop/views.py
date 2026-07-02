@@ -668,20 +668,19 @@ def assistant_chatbot_api(request):
             "Réponds toujours en français avec des émojis appropriés et reste amical."
         )
 
-        # Structure exacte validée par l'API Gemini
         payload = {
             "contents": historique_payload,
-            "systemInstruction": {
-                "parts": [{"text": instructions_systeme}]
-            },
+            "systemInstruction": {"parts": [{"text": instructions_systeme}]},
             "generationConfig": {
                 "maxOutputTokens": 300,
                 "temperature": 0.7
             }
         }
 
+        # CONFIGURATION OBLIGATOIRE POUR LES CLÉS COMMENÇANT PAR 'AQ.'
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}'  # <-- Changement crucial ici
         }
         
         modeles_repli = ["gemini-2.5-flash", "gemini-1.5-flash"]
@@ -691,7 +690,8 @@ def assistant_chatbot_api(request):
             if requete_reussie:
                 break
                 
-            # Utilisation du paramètre ?key= à la fin de l'URL (Méthode officielle et la plus stable pour Gemini)
+            # On retire le ?key= de l'URL car l'authentification passe désormais par le Bearer Token
+
             url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent?key={api_key}"
             
             try:
@@ -702,7 +702,6 @@ def assistant_chatbot_api(request):
                     reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
                     requete_reussie = True
                 else:
-                    # Permet de voir précisément le rejet de Google dans vos Deploy Logs
                     print(f"Erreur API Gemini sur {modele} (Status {response.status_code}): {response.text}")
             except Exception as e:
                 print(f"Erreur réseau / timeout sur le modèle {modele} : {e}")
