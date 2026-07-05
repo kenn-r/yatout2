@@ -536,17 +536,13 @@ def passer_commande_panier(request):
         
     return render(request, 'shop/passer_commande_panier.html', {'cart': cart})
 
-
-
-
-
+import os  # Vérifiez que cet import est bien présent tout en haut du fichier
 
 @csrf_exempt
 def assistant_chatbot_api(request):
+    # Récupération invisible et sécurisée de la clé d'environnement
     api_key = os.environ.get("CLE_API_GEMINI")
     
-    print("--- DEBUG IA --- LA CLÉ RECUPEREE EST :", api_key)
-  
     reponse_bot = "Désolé, je rencontre des difficultés techniques à me connecter."
     session_key = ''
 
@@ -576,8 +572,10 @@ def assistant_chatbot_api(request):
         except Exception as e:
             print(f"Erreur BDD Client: {e}")
 
-        # 2. RECHERCHE EN BDD : BOUTIQUE (PRODUITS) + IMPRIMERIE (PRESTATIONS)
-        contexte_produits = "Aucun article spécifique trouvé dans la boutique."
+        # =====================================================================
+        # 2. 🔍 RECHERCHE EN BDD : BOUTIQUE (PRODUITS) + IMPRIMERIE (PRESTATIONS)
+        # =====================================================================
+        contexte_produits = "Aucun produit spécifique trouvé pour cette recherche."
         contexte_impressions = "Aucun support d'impression spécifique trouvé pour cette demande."
         
         # --- A. RECHERCHE CÔTÉ BOUTIQUE ---
@@ -588,10 +586,10 @@ def assistant_chatbot_api(request):
             produits_trouves = Produit.objects.filter(
                 Q(nom__icontains=message_client) | Q(description__icontains=message_client),
                 stock__gt=0
-            ).select_related('vendeur').distinct()[:4]
+            ).select_related('vendeur').distinct()[:5]
             
             if 'promo' in message_client.lower() or 'solde' in message_client.lower() or 'rabais' in message_client.lower():
-                produits_trouves = Produit.objects.filter(ancien_prix__gt=F('prix'), stock__gt=0).select_related('vendeur')[:4]
+                produits_trouves = Produit.objects.filter(ancien_prix__gt=F('prix'), stock__gt=0).select_related('vendeur')[:5]
 
             if produits_trouves.exists():
                 liste_p = []
@@ -599,9 +597,9 @@ def assistant_chatbot_api(request):
                     devise = p.vendeur.get_devise_display() if hasattr(p.vendeur, 'get_devise_display') else p.vendeur.devise
                     info_p = f"- {p.nom} : {p.prix} {devise} (Boutique : {p.vendeur.nom_boutique})"
                     if p.ancien_prix and p.ancien_prix > p.prix:
-                        info_p += f" [PROMO! Avant: {p.ancien_prix} {devise} - Remise: {p.reduction_pourcentage}%]"
+                        info_p += f" [En PROMO ! Prix d'origine: {p.ancien_prix} {devise} - Remise immédiate de {p.reduction_pourcentage}%]"
                     liste_p.append(info_p)
-                contexte_produits = "Articles boutique trouvés :\n" + "\n".join(liste_p)
+                contexte_produits = "Voici les articles réels trouvés sur notre catalogue :\n" + "\n".join(liste_p)
 
         # --- B. RECHERCHE CÔTÉ ATELIER D'IMPRESSION ---
         mots_cles_impression = ['impression', 'imprimer', 'affiche', 'bache', 'bâche', 'flyer', 'support', 'autocollant', 'lettre', 'f cfa', 'fcfa']
@@ -622,16 +620,10 @@ def assistant_chatbot_api(request):
                     liste_i.append(f"- {prest.titre} : {prest.prix_unitaire} FCFA ({unite})")
                 contexte_impressions = "Supports d'imprimerie disponibles à l'atelier YaTout :\n" + "\n".join(liste_i)
 
-        # 3. CONSTITUTION DE L'HISTORIQUE CHRONOLOGIQUE SÉCURISÉ
+        # 3. CONSTITUTION DE L'HISTORIQUE CHRONOLOGIQUE
         try:
-            # On récupère les 11 derniers pour exclure le message qu'on vient d'enregistrer et garder 10 anciens messages max
-            tous_les_messages = MessageAssistant.objects.filter(session_key=session_key).order_by('-id')[:11]
-            if tous_les_messages.exists():
-                # On retire le premier élément de la liste ordonnée par '-id' (qui est le message actuel de l'user)
-                anciens_messages = list(tous_les_messages)[1:]
-                anciens_messages.reverse()  # On remet l'historique dans le sens chronologique
-            else:
-                anciens_messages = []
+            anciens_messages = MessageAssistant.objects.filter(session_key=session_key).order_by('-id')[:10]
+            anciens_messages = reversed(anciens_messages)
         except Exception as e:
             print(f"Erreur historique : {e}")
             anciens_messages = []
@@ -643,72 +635,59 @@ def assistant_chatbot_api(request):
                 "role": role,
                 "parts": [{"text": msg.message}]
             })
+
+        # 4. REQUÊTE SÉCURISÉE VERS L'API GOOGLE GEMINI
+        try:
+            url_api = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+            date_aujourdhui = now().strftime("%A %d %B %Y")
             
-        # RÈGLE D'OR GEMINI : On injecte manuellement le message actuel à la toute fin de 'contents'
-        historique_payload.append({
-            "role": "user",
-            "parts": [{"text": message_client}]
-        })
+            instructions_systeme = (
+                "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' (ou YaTout Ci) et de son atelier 'YaTout Impression'. "
+                "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et de manière concise. "
+                f"Information temporelle importante : Nous sommes aujourd'hui le {date_aujourdhui}. "
+                "Règles strictes du site à connaître : "
+                "1. Pour commander en boutique : ajouter au panier, aller dans 'Mon Panier' en haut à droite, valider la livraison. Le paiement se fait en liquide à la livraison. "
+                "2. Pour l'atelier d'impression : le client sélectionne son support à gauche, ajuste ses options (finitions, délais) et remplit le formulaire à droite pour simuler son devis en direct. "
+                "3. La remise commerciale standard de l'atelier est de 5% incluse sur le Net à payer. Finitions dispo : Standard, Mate (+10%), Vernis sélectif. "
+                "4. Le site gère plusieurs devises (FCFA, MAD, EUR...) selon le choix du vendeur. "
+                "\n--- SUPPORTS D'IMPRESSION EN DIRECT ---\n"
+                f"{contexte_impressions}\n"
+                "\n--- STOCKS ET PRODUITS DE LA BOUTIQUE ---\n"
+                f"{contexte_produits}\n"
+                "Règle d'or : Ne vends et n'invente jamais de produits ou de supports imaginaires. Utilise strictement les listes ci-dessus. "
+                "Réponds toujours en français, utilise des émojis appropriés et reste amical."
+            )
 
-       # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI
-        date_aujourdhui = now().strftime("%A %d %B %Y")
-        
-        # CORRECTION : On définit obligatoirement la variable manquante ici
-        instructions_systeme = (
-            "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' et de son atelier 'YaTout Impression'. "
-            "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et concision. "
-            f"Information temporelle : Nous sommes aujourd'hui le {date_aujourdhui}. "
-            "Règles strictes de l'atelier d'imprimerie à connaître : "
-            "1. Pour l'atelier, le client sélectionne son support à gauche, ajuste ses options (finitions, délais) et remplit le formulaire à droite pour simuler son devis en direct. "
-            "2. La remise commerciale standard de l'atelier est de 5% incluse sur le Net à payer. "
-            "3. Les finitions disponibles sont : Standard/Brillante, Mate (+10%) et Vernis sélectif. Les délais sont Normal ou Urgent/Express 24h. "
-            "\n--- CATALOGUE DES SUPPORTS D'IMPRESSION RÉELS ---\n"
-            f"{contexte_impressions}\n"
-            "\n--- ARTICLES EN STOCK DE LA BOUTIQUE E-COMMERCE ---\n"
-            f"{contexte_produits}\n"
-            "Règle d'or : Ne vends et n'invente jamais de supports ou de prix imaginaires. Utilise STRICTEMENT les listes ci-dessus. "
-            "Réponds toujours en français avec des émojis appropriés et reste amical."
-        )
-
-                # 4. CONFIGURATION ET REQUÊTE VERS L'API GOOGLE GEMINI
-        payload = {
-            "contents": historique_payload,
-            "systemInstruction": {"parts": [{"text": instructions_systeme}]},
-            "generationConfig": {
-                "maxOutputTokens": 300,
-                "temperature": 0.7
+            payload = {
+                "contents": historique_payload,
+                "systemInstruction": {"parts": [{"text": instructions_systeme}]},
+                "generationConfig": {
+                    "maxOutputTokens": 300,
+                    "temperature": 0.7
+                }
             }
-        }
 
-        # CONFIGURATION EXIGÉE POUR LES CLÉS 'AQ.' SUR L'API PUBLIQUE
-        headers = {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': api_key  # On passe la clé dans ce header spécifique
-        }
-        
-        modeles_repli = ["gemini-2.5-flash", "gemini-1.5-flash"]
-        requete_reussie = False
-
-        for modele in modeles_repli:
-            if requete_reussie:
-                break
-                
-            # URL standard ÉPURÉE (interdiction absolue de mettre ?key= à la fin pour les clés AQ.)
-            url_api_dynamique = f"https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent"
+            headers = {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': api_key
+            }
             
-            try:
-                response = requests.post(url_api_dynamique, json=payload, headers=headers, timeout=12)
-                
-                if response.status_code == 200:
-                    resultat = response.json()
-                    reponse_bot = resultat['candidates']['content']['parts']['text']
-                    requete_reussie = True
-                else:
-                    print(f"Erreur API Gemini sur {modele} (Status {response.status_code}): {response.text}")
-            except Exception as e:
-                print(f"Erreur réseau / timeout sur le modèle {modele} : {e}")
+            response = requests.post(url_api, json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                resultat = response.json()
+                reponse_bot = resultat['candidates'][0]['content']['parts'][0]['text']
+            elif response.status_code == 503:
+                reponse_bot = "Oups ! Je suis un peu surchargé par les demandes en ce moment. 🤖 Pouvez-vous répéter votre question dans quelques secondes ?"
+            elif response.status_code == 429:
+                reponse_bot = "Vous allez un peu trop vite pour moi ! ⚡ Laissez-moi respirer quelques instants avant de poser votre prochaine question."
+            else:
+                reponse_bot = "Je rencontre une petite difficulté à joindre mes serveurs centraux. Réessayez d'ici un instant !"
 
-        # 5. SAUVEGARDE DE LA RÉPONSE DU BOT
+        except Exception as e:
+            reponse_bot = f"Une erreur technique est survenue lors de la communication avec l'IA : {e}"
+
+        # 5. Sauvegarde de la réponse finale de l'IA en BDD
         try:
             MessageAssistant.objects.create(
                 user=request.user if request.user.is_authenticated else None,
@@ -719,8 +698,9 @@ def assistant_chatbot_api(request):
         except Exception as e:
             print(f"Erreur BDD Assistant: {e}")
 
-        return JsonResponse({'message': reponse_bot})
+        return JsonResponse({'reponse': reponse_bot})
 
+    return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
 
 
 def bienvenue(request):
