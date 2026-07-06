@@ -6,38 +6,41 @@
     <title>Bon de Livraison {{ commande.numero_bon }}</title>
     <style>
         /* Configuration générale */
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; padding-bottom: 60px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; padding-bottom: 80px; }
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
         .logo { max-height: 70px; width: auto; object-fit: contain; }
         .title { font-size: 26px; font-weight: bold; color: #1e293b; text-transform: uppercase; text-align: right; }
-        .info-section { width: 100%; margin-bottom: 30px; }
+        .info-section { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         .info-box { width: 45%; vertical-align: top; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .items-table th { background-color: #1e293b; color: white; padding: 12px; text-align: left; font-size: 14px; }
+        .items-table th { background-color: #1e293b; color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
         .items-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        .total-box { margin-top: 30px; text-align: right; font-size: 16px; line-height: 1.6; }
-        .total-box strong { color: #15803d; font-size: 22px; }
         
-        /* Section Signatures et structure pour pousser le cachet vers le bas */
-        .signature-section { margin-top: 40px; width: 100%; }
+        /* Style pour l'affichage de la remise */
+        .remise-texte { color: #ef4444; font-weight: bold; font-size: 0.9rem; }
+        .total-summary-row td { padding: 8px 12px; background: #f8fafc; font-size: 13px; }
+
+        /* Structure pour les blocs de signature */
+        .signature-section { margin-top: 40px; width: 100%; border-collapse: collapse; }
+        .signature-td { width: 45%; vertical-align: top; }
+        
         .signature-box { 
-            width: 45%; 
-            height: 160px; 
+            height: 170px; 
             border: 1px dashed #cbd5e1; 
             border-radius: 6px; 
             padding: 15px; 
-            vertical-align: top; 
-            font-size: 13px; 
-            color: #64748b; 
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Pousse le titre en haut et le cachet en bas */
-            box-sizing: border-box;
+            justify-content: space-between;
+            align-items: stretch;
         }
+        
+        .signature-title { font-size: 13px; font-weight: bold; color: #1e293b; margin-bottom: 10px; }
         
         /* 🔵 CACHET ROND BLEU POSITIONNÉ EN BAS ET CENTRÉ */
         .cachet-rond {
-            align-self: center; /* Centre le cachet horizontalement dans la case */
+            align-self: center;
             width: 95px;
             height: 95px;
             border: 3px double #0033aa;
@@ -51,9 +54,9 @@
             font-family: Arial, sans-serif;
             font-weight: bold;
             text-transform: uppercase;
-            transform: rotate(-5deg); /* Effet tampon réel appliqué de biais */
+            transform: rotate(-5deg);
             background-color: rgba(255, 255, 255, 0.8);
-            margin-top: 10px;
+            margin-bottom: 5px;
         }
         .cachet-top { font-size: 8px; letter-spacing: 0.5px; }
         .cachet-center { font-size: 10px; border-top: 1px solid #0033aa; border-bottom: 1px solid #0033aa; padding: 1px 4px; margin: 2px 0; }
@@ -70,7 +73,7 @@
             font-weight: bold;
             color: #475569;
             background: #ffffff;
-            padding: 10px 0;
+            padding: 12px 0;
             border-top: 1px solid #e2e8f0;
         }
 
@@ -94,7 +97,6 @@
             <td>
                 <img src="{% static 'shop/js/images/logo.png' %}" alt="Logo YaTout" class="logo">
             </td>
-            <!-- Titre épuré : Uniquement Bon de Livraison -->
             <td class="title">Bon de Livraison</td>
         </tr>
     </table>
@@ -118,67 +120,86 @@
         </tr>
     </table>
 
-    <!-- TABLEAU DES PRESTATIONS -->
-    <table class="items-table" style="width: 100%;">
+    <!-- TABLEAU DES PRESTATIONS ALIGNÉ SUR LE MODÈLE SANS DÉCIMALES -->
+    <table class="items-table">
         <thead>
             <tr>
                 <th style="padding: 12px; text-align: left;">Désignation de la prestation</th>
-                <th style="padding: 12px; text-align: center; width: 80px;">Quantité</th>
-                <th style="padding: 12px; text-align: right; width: 120px;">Prix unitaire</th>
-                <th style="padding: 12px; text-align: right; width: 120px;">Total</th>
-                <th style="padding: 12px; text-align: center; width: 100px;">État</th>
+                <th style="padding: 12px; text-align: center; width: 100px;">Quantité</th>
+                <th style="padding: 12px; text-align: right; width: 120px;">Prix Unit.</th>
+                <th style="padding: 12px; text-align: center; width: 100px;">Rem. %</th>
+                <th style="padding: 12px; text-align: right; width: 140px;">Montant net</th>
+                <th style="padding: 12px; text-align: center; width: 120px;">État</th>
             </tr>
         </thead>
         <tbody>
             {% for item in articles_liste %}
             <tr>
                 <td>{{ item.titre }}</td>
-                <td style="text-align: center; font-weight: bold;">{{ item.qte }}</td>
-                <td style="text-align: right;">{{ item.prix }} FCFA</td>
-                <td style="text-align: right; font-weight: bold;">{{ item.total }} FCFA</td>
-                <td style="text-align: center; color: #16a34a; font-weight: bold;">Conforme</td>
+                <td style="text-align: center; font-weight: bold;">{{ item.qte_entier }}</td>
+                <td style="text-align: right;">{{ item.prix_entier }} FCFA</td>
+                
+                <!-- Colonne Remise en % strict -->
+                <td style="text-align: center;" class="remise-texte">
+                    {{ item.remise_pourcent_entier }}
+                </td>
+                
+                <!-- Montant net total de la ligne -->
+                <td style="text-align: right; font-weight: bold;">{{ item.total_net_entier }} FCFA</td>
+                <td style="text-align: center; color: #16a34a; font-weight: bold;">✓ Conforme</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5" style="text-align: center; color: #64748b;">Aucun article dans cette commande.</td>
+                <td colspan="6" style="text-align: center; color: #64748b;">Aucun article dans cette commande.</td>
             </tr>
             {% endfor %}
+            
+            <!-- LIGNES DE RÈGLEMENT FINANCIER SANS CENTIMES -->
+            <tr class="total-summary-row">
+                <td colspan="4" style="text-align: right; font-weight: bold;">Montant Brut total :</td>
+                <td style="text-align: right; font-weight: bold;">{{ commande.total_brut_entier }} FCFA</td>
+                <td></td>
+            </tr>
+            {% if commande.montant_remise_global > 0 %}
+            <tr class="total-summary-row">
+                <td colspan="4" style="text-align: right; font-weight: bold; color: #ef4444;">Remise globale de la marchandise :</td>
+                <td style="text-align: right; font-weight: bold; color: #ef4444;">-{{ commande.montant_remise_global_entier }} FCFA</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            <tr class="total-summary-row" style="border-top: 2px solid #1e293b;">
+                <td colspan="4" style="text-align: right; font-weight: 800; font-size: 15px; color: #166534;">Net à Payer :</td>
+                <td style="text-align: right; font-weight: 800; font-size: 15px; color: #166534;">{{ commande.total_final_entier }} FCFA</td>
+                <td></td>
+            </tr>
         </tbody>
     </table>
 
-    <!-- RECAPITULATIF FINANCIER -->
-    <div class="total-box">
-        <div style="color: #64748b;">Total Brut : {{ commande.total_brut }} FCFA</div>
-        <div style="color: #dc2626;">Remise Appliquée : -{{ commande.montant_remise }} FCFA</div>
-        <hr style="width: 250px; margin: 10px 0 10px auto; border: 0; border-top: 1px solid #e2e8f0;">
-        <div style="font-size: 18px; font-weight: bold;">
-            Montant Net Payé : <strong style="color: #15803d; font-size: 24px;">{{ commande.total_final }} FCFA</strong>
-        </div>
-    </div>
-
-    <!-- ZONE DE SIGNATURE AVEC ACCORD ET CACHET ROND TOUT EN BAS -->
+    <!-- ZONE DE SIGNATURES COMPLÈTE ET REFERMÉE -->
     <table class="signature-section">
         <tr>
-            <td class="signature-box">
-                <div><strong>Cachet et Signature de l'Imprimerie :</strong></div>
-                
-                <!-- Le cachet rond bleu automatique, centré en bas -->
-                <div class="cachet-rond">
-                    <span class="cachet-top">YATOUT</span>
-                    <span class="cachet-center">IMPRESSION</span>
-                    <span class="cachet-name">Aime Bosson</span>
+            <td class="signature-td">
+                <div class="signature-box">
+                    <div class="signature-title">Cachet et Signature de l'Imprimerie :</div>
+                    <div class="cachet-rond">
+                        <span class="cachet-top">YaTout</span>
+                        <span class="cachet-center">IMPRESSION</span>
+                        <span class="cachet-name">Validé</span>
+                    </div>
                 </div>
             </td>
             <td style="width: 10%;"></td>
-            <td class="signature-box" style="justify-content: flex-start;">
-                <div><strong>Date et Signature du Client (Précédé de "Reçu conforme") :</strong></div>
+            <td class="signature-td">
+                <div class="signature-box">
+                    <div class="signature-title">Signature du Client (Précédée de la mention "Bon pour accord") :</div>
+                </div>
             </td>
         </tr>
     </table>
 
-    <!-- MESSAGE DE REMERCIEMENT EN BAS DE CHAQUE PAGE -->
+    <!-- PIED DE PAGE FIXE -->
     <div class="footer-remerciement">
-        ✨ Merci pour votre confiance ! L'équipe YaTout Impression vous remercie pour votre fidélité. ✨
+        Merci pour votre confiance ! YaTout Impression vous remercie.
     </div>
 
 </body>

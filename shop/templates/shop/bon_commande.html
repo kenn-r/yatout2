@@ -12,14 +12,20 @@
         .info-section { width: 100%; margin-bottom: 30px; }
         .info-box { width: 45%; vertical-align: top; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .items-table th { background-color: #7c3aed; color: white; padding: 12px; text-align: left; font-size: 14px; }
+        .items-table th { background-color: #7c3aed; color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
         .items-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        .total-box { margin-top: 30px; text-align: right; font-size: 18px; }
-        .total-box strong { color: #15803d; font-size: 22px; }
+        .total-box { margin-top: 30px; text-align: right; font-size: 16px; line-height: 2; }
+        .total-box p { margin: 4px 0; }
+        .text-danger { color: #ef4444; font-weight: bold; }
+        .text-success { color: #15803d; font-size: 22px; font-weight: bold; }
         
-        /* Boutons et formulaires masqués lors de l'impression PDF */
+        /* Classe utilitaire pour les champs de saisie des remises par article */
+        .input-remise { width: 70px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center; }
+        
+        /* Masquage des éléments d'administration lors de l'impression PDF */
         @media print { 
             .btn-print, .admin-box { display: none !important; } 
+            body { margin: 15px; }
         }
     </style>
 </head>
@@ -60,31 +66,9 @@
         </tr>
     </table>
 
-    <!-- TABLEAU DES PRESTATIONS -->
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th>Désignation de la prestation</th>
-                <th style="text-align: center; width: 100px;">Quantité</th>
-                <th style="text-align: right; width: 150px;">Prix unitaire</th>
-                <th style="text-align: right; width: 150px;">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in articles_liste %}
-            <tr>
-                <td>{{ item.titre }}</td>
-                <td style="text-align: center;">{{ item.qte }}</td>
-                <td style="text-align: right;">{{ item.prix }} FCFA</td>
-                <td style="text-align: right; font-weight: bold;">{{ item.total }} FCFA</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- MESSAGES DE SUCCÈS OU D'ERREUR (S'AFFICCHENT APPRÈS UNE MODIFICATION) -->
+    <!-- MESSAGES DE SUCCÈS OU D'ERREUR -->
     {% if messages %}
-        <div class="btn-print" style="margin-top: 20px;">
+        <div class="btn-print" style="margin-top: 20px; margin-bottom: 20px;">
             {% for message in messages %}
                 <div style="padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
                     {{ message }}
@@ -93,18 +77,79 @@
         </div>
     {% endif %}
 
-    <!-- BLOC ADMINISTRATION (Remise + Statut de Livraison) -->
+    <!-- 1. FORMULAIRE COMPTABLE POUR LES REMISES PAR ARTICLE EN POURCENTAGE -->
+    <form method="POST">
+        {% csrf_token %}
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Désignation de la prestation</th>
+                    <th style="text-align: center; width: 100px;">Quantité</th>
+                    <th style="text-align: right; width: 140px;">Prix unitaire</th>
+                    <th style="text-align: center; width: 120px;">Rem. %</th>
+                    <th style="text-align: right; width: 140px;">Montant net</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in articles_liste %}
+                <tr>
+                    <td>{{ item.titre }}</td>
+                    <td style="text-align: center;">{{ item.qte_entier }}</td>
+                    <td style="text-align: right;">{{ item.prix_entier }} FCFA</td>
+                    
+                    <!-- Zone de saisie du pourcentage de remise par ligne (Ex: 25) -->
+                    <td style="text-align: center;">
+                        <span class="admin-box">
+                            <input type="number" 
+                                   name="remise_{{ forloop.counter0 }}" 
+                                   value="{{ item.remise_pourcent|default:0 }}" 
+                                   min="0" 
+                                   max="100"
+                                   class="input-remise">
+                            <strong style="margin-left: 3px;">%</strong>
+                        </span>
+                        <!-- Affichage figé pour l'impression PDF -->
+                        <span style="display: none; font-weight: bold; color: #ef4444;" class="print-only">
+                            {{ item.remise_pourcent_entier }}
+                        </span>
+                    </td>
+                    
+                    <!-- Montant total net calculé de la ligne -->
+                    <td style="text-align: right; font-weight: bold;">{{ item.total_net_entier }} FCFA</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Bouton de mise à jour des lignes de commande -->
+        <div class="admin-box" style="margin-top: 15px; text-align: right;">
+            <button type="submit" name="appliquer_remises_articles" style="background-color: #4c1d95; color: white; border: none; padding: 10px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                🔄 Calculer les remises articles
+            </button>
+        </div>
+    </form>
+
+    <!-- SECTION DE RÉCAPITULATION DES TOTAUX -->
+    <div class="total-box">
+        <p>Sous-total Brut : {{ commande.total_brut_entier }} FCFA</p>
+        {% if commande.montant_remise_global > 0 %}
+            <p class="text-danger">Remise globale de la marchandise : -{{ commande.montant_remise_global_entier }} FCFA</p>
+        {% endif %}
+        <p class="text-success">Net à payer : {{ commande.total_final_entier }} FCFA</p>
+    </div>
+
+    <!-- BLOC ADMINISTRATION (Remise Globale + Statut de Livraison) -->
     <div class="admin-box" style="margin-top: 30px; display: flex; gap: 20px; flex-wrap: wrap;">
         
-        <!-- Formulaire de modification de la remise -->
+        <!-- 2. Formulaire de modification de la remise globale -->
         <div style="background-color: #f8fafc; border: 1px dashed #7c3aed; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
             <form method="POST">
                 {% csrf_token %}
                 <label style="font-weight: bold; font-size: 13px; color: #4c1d95; display: block; margin-bottom: 5px;">
-                    🛠️ Ajuster la remise commerciale :
+                    🛠️ Ajuster la remise commerciale globale :
                 </label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="number" name="pourcentage_remise" value="{{ pourcentage_actuel }}" min="0" max="100" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
+                    <input type="number" name="pourcentage_remise" value="{{ pourcentage_actuel|default:0 }}" min="0" max="100" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
                     <span style="align-self: center; font-weight: bold;">%</span>
                     <button type="submit" name="changer_remise" style="background-color: #7c3aed; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
                         Appliquer et recalculer
@@ -112,39 +157,25 @@
                 </div>
             </form>
         </div>
-<!-- Bloc de transfert direct en BL -->
-<div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
-    <label style="font-weight: bold; font-size: 13px; color: #1e293b; display: block; margin-bottom: 8px;">
-        🔄 Évolution du document :
-    </label>
-    
-    {% if not commande.bl_genere %}
-        <!-- LE FORMULAIRE MANQUANT QUI ENVOIE L'ACTION -->
-        <form method="POST">
-            {% csrf_token %}
-            <button type="submit" name="generer_bl" style="background-color: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; width: 100%; text-align: center;">
-                🔄 Transformer en Bon de Livraison (BL)
-            </button>
-        </form>
-    {% else %}
-        <div style="margin-bottom: 10px; color: #2563eb; font-weight: bold; font-size: 13px;">
-            ℹ️ Le Bon de Livraison a déjà été généré.
-        </div>
-        <a href="{% url 'voir_bon_livraison' commande.id %}" style="display: block; text-align: center; background-color: #2563eb; color: white; padding: 10px 15px; border-radius: 4px; font-weight: bold; text-decoration: none; font-size: 13px;">
-            👉 Voir / Imprimer le BL
-        </a>
-    {% endif %}
-</div>
-        </div>
-    </div>
 
-    <!-- TOTAL GENERAL -->
-    <div class="total-box" style="margin-top: 30px; text-align: right; font-size: 16px; line-height: 1.6;">
-        <div style="color: #64748b;">Total Brut : {{ commande.total_brut }} FCFA</div>
-        <div style="color: #dc2626;">Remise Appliquée ({{ pourcentage_actuel }}%) : -{{ commande.montant_remise }} FCFA</div>
-        <hr style="width: 250px; margin: 10px 0 10px auto; border: 0; border-top: 1px solid #e2e8f0;">
-        <div style="font-size: 18px; font-weight: bold;">
-            Montant Net à Payer : <strong style="color: #15803d; font-size: 24px;">{{ commande.total_final }} FCFA</strong>
+        <!-- 3. Bloc de transfert direct en BL -->
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
+            <label style="font-weight: bold; font-size: 13px; color: #1e293b; display: block; margin-bottom: 8px;">
+                🔄 Évolution du document :
+            </label>
+            
+            {% if not commande.bl_genere %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" name="generer_bl" style="background-color: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; width: 100%; text-align: center;">
+                        🔄 Transformer en Bon de Livraison (BL)
+                    </button>
+                </form>
+            {% else %}
+                <div style="text-align: center; padding: 8px; background-color: #d1fae5; color: #065f46; font-weight: bold; border-radius: 4px; font-size: 13px;">
+                    ✅ Bon de Livraison déjà généré
+                </div>
+            {% endif %}
         </div>
     </div>
 

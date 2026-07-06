@@ -149,8 +149,11 @@ ANYMAIL = {
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+LOGIN_URL = '/vendeur/connexion/'
+LOGIN_REDIRECT_URL = '/vendeur/dashboard/'
+
 # Force l'utilisation sécurisée si votre site est en HTTPS sur Render
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = True
 
 # Indique à Django où stocker les fichiers statiques collectés pour Render

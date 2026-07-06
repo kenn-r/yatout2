@@ -48,4 +48,6 @@ urlpatterns = [
     path('impression/prestations/<int:prestation_id>/', views.detail_prestation, name='detail_prestation'),
     path('impression/bon-commande/<int:commande_id>/', views.voir_bon_commande, name='voir_bon_commande'),
     path('impression/bon-livraison/<int:commande_id>/', views.voir_bon_livraison, name='voir_bon_livraison'),
+    path('impressions/commande/<int:commande_id>/public/', views.voir_bon_commande_public, name='voir_bon_commande_public'),
+    path('impressions/admin/check-code/', views.verifier_code_admin, name='verifier_code_admin'),
 ]

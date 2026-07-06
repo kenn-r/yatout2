@@ -100,7 +100,7 @@ def connexion_vendeur(request):
             if user is not None:
                 auth_login(request, user)
                 messages.success(request, f"Bienvenue, {username} !")
-                return redirect('accueil')
+                return redirect('dashboard_vendeur')
     else:
         form = AuthenticationForm()
     return render(request, 'shop/connexion.html', {'form': form})
@@ -330,33 +330,41 @@ def passer_commande(request, pk):
 
 # --- GESTION DU DASHBOARD ET DES PRODUITS ---
 
-@login_required(login_url='connexion')
+@login_required
 def dashboard_vendeur(request):
-    """Affiche les statistiques financières et logistiques du vendeur."""
+    """Affiche le tableau de bord du vendeur avec les statistiques globales et le top 3 des commandes."""
     try:
         vendeur = request.user.vendeur
     except Vendeur.DoesNotExist:
         return redirect('inscription_vendeur')
 
+    # Catalogue complet du vendeur
     mes_produits = Produit.objects.filter(vendeur=vendeur)
     
-    # 1. CORRECTION : On passe par 'items__' pour filtrer les commandes
-    mes_ventes = Commande.objects.filter(items__produit__vendeur=vendeur).order_by('-date_commande').distinct()
+    # 📊 1. TOUTES les ventes (Requis pour la jauge "Commandes reçues" et le calcul financier)
+    toutes_les_ventes = Commande.objects.filter(
+        items__produit__vendeur=vendeur
+    ).distinct()
 
-    # 2. CORRECTION : On calcule les revenus en filtrant uniquement les articles de CE vendeur
+    # Calcul global des revenus (sur l'ensemble des ventes, pas seulement les 3 affichées)
     total_revenus = 0
-    for vente in mes_ventes:
+    for vente in toutes_les_ventes:
         for item in vente.items.filter(produit__vendeur=vendeur):
             total_revenus += item.get_cost()
 
-    nombre_ventes = mes_ventes.count()
+    nombre_ventes = toutes_les_ventes.count()
+    articles_en_vente = mes_produits.count()
+
+    # 🚚 2. LE TOP 3 DES COMMANDES (Uniquement pour l'affichage visuel du tableau HTML)
+    mes_ventes_affichees = toutes_les_ventes.order_by('-date_commande')[:3]
 
     context = {
         'vendeur': vendeur,
         'produits': mes_produits,
-        'ventes': mes_ventes,
-        'total_revenus': total_revenus,
-        'nombre_ventes': nombre_ventes,
+        'ventes': mes_ventes_affichees,  # 👈 Ce tableau HTML contiendra exactement 3 lignes maximum
+        'total_revenus': total_revenus,   # 👈 Reste juste (494500,00 XOF)
+        'nombre_ventes': nombre_ventes,   # 👈 Reste juste (7)
+        'articles_en_vente': articles_en_vente,
     }
     return render(request, 'shop/dashboard.html', context)
 
@@ -642,21 +650,43 @@ def assistant_chatbot_api(request):
             date_aujourdhui = now().strftime("%A %d %B %Y")
             
             instructions_systeme = (
-                "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' (ou YaTout Ci) et de son atelier 'YaTout Impression'. "
-                "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et de manière concise. "
-                f"Information temporelle importante : Nous sommes aujourd'hui le {date_aujourdhui}. "
-                "Règles strictes du site à connaître : "
-                "1. Pour commander en boutique : ajouter au panier, aller dans 'Mon Panier' en haut à droite, valider la livraison. Le paiement se fait en liquide à la livraison. "
-                "2. Pour l'atelier d'impression : le client sélectionne son support à gauche, ajuste ses options (finitions, délais) et remplit le formulaire à droite pour simuler son devis en direct. "
-                "3. La remise commerciale standard de l'atelier est de 5% incluse sur le Net à payer. Finitions dispo : Standard, Mate (+10%), Vernis sélectif. "
-                "4. Le site gère plusieurs devises (FCFA, MAD, EUR...) selon le choix du vendeur. "
-                "\n--- SUPPORTS D'IMPRESSION EN DIRECT ---\n"
-                f"{contexte_impressions}\n"
-                "\n--- STOCKS ET PRODUITS DE LA BOUTIQUE ---\n"
-                f"{contexte_produits}\n"
-                "Règle d'or : Ne vends et n'invente jamais de produits ou de supports imaginaires. Utilise strictement les listes ci-dessus. "
-                "Réponds toujours en français, utilise des émojis appropriés et reste amical."
-            )
+    "Tu es l'assistant virtuel officiel du site d'e-commerce multi-vendeur 'YaTout' (ou YaTout Ci) et de son atelier 'YaTout Impression'. "
+    "Ton rôle est d'aider les acheteurs, les vendeurs et les clients de l'atelier avec politesse, enthousiasme et de manière concise. "
+    f"Information temporelle importante : Nous sommes aujourd'hui le {date_aujourdhui}. "
+    "Règles strictes du site à connaître : "
+    "1. Pour commander en boutique : ajouter au panier, aller dans 'Mon Panier' en haut à droite, valider la livraison. Le paiement se fait en liquide à la livraison. "
+    "2. Pour l'atelier d'impression : le client sélectionne son support à gauche, ajuste ses options (finitions, délais) et remplit le formulaire à droite pour simuler son devis en direct. "
+    "3. La remise commerciale standard de l'atelier est de 5% incluse sur le Net à payer. Finitions dispo : Standard, Mate (+10%), Vernis sélectif. "
+    "4. Le site gère plusieurs devises (FCFA, MAD, EUR...) selon le choix du vendeur. "
+    
+    "\n--- RÈGLES COMPTABLES ET DE REMISE DE L'ATELIER ---\n"
+    "- Utilise TOUJOURS le terme 'Remise' ou 'Remise commerciale', n'utilise JAMAIS le mot 'Réduction' ni 'Rabais'. "
+    "- La remise doit obligatoirement être calculée automatiquement et détaillée sur chaque article individuellement d'abord (colonne Rem. % ou Remise / Art.). "
+    "- À la fin du document, le total affiche une 'Remise globale de la marchandise' qui cumule automatiquement toutes les remises. "
+    "- RÈGLE CRUCIALE POUR LE FCFA : Le FCFA n'utilise AUCUNE décimale. Arrondis toujours les calculs financiers à l'entier strict (Ex: 45.000 FCFA et non 45.000,00 FCFA). Utilise des points pour séparer les milliers. "
+    
+    "\n--- EXEMPLES DE DIALOGUES TYPES POUR LE CALCUL DES REMISES ---\n"
+    "Exemple 1 (Demande de prix standard) :\n"
+    "Client : 'Quel est le prix pour 1 Bâche à 25.000 FCFA et 2 tasses à 2.200 FCFA l'unité ?'\n"
+    "IA : 'Voici le détail de votre simulation avec notre remise standard de 5% intégrée : \n"
+    "• 1 Bâche : 25.000 FCFA | Remise : 5% (-1.250 FCFA) | Total Net : 23.750 FCFA\n"
+    "• 2 Tasses : 4.400 FCFA | Remise : 5% (-220 FCFA) | Total Net : 4.180 FCFA\n"
+    "-------------------------\n"
+    "• Montant Brut total : 29.400 FCFA\n"
+    "• Remise globale de la marchandise : -1.470 FCFA\n"
+    "• Net à payer : 27.930 FCFA 🎯'\n\n"
+    
+    "Exemple 2 (Vérification de format monétaire) :\n"
+    "Client : 'Est-ce que j'ai une réduction ?'\n"
+    "IA : 'Nous n'appliquons pas de réduction, mais vous bénéficiez automatiquement d'une remise commerciale de 5% sur chaque article ! Par exemple, pour un support à 10.000 FCFA, la remise par article est de 500 FCFA, ce qui vous fait un total net par ligne de 9.500 FCFA. ✨'\n"
+    
+    "\n--- SUPPORTS D'IMPRESSION EN DIRECT ---\n"
+    f"{contexte_impressions}\n"
+    "\n--- STOCKS ET PRODUITS DE LA BOUTIQUE ---\n"
+    f"{contexte_produits}\n"
+    "Règle d'or : Ne vends et n'invente jamais de produits ou de supports imaginaires. Utilise strictement les listes ci-dessus. "
+    "Réponds toujours en français, utilise des émojis appropriés et reste amical."
+)
 
             payload = {
                 "contents": historique_payload,
@@ -709,12 +739,16 @@ def bienvenue(request):
 
 
 
+
+
 @staff_member_required
 def generer_bon_pdf(request, commande_id):
+    # Récupération de la commande principale
     commande = get_object_or_404(CommandeImpression, id=commande_id)
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{commande.numero_bon()}.pdf"'
+    # Modification optionnelle : 'inline' au lieu de 'attachment' permet de voir le PDF sur Safari/Chrome avant d'imprimer
+    response['Content-Disposition'] = f'inline; filename="{commande.numero_bon()}.pdf"'
 
     # Marges définies à 40 points
     marge_gauche = 40
@@ -731,19 +765,24 @@ def generer_bon_pdf(request, commande_id):
     story = []
     
     # --- CALCUL DE LA LARGEUR MAXIMALE DISPONIBLE SUR LA FEUILLE ---
-    largeur_page = letter[0]  # Largeur totale de la feuille letter
-    largeur_utile = largeur_page - (marge_gauche + marge_droite) # Largeur réelle pour le contenu (532 points)
+    largeur_page = letter[0]  
+    largeur_utile = largeur_page - (marge_gauche + marge_droite) 
     
     styles = getSampleStyleSheet()
     normal_style = styles['Normal']
     bold_style = ParagraphStyle('BoldStyle', parent=styles['Normal'], fontName='Helvetica-Bold')
     
-    # Styles d'alignement pour les prix dans le tableau
-    style_prix_entete = ParagraphStyle('PrixEntete', parent=bold_style, alignment=2) # Aligné à droite
-    style_prix_cellule = ParagraphStyle('PrixCellule', parent=normal_style, alignment=2) # Aligné à droite
+    # Styles d'alignement pour les prix et remises dans le tableau
+    style_prix_entete = ParagraphStyle('PrixEntete', parent=bold_style, alignment=2) 
+    style_prix_cellule = ParagraphStyle('PrixCellule', parent=normal_style, alignment=2) 
+    style_remise_cellule = ParagraphStyle('RemiseCellule', parent=normal_style, alignment=2, textColor=colors.HexColor("#CC0000"))
 
     # --- 1. CONFIGURATION DU BLOC GAUCHE (ENTREPRISE + INFOS BON) ---
     bloc_gauche = []
+    
+    # Vérification et ajout dynamique du titre du document (Bon de Commande ou Livraison)
+    # Si le champ 'bl_genere' est à True, le titre s'adapte automatiquement sur le document
+    titre_document = "BON DE LIVRAISON" if getattr(commande, 'bl_genere', False) else "BON DE COMMANDE"
     
     chemin_logo = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo.png')
     if os.path.exists(chemin_logo):
@@ -753,13 +792,12 @@ def generer_bon_pdf(request, commande_id):
         bloc_gauche.append(Spacer(1, 5))
         
     title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor("#2E0854"), spaceAfter=3)
-    bloc_gauche.append(Paragraph("<b>YaTout Print</b>", title_style))
-    bloc_gauche.append(Paragraph("<font size=9 color='#7b6f93'>Atelier d'Impression Numérique</font>", normal_style))
-    bloc_gauche.append(Paragraph("<font size=9>Email : print@yatout.com<br/>Tél : +225 07 00 00 00 00 (CI)</font>", normal_style))
+    bloc_gauche.append(Paragraph(f"<b>{titre_document}</b>", title_style))
+    bloc_gauche.append(Paragraph("<font size=9 color='#7b6f93'>YaTout Print — Atelier d'Impression</font>", normal_style))
     
-    bloc_gauche.append(Spacer(1, 15))
-    bloc_gauche.append(Paragraph(f"<b>Numéro de Bon :</b> {commande.numero_bon()}", normal_style))
-    bloc_gauche.append(Paragraph(f"<b>Date / Heure :</b> {commande.date_commande.strftime('%d/%m/%Y à %H:%M')}", normal_style))
+    bloc_gauche.append(Spacer(1, 10))
+    bloc_gauche.append(Paragraph(f"<b>Numéro :</b> {commande.numero_bon()}", normal_style))
+    bloc_gauche.append(Paragraph(f"<b>Date :</b> {commande.date_commande.strftime('%d/%m/%Y à %H:%M')}", normal_style))
 
     # --- 2. CONFIGURATION DU BLOC DROITE (COORDONNÉES CLIENT) ---
     bloc_droite = []
@@ -767,15 +805,11 @@ def generer_bon_pdf(request, commande_id):
     bloc_droite.append(Paragraph("<b>FACTURE & DESTINATAIRE</b>", client_title_style))
     bloc_droite.append(Paragraph(f"<b>Client :</b> {commande.nom_client}", normal_style))
     
-    if commande.telephone.startswith('+') or commande.telephone.startswith('00'):
-        tel_affiche = commande.telephone
-    else:
-        tel_affiche = f"+225 {commande.telephone}"
-        
+    tel_affiche = commande.telephone if commande.telephone.startswith(('+', '00')) else f"+225 {commande.telephone}"
     bloc_droite.append(Paragraph(f"<b>Contact :</b> {tel_affiche}", normal_style))
     bloc_droite.append(Paragraph(f"<b>Email :</b> {commande.email_client}", normal_style))
 
-    # --- 3. ALIGNEMENT FACE À FACE (Prend toute la largeur utile divisée en deux) ---
+    # --- 3. ALIGNEMENT FACE À FACE ---
     largeur_bloc_entete = largeur_utile / 2
     table_en_tete = Table([[bloc_gauche, bloc_droite]], colWidths=[largeur_bloc_entete, largeur_bloc_entete])
     table_en_tete.setStyle(TableStyle([
@@ -788,68 +822,122 @@ def generer_bon_pdf(request, commande_id):
     story.append(Spacer(1, 15))
     story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#C8BED6"), spaceAfter=20, spaceBefore=0))
 
-    # --- 4. TABLEAU DES ARTICLES (DÉSIGNATION PLEINE LARGEUR) ---
-    # Nous fixons des tailles strictes pour le Prix (90), Quantité (60) et Total (110).
-    # La colonne Désignation prend TOUT le reste de l'espace de la feuille (largeur_utile - 260)
-    col_prix = 90
-    col_qte = 60
-    col_total = 110
-    col_designation = largeur_utile - (col_prix + col_qte + col_total)
+    # --- 4. TABLEAU DES ARTICLES AVEC GESTION DE LA REMISE ARTICLE ---
+    # Répartition des colonnes sur la largeur utile totale (532 points) :
+    col_prix = 80
+    col_qte = 45
+    col_remise = 75   # 👈 Nouvelle colonne dédiée à la remise sur chaque article
+    col_total = 95
+    col_designation = largeur_utile - (col_prix + col_qte + col_remise + col_total) # Reste ~237 pour le texte
 
     data = [
         [Paragraph("<b>Désignation Prestation</b>", bold_style), 
          Paragraph("<b>Prix Unit.</b>", style_prix_entete), 
-         Paragraph("<b>Quantité</b>", bold_style), 
-         Paragraph("<b>Total Brut</b>", style_prix_entete)]
+         Paragraph("<b>Qté</b>", bold_style), 
+         Paragraph("<b>Remise / Art.</b>", style_prix_entete), # 👈 En-tête de remise
+         Paragraph("<b>Total Net</b>", style_prix_entete)]
     ]
     
     articles = json.loads(commande.details_json)
     for art in articles:
-        data.append([
-            Paragraph(f"<b>{art['titre']}</b>", normal_style),
-            Paragraph(f"{art['prix']:,} FCFA", style_prix_cellule),
-            f"x{art['qte']}",
-            Paragraph(f"{art['total']:,} FCFA", style_prix_cellule)
-        ])
+    # 1. Récupération sécurisée de la quantité (gère 'qte' ou 'quantite')
+        qte_valeur = int(art.get('qte', art.get('quantite', 1)))
+    
+    # 2. Récupération sécurisée du champ 'remise' ou 'discount' 
+    remise_art_valeur = art.get('remise', 0)
+    
+    # 3. Ajout sécurisé dans les données du tableau ReportLab
+    data.append([
+        Paragraph(f"<b>{art['titre']}</b>", normal_style),
+        Paragraph(f"{art['prix']:,} FCFA", style_prix_cellule),
+        Paragraph(f"x{qte_valeur}", bold_style),  # 🟢 Utilise la variable sécurisée
+        Paragraph(f"-{remise_art_valeur:,} FCFA" if remise_art_valeur else "0 FCFA", style_prix_cellule),
+        Paragraph(f"{art['total']:,} FCFA", style_prix_cellule)
+    ])
 
-    # Lignes des totaux de fin de facture
-    data.append(["", "", Paragraph("<b>Total Brut :</b>", bold_style), Paragraph(f"<b>{commande.total_brut:,} FCFA</b>", style_prix_cellule)])
-    data.append(["", "", Paragraph("<font color='red'><b>Remise (5%) :</b></font>", bold_style), Paragraph(f"<font color='red'><b>-{commande.montant_remise:,} FCFA</b></font>", style_prix_cellule)])
-    data.append(["", "", Paragraph("<b>MONTANT NET A PAYER :</b>", bold_style), Paragraph(f"<b>{commande.total_final:,} FCFA</b>", style_prix_cellule)])
+    # Lignes des totaux globaux et de la case pour la remise globale finale
+    data.append(["", "", "", Paragraph("<b>Total Brut :</b>", bold_style), Paragraph(f"<b>{commande.total_brut:,} FCFA</b>", style_prix_cellule)])
+    data.append(["", "", "", Paragraph("<font color='red'><b>Remise globale :</b></font>", bold_style), Paragraph(f"<font color='red'><b>-{commande.montant_remise:,} FCFA</b></font>", style_prix_cellule)])
+    data.append(["", "", "", Paragraph("<b>NET A PAYER :</b>", bold_style), Paragraph(f"<b>{commande.total_final:,} FCFA</b>", style_prix_cellule)])
 
-    # Application des largeurs dynamiques calculées pour colWidths
-    tableau = Table(data, colWidths=[col_designation, col_prix, col_qte, col_total])
+    # Application de la structure à 5 colonnes
+    tableau = Table(data, colWidths=[col_designation, col_prix, col_qte, col_remise, col_total])
     tableau.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#F3E8FF")),
-        ('ALIGN', (0, 0), (0, -1), 'LEFT'),      # Aligne le texte de désignation à gauche
-        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),     # Aligne le prix unitaire à droite
-        ('ALIGN', (2, 0), (2, -1), 'CENTER'),    # Centre les quantités
-        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),     # Aligne le prix total à droite
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),      
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),     
+        ('ALIGN', (2, 0), (2, -1), 'CENTER'),    
+        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),     # Aligne la colonne des remises à droite
+        ('ALIGN', (4, 0), (4, -1), 'RIGHT'),     
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('GRID', (0, 0), (-1, len(articles)), 0.5, colors.HexColor("#E8E3F0")),
-        ('LINEABOVE', (2, -1), (3, -1), 1.5, colors.HexColor("#2E0854")),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),     # Un peu d'espace pour respirer
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LINEABOVE', (3, -1), (4, -1), 1.5, colors.HexColor("#2E0854")),
+        ('TOPPADDING', (0, 0), (-1, -1), 7),     
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
     ]))
 
     story.append(tableau)
+    
+    # --- 5. BLOC DE SIGNATURE ET DOCUMENTATION LOGISTIQUE ---
+    story.append(Spacer(1, 35))
+    
+    # Création des cadres de visa comme visible sur le modèle imprimé (Visa Livreur / Visa Client)
+    style_visa = ParagraphStyle('VisaStyle', parent=bold_style, fontSize=10, textColor=colors.HexColor("#555555"))
+    cell_livreur = [Paragraph("<b>Visa Livreur / Cachet</b>", style_visa), Spacer(1, 40)]
+    cell_client = [Paragraph("<b>Visa Client (Lu et approuvé)</b>", style_visa), Spacer(1, 40)]
+    
+    table_visa = Table([[cell_livreur, cell_client]], colWidths=[largeur_utile/2, largeur_utile/2])
+    table_visa.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LINEBELOW', (0, 0), (0, 0), 0.5, colors.HexColor("#CCCCCC")), # Ligne pour signer
+        ('LINEBELOW', (1, 0), (1, 0), 0.5, colors.HexColor("#CCCCCC")),
+        ('RIGHTPADDING', (0, 0), (0, 0), 30), # Évite que les lignes ne collent
+        ('LEFTPADDING', (1, 0), (1, 0), 30),
+    ]))
+    story.append(table_visa)
+
     doc.build(story)
     return response
 
 
 
 
+
 @staff_member_required
 def liste_commandes_admin(request):
-    # On récupère les commandes
+    """
+    Tableau de bord administrateur qui calcule les totaux et extrait 
+    la liste des achats pour le template HTML.
+    """
+    # 1. On récupère toutes les commandes triées par nouveauté
     commandes = CommandeImpression.objects.all().order_by('-date_commande')
     
-    # On pré-calcule les totaux pour chaque commande pour les afficher dans le tableau HTML
+    # 2. On parcourt chaque commande pour injecter les données requises par le template
     for cmd in commandes:
-        cmd.totaux = cmd.calcul_total() # Ajoute les calculs dynamiquement
+        # A. Votre méthode existante pour les calculs financiers
+        cmd.totaux = cmd.calcul_total() 
         
-    return render(request, 'admin_commandes.html', {'commandes': commandes})
+        # B. 💡 L'AJUSTEMENT : Extraction du JSON pour alimenter la colonne "Liste des achats"
+        try:
+            cmd.articles_liste = json.loads(cmd.details_json)
+        except (json.JSONDecodeError, TypeError):
+            cmd.articles_liste = [] # Sécurité si le champ est vide ou mal formé
+        
+    # On retourne le template 'shop/liste_commandes_admin.html' que vous venez de créer
+    return render(request, 'shop/liste_commandes_admin.html', {'commandes': commandes})
 
+
+@staff_member_required
+def valider_commande_impression(request, commande_id):
+    """Action du bouton vert pour passer le statut à validé et activer le BL."""
+    commande = get_object_or_404(CommandeImpression, id=commande_id)
+    commande.statut = 'VALIDE'
+    commande.bl_genere = True
+    commande.save()
+    
+    messages.success(request, f"La commande {commande.numero_bon()} a été validée avec succès !")
+    return redirect('liste_commandes_admin')
 
 
 
@@ -874,6 +962,7 @@ def liste_commandes_admin(request):
         cmd.articles_liste = json.loads(cmd.details_json)
         
     return render(request, 'shop/admin_commandes.html', {'commandes': commandes})
+
 
 
 
@@ -999,7 +1088,10 @@ def page_impressions(request):
    # 1. On récupère les prestations qui servent d'exemples de réalisations
     exemples_realisations = Prestation.objects.all()
 
-    # 2. Votre bloc de retour existant
+    # 🌟 AJOUT : On récupère toutes les commandes d'impression du site
+    toutes_les_commandes = CommandeImpression.objects.all().order_by('-date_commande')
+
+    # 2. Votre bloc de retour mis à jour avec les commandes
     return render(request, 'shop/impressions.html', {
         'prestations': prestations,
         'item_selectionne': item_selectionne,
@@ -1008,6 +1100,7 @@ def page_impressions(request):
         'remise_panier': remise_panier,
         'total_final': total_final,
         'exemples_realisations': exemples_realisations,
+        'toutes_les_commandes': toutes_les_commandes, # 🚀 Indispensable pour remplir votre tableau
     })
 
 
@@ -1188,50 +1281,225 @@ def detail_prestation(request, prestation_id):
     })
 
 
-
-
-
+# 2. Placez ce décorateur juste AU-DESSUS de votre fonction
+@csrf_exempt
 def voir_bon_commande(request, commande_id):
     commande = get_object_or_404(CommandeImpression, id=commande_id)
+    articles_liste = json.loads(commande.details_json)
+    # ... (le reste de votre code reste identique)
     
+    # 1. Préparation initiale des variables entières pour l'affichage (GET)
+    for art in articles_liste:
+        quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
+        prix_unitaire = int(float(art.get('prix', 0)))
+        brut_ligne = quantite_securisee * prix_unitaire
+        
+        # Lecture du pourcentage de remise stocké (ex: 25)
+        taux_remise = int(float(art.get('remise_pourcent', 0)))
+        montant_remise_ligne = round(brut_ligne * (taux_remise / 100.0))
+        total_net_ligne = max(0, brut_ligne - montant_remise_ligne)
+        
+        # Clés lues par le template HTML du Bon de Commande
+        art['qte_entier'] = quantite_securisee
+        art['prix_entier'] = prix_unitaire
+        art['remise_pourcent_entier'] = f"{taux_remise} %" if taux_remise > 0 else "0 %"
+        art['total_net_entier'] = total_net_ligne
+
+    # Récupération des totaux généraux pour le bloc du bas
+    commande.total_brut_entier = int(commande.total_brut)
+    commande.montant_remise_global_entier = int(commande.montant_remise)
+    commande.total_final_entier = int(commande.total_final)
+    commande.montant_remise_global = int(commande.montant_remise)
+
+    # Récupération ou initialisation du pourcentage de remise globale actuel
+    pourcentage_actuel = int((commande.montant_remise / commande.total_brut) * 100) if commande.total_brut > 0 else 0
+
     if request.method == "POST":
-        if 'changer_remise' in request.POST:
-            nouvelle_remise_pourcent = float(request.POST.get('pourcentage_remise', 5))
-            total_brut = commande.total_brut
-            montant_remise = int(total_brut * (nouvelle_remise_pourcent / 100))
-            commande.montant_remise = montant_remise
-            commande.total_final = total_brut - montant_remise
+        # ACTION 1 : MISE A JOUR DES REMISES EN POURCENTAGE PAR ARTICLE INDIVIDUEL
+        if 'appliquer_remises_articles' in request.POST:
+            nouveau_total_brut_global = 0
+            total_remise_cumulee = 0
+            
+            for index, art in enumerate(articles_liste):
+                cle_remise = f"remise_{index}"
+                
+                # Le vendeur saisit un pourcentage entier sur l'interface (ex: 25)
+                taux_remise = int(float(request.POST.get(cle_remise, 0)))
+                
+                quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
+                prix_unitaire = int(float(art.get('prix', 0)))
+                total_brut_ligne = quantite_securisee * prix_unitaire
+                
+                # Calcul de la réduction en FCFA (arrondi à l'entier)
+                montant_reduction_ligne = round(total_brut_ligne * (taux_remise / 100.0))
+                total_net_ligne = max(0, total_brut_ligne - montant_reduction_ligne)
+                
+                # Enregistrement des valeurs définitives dans le JSON
+                art['remise_pourcent'] = taux_remise
+                art['remise'] = montant_reduction_ligne
+                art['total'] = total_net_ligne
+                
+                # Cumul des montants pour la commande globale
+                nouveau_total_brut_global += total_brut_ligne
+                total_remise_cumulee += montant_reduction_ligne
+            
+            # Recalcul de la remise globale basée sur le nouveau brut
+            nouveau_montant_remise_global = round(nouveau_total_brut_global * (pourcentage_actuel / 100))
+            
+            # Sauvegarde finale en base de données (Nombres entiers stricts)
+            commande.details_json = json.dumps(articles_liste)
+            commande.total_brut = int(nouveau_total_brut_global)
+            commande.montant_remise = int(total_remise_cumulee + nouveau_montant_remise_global)
+            commande.total_final = int(nouveau_total_brut_global - commande.montant_remise)
             commande.save()
             
-        # 🟢 VERIFIEZ CETTE LIGNE : Elle doit être stricte, sans "and ..."
+            messages.success(request, "Les remises par article ont été appliquées avec succès !")
+            return redirect('voir_bon_commande', commande_id=commande.id)
+
+        # ACTION 2 : MISE A JOUR DE LA REMISE GLOBALE EN POURCENTAGE
+        elif 'changer_remise' in request.POST:
+            nouvelle_remise_pourcent = int(float(request.POST.get('pourcentage_remise', 5)))
+            total_brut = int(commande.total_brut)
+            montant_remise = round(total_brut * (nouvelle_remise_pourcent / 100))
+            
+            commande.montant_remise = int(montant_remise)
+            commande.total_final = int(total_brut - montant_remise)
+            commande.save()
+            
+            messages.success(request, f"Remise globale mise à jour à {nouvelle_remise_pourcent}%")
+            return redirect('voir_bon_commande', commande_id=commande.id)
+            
+        # ACTION 3 : GENERATION DU BON DE LIVRAISON + ENVOI MAIL
         elif 'generer_bl' in request.POST:
             commande.bl_genere = True
             commande.statut = 'VALIDE'
             commande.save()
-            # Redirection directe vers la vue du Bon de Livraison
+            
+            sujet = f"✅ Votre bon d'impression #{commande.numero_bon} a été validé !"
+            message = (
+                f"Bonjour {commande.nom_client},\n\n"
+                f"Bonne nouvelle ! L'administrateur de YaTout vient de valider votre bon de commande.\n\n"
+                f"Nous lançons la fabrication de vos impressions. Nous vous contacterons très vite au "
+                f"{commande.telephone} dès que vos supports seront prêts pour la livraison.\n\n"
+                f"Merci pour votre confiance !"
+            )
+            try:
+                send_mail(sujet, message, 'noreply@yatout.com', [commande.email_client], fail_silently=True)
+            except Exception:
+                pass 
+            
+            messages.success(request, "Bon de Livraison généré et validé avec succès !")
             return redirect('voir_bon_livraison', commande_id=commande.id)
         
-    articles_liste = json.loads(commande.details_json)
-    pourcentage_actuel = int((commande.montant_remise / commande.total_brut) * 100) if commande.total_brut > 0 else 0
-
     return render(request, 'shop/bon_commande.html', {
         'commande': commande,
         'articles_liste': articles_liste,
         'pourcentage_actuel': pourcentage_actuel
     })
 
-
 def voir_bon_livraison(request, commande_id):
-    """ Génère la page du Bon de Livraison officiel (Reçu) si l'admin l'a validé """
-    # Sécurité : Seul un bon transféré par l'admin est visible en BL
+    """ Génère la page du Bon de Livraison officiel sans centimes """
     commande = get_object_or_404(CommandeImpression, id=commande_id)
-    
     articles_liste = json.loads(commande.details_json)
+    
+    # Injection des données entières formatées pour le template du BL
+    for art in articles_liste:
+        quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
+        prix_unitaire = int(float(art.get('prix', 0)))
+        brut_ligne = quantite_securisee * prix_unitaire
+        
+        taux_remise = int(float(art.get('remise_pourcent', 0)))
+        montant_remise_ligne = round(brut_ligne * (taux_remise / 100.0))
+        total_net_ligne = max(0, brut_ligne - montant_remise_ligne)
+        
+        # Clés lues par le template HTML du Bon de Livraison
+        art['qte_entier'] = quantite_securisee
+        art['prix_entier'] = prix_unitaire
+        art['remise_pourcent_entier'] = f"{taux_remise} %" if taux_remise > 0 else "0 %"
+        art['total_net_entier'] = total_net_ligne
+    
+    # Données du bloc récapitulatif
+    commande.total_brut_entier = int(commande.total_brut)
+    commande.montant_remise_global_entier = int(commande.montant_remise)
+    commande.total_final_entier = int(commande.total_final)
+    commande.montant_remise_global = int(commande.montant_remise)
     
     return render(request, 'shop/bon_livraison.html', {
         'commande': commande,
         'articles_liste': articles_liste
     })
+
+def voir_bon_commande_public(request, commande_id):
+    """ Permet au client de visualiser son bon sans aucune décimale avec séparateur de milliers par un point """
+    commande = get_object_or_404(CommandeImpression, id=commande_id)
+    articles_liste = json.loads(commande.details_json)
+    
+    for art in articles:
+    # 1. Récupération sécurisée de la quantité et du prix unitaire
+        qte_valeur = int(art.get('qte', art.get('quantite', 1)))
+        prix_unitaire = int(float(art.get('prix', 0)))
+        brut_ligne = qte_valeur * prix_unitaire
+        
+        # 2. Récupération du pourcentage de remise (ex: 5)
+        # On cherche d'abord la clé 'remise_pourcent'
+        taux_remise = int(float(art.get('remise_pourcent', 0)))
+        
+        # Si 'remise_pourcent' n'existe pas mais qu'un montant en FCFA est stocké dans 'remise'
+        if taux_remise == 0 and int(art.get('remise', 0)) > 0:
+            taux_remise = int(round((int(art.get('remise', 0)) / brut_ligne) * 100))
+            
+        # 3. Calculs des montants nets de la ligne
+        montant_remise_ligne = round(brut_ligne * (taux_remise / 100.0))
+        total_net_ligne = max(0, brut_ligne - montant_remise_ligne)
+        
+        # 4. Formatage avec des points pour les milliers (Ex: 45.000)
+        prix_formate = f"{prix_unitaire:,}".replace(',', '.')
+        total_formate = f"{total_net_ligne:,}".replace(',', '.')
+        
+        # Préparation du texte en pourcentage pour la colonne
+        remise_formatee = f"{taux_remise} %" if taux_remise > 0 else "0 %"
+
+        # 5. Injection directe dans le tableau de ReportLab
+        data.append([
+            Paragraph(f"<b>{art['titre']}</b>", normal_style),
+            Paragraph(f"{prix_formate} FCFA", style_prix_cellule),
+            Paragraph(f"x{qte_valeur}", bold_style),
+            
+            # 🟢 CORRECTION ICI : On remplace l'ancien texte par la variable en pourcentage
+            Paragraph(remise_formatee, style_prix_cellule), 
+            
+            Paragraph(f"{total_formate} FCFA", style_prix_cellule)
+        ])
+
+    return render(request, 'shop/bon_commande_public.html', {
+        'commande': commande,
+        'articles_liste': articles_liste,
+    })
+
+def verifier_code_admin(request):
+    """ Vérifie le code d'accès administrateur à 6 chiffres (191953) et renvoie les commandes en AJAX """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            code_saisi = data.get('code')
+            
+            if code_saisi == "191953": 
+                commandes_qs = CommandeImpression.objects.all().order_by('-id')
+                liste_commandes = []
+                
+                for cmd in commandes_qs:
+                    liste_commandes.append({
+                        'id': cmd.id,
+                        'nom_client': cmd.nom_client,
+                        'telephone': cmd.telephone,
+                        'total_brut': cmd.total_brut,
+                        'statut': cmd.statut,
+                    })
+                return JsonResponse({'autorise': True, 'commandes': liste_commandes})
+        except Exception:
+            pass
+            
+    return JsonResponse({'autorise': False}, status=403)
 
 
 
@@ -1313,3 +1581,45 @@ def action_panier_api(request):
         return JsonResponse({'status': 'success'})
         
     return JsonResponse({'status': 'error'}, status=400)
+
+from django.http import JsonResponse
+import json
+from .models import CommandeImpression
+
+def verifier_code_admin(request):
+    """ Vérifie le code admin et renvoie la liste des commandes avec sécurité totale """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            code_saisi = data.get('code')
+            
+            if code_saisi == "191953": 
+                commandes_qs = CommandeImpression.objects.all().order_by('-id')
+                liste_commandes = []
+                
+                for cmd in commandes_qs:
+                    # 💡 Sécurité absolue : on utilise getattr() pour éviter les plantages si un champ est mal nommé
+                    cmd_id = getattr(cmd, 'id', 0)
+                    nom = getattr(cmd, 'nom_client', 'Client Inconnu')
+                    tel = getattr(cmd, 'telephone', 'Aucun contact')
+                    statut = getattr(cmd, 'statut', 'EN_ATTENTE')
+                    
+                    # On teste si total_brut existe, sinon on se rabat sur total_final ou 0
+                    total = getattr(cmd, 'total_brut', getattr(cmd, 'total_final', 0))
+                    
+                    liste_commandes.append({
+                        'id': cmd_id,
+                        'nom_client': nom,
+                        'telephone': tel,
+                        'total_brut': int(total) if total else 0,
+                        'statut': statut,
+                    })
+                
+                return JsonResponse({'autorise': True, 'commandes': liste_commandes})
+            else:
+                return JsonResponse({'autorise': False, 'message': 'Code incorrect'})
+        except Exception as e:
+            # Si un plantage survient malgré tout, on renvoie l'erreur au JavaScript pour la lire à l'écran
+            return JsonResponse({'autorise': False, 'error': str(e)}, status=500)
+            
+    return JsonResponse({'autorise': False}, status=403)

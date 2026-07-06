@@ -33,20 +33,19 @@
             <div style="margin-bottom: 20px;">
                 
                 {% if prestation.type_unite == 'M2' %}
-                    <!-- CAS 1 : PRODUIT AU METRE CARRE (Bâche) -->
+                    <!-- CAS 1 : PRODUIT AU METRE CARRE (Bâche, Autocollant géant) -->
                     <div style="display: flex; gap: 15px;">
                         <div style="flex: 1;">
                             <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">Longueur (mètres) :</label>
-                            <input type="number" name="longueur" id="js-longueur" value="1" min="0.1" step="any" required 
+                            <input type="number" name="longueur" id="js-longueur" value="{{ longueur_saisie|default:'1' }}" min="0.1" step="any" required 
                                    style="padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
                         </div>
                         <div style="flex: 1;">
                             <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">Largeur (mètres) :</label>
-                            <input type="number" name="largeur" id="js-largeur" value="1" min="0.1" step="any" required 
+                            <input type="number" name="largeur" id="js-largeur" value="{{ largeur_saisie|default:'1' }}" min="0.1" step="any" required 
                                    style="padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
                         </div>
                     </div>
-                    <!-- On cache un champ quantité technique pour que votre backend Django reçoive une valeur par défaut si nécessaire -->
                     <input type="hidden" name="quantite" id="js-quantite" value="1">
 
                 {% else %}
@@ -73,13 +72,13 @@
                     🔄 Mettre à jour le prix
                 </button>
 
-                <button type="submit" name="valider_commande" formnovalidate 
+                <button type="submit" name="valider_commande" 
                         style="flex: 1; background-color: #7c3aed; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; transition: background 0.2s;">
-                    🛒 Ajouter au panier boutique
+                    🚀 Valider et enregistrer ma demande
                 </button>
             </div>
 
-            <!-- BOÎTE D'AFFICHAGE DU PRIX RECALCULÉ (Mis à jour en JS ou par Python) -->
+            <!-- BOÎTE D'AFFICHAGE DU PRIX RECALCULÉ -->
             <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: inset 0 2px 4px rgba(22,163,74,0.02);">
                 <span style="font-size: 12px; color: #16a34a; font-weight: bold; display: block; text-transform: uppercase; letter-spacing: 0.05em;">
                     Estimation brute actuelle
@@ -97,75 +96,87 @@
                 
                 <div style="margin-bottom: 12px;">
                     <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Nom et Prénoms *</label>
-                    <input type="text" name="nom_client" placeholder="Ex: Kouassi Koffi Jean" required 
+                    <input type="text" name="nom_client" value="{{ nom_client_saisi|default:'' }}" placeholder="Ex: Kouassi Koffi Jean" required 
                            style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
                 </div>
 
                 <div style="margin-bottom: 12px;">
                     <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Adresse E-mail (Optionnel)</label>
-                    <input type="email" name="email_client" placeholder="Ex: monadresse@gmail.com" 
+                    <input type="email" name="email_client" value="{{ email_client_saisi|default:'' }}" placeholder="Ex: monadresse@gmail.com" 
                            style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
                 </div>
 
-                <div>
+                <div style="margin-bottom: 20px;">
                     <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Numéro de téléphone portable *</label>
-                    <input type="tel" name="telephone_client" placeholder="Ex: 0574702092 (10 chiffres requis)" 
+                    <input type="tel" name="telephone_client" value="{{ telephone_client_saisi|default:'' }}" placeholder="Ex: 0574702092" 
                            required 
                            pattern="[0-9]{10}" 
                            maxlength="10"
-                           title="Veuillez entrer un numéro de téléphone mobile ivoirien composé exactement de 10 chiffres."
-                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none; font-weight: 600; letter-spacing: 0.02em;">
+                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
                 </div>
+
+                <!-- 💡 APPARITION DES ACCÈS CLIENTS UNIQUEMENT APRÈS ENREGISTREMENT VALIDE -->
+                {% if commande %}
+                    <hr style="margin: 25px 0; border: 0; border-top: 1px dashed #cbd5e1;">
+                    
+                    <div style="margin-bottom: 15px;">
+                        <!-- Bouton public vers la route sans restriction @staff_member_required -->
+                        <a href="{% url 'voir_bon_commande_public' commande.id %}" target="_blank" 
+                           style="display: block; text-align: center; background-color: white; color: #2e0854; border: 2px solid #2e0854; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 15px; text-decoration: none; transition: background 0.2s;">
+                            📄 Voir mon Bon de Commande (PDF Officiel)
+                        </a>
+                    </div>
+
+                    <div>
+                        <!-- Lien WhatsApp automatique qui envoie la référence du document -->
+                        <a href="https://wa.me{{ commande.numero_bon }}%20sur%20votre%20site.%20Voici%20le%20lien%20pour%20consulter%20mon%20bon%20de%20commande%20en%20ligne%20:%20{{ request.build_absolute_uri|slice:":-1" }}{% url 'voir_bon_commande_public' commande.id %}" 
+                           target="_blank" 
+                           style="display: block; text-align: center; background-color: #16a34a; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 15px; text-decoration: none; transition: background 0.2s;">
+                            💬 Envoyer ma commande sur WhatsApp
+                            {% endif %}
+
             </div>
-
-            <!-- BOUTON DE SOUMISSION WHATSAPP -->
-            <button type="submit" name="valider_whatsapp" 
-                    style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background-color: #22c55e; color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px rgba(34,197,94,0.15);">
-                💬 Générer le Bon et valider sur WhatsApp
-            </button>
-
         </form>
-
     </div>
 </div>
 
-<!-- LE SCRIPT JAVASCRIPT DE CALCUL DYNAMIQUE EN DIRECT -->
+<!-- Logique JavaScript pour le calcul automatique des prix en direct -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
+        const prixUnitaireBase = parseFloat("{{ prestation.prix_unitaire }}");
         const typeUnite = "{{ prestation.type_unite }}";
-        const prixUnitaire = parseFloat("{{ prestation.prix_unitaire }}");
         
         const inputLongueur = document.getElementById("js-longueur");
         const inputLargeur = document.getElementById("js-largeur");
         const inputQuantite = document.getElementById("js-quantite");
-        const affichagePrix = document.getElementById("js-prix-total");
+        const affichagePrixTotal = document.getElementById("js-prix-total");
 
         function recalculerPrixEnDirect() {
             let total = 0;
 
             if (typeUnite === "M2") {
+                // Logique Bâche / M² : Longueur * Largeur * Prix unitaire
                 const longueur = parseFloat(inputLongueur.value) || 0;
                 const largeur = parseFloat(inputLargeur.value) || 0;
-                const surface = longueur * largeur;
-                total = surface * prixUnitaire;
+                total = longueur * largeur * prixUnitaireBase;
             } else if (typeUnite === "LOT_100") {
+                // Logique Lot de 100 Flyers : (Quantité saisie / 100) * Prix unitaire du lot
                 const quantite = parseFloat(inputQuantite.value) || 0;
-                // Formule pour lot de 100 (Nombre de flyers / 100 * prix unitaire du lot)
-            total = (quantite / 100) * prixUnitaire;
-        } else {
-            // Pour UNITE et LETTRE (Quantité simple x Prix unitaire)
-            const quantite = parseInt(inputQuantite.value) || 0;
-            total = quantite * prixUnitaire;
+                total = (quantite / 100) * prixUnitaireBase;
+            } else {
+                // Logique standard Unitaire ou par Lettre : Quantité * Prix unitaire
+                const quantite = parseFloat(inputQuantite.value) || 0;
+                total = quantite * prixUnitaireBase;
+            }
+
+            // Affichage propre arrondi sans décimales
+            affichagePrixTotal.textContent = Math.round(total);
         }
 
-        // Arrondir pour les FCFA et mettre à jour le texte
-        affichagePrix.innerText = Math.round(total);
-    }
-
-    // Écouter les changements sur tous les champs de saisie pour réagir en direct
-    if (inputLongueur) inputLongueur.addEventListener("input", recalculerPrixEnDirect);
-    if (inputLargeur) inputLargeur.addEventListener("input", recalculerPrixEnDirect);
-    if (inputQuantite) inputQuantite.addEventListener("input", recalculerPrixEnDirect);
-});
+        // Branchement des écouteurs d'événements pour le calcul instantané à la saisie
+        if (inputLongueur) inputLongueur.addEventListener("input", recalculerPrixEnDirect);
+        if (inputLargeur) inputLargeur.addEventListener("input", recalculerPrixEnDirect);
+        if (inputQuantite) inputQuantite.addEventListener("input", recalculerPrixEnDirect);
+    });
 </script>
 {% endblock %}

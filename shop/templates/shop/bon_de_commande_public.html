@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Votre Bon de Commande {{ commande.numero_bon }}</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; padding-bottom: 40px; }
+        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        .logo { max-height: 70px; width: auto; object-fit: contain; }
+        .title { font-size: 24px; font-weight: bold; color: #0f172a; text-transform: uppercase; text-align: right; }
+        .info-section { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .info-box { width: 45%; vertical-align: top; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .items-table th { background-color: #0f172a; color: white; padding: 12px; text-align: left; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        .items-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        
+        .total-box { margin-top: 30px; text-align: right; font-size: 16px; line-height: 2; }
+        .total-box p { margin: 4px 0; }
+        .text-danger { color: #ef4444; font-weight: bold; }
+        .text-success { color: #16a34a; font-size: 22px; font-weight: bold; }
+        
+        .merci-text { text-align: center; margin-top: 50px; font-weight: bold; color: #475569; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+        
+        @media print { .btn-print { display: none !important; } }
+    </style>
+</head>
+<body>
+
+    <!-- BOUTON TÉLÉCHARGEMENT/IMPRESSION CLIENT -->
+    <button class="btn-print" onclick="window.print()" style="padding: 10px 20px; background: #0f172a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 20px;">
+        🖨️ Télécharger mon Bon de Commande (PDF)
+    </button>
+
+    <!-- ENTÊTE LOGO + TITRE -->
+    <table class="header-table">
+        <tr>
+            <td><img src="{% static 'shop/js/images/logo.png' %}" alt="Logo" class="logo"></td>
+            <td class="title">Récapitulatif Commande</td>
+        </tr>
+    </table>
+
+    <!-- BLOCS COORDONNÉES -->
+    <table class="info-section">
+        <tr>
+            <td class="info-box">
+                <strong>PRESTATAIRE :</strong><br>
+                <strong>YaTout Impression</strong><br>
+                Abidjan, Côte d'Ivoire<br>
+                Téléphone : +225 05 74 70 20 92
+            </td>
+            <td style="width: 10%;"></td>
+            <td class="info-box">
+                <strong>VOS INFORMATIONS :</strong><br>
+                Client : {{ commande.nom_client }}<br>
+                Téléphone : {{ commande.telephone }}<br>
+                Date : {{ commande.date_commande|date:"d/m/Y H:i" }}<br>
+                <strong>Numéro de commande : {{ commande.numero_bon }}</strong>
+            </td>
+        </tr>
+    </table>
+
+    <!-- TABLEAU COMPTABLE CLIENT AVEC REMISE EN % -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Désignation de la prestation</th>
+                <th style="text-align: center; width: 100px;">Quantité</th>
+                <th style="text-align: right; width: 140px;">Prix unitaire</th>
+                <th style="text-align: center; width: 100px;">Rem. %</th>
+                <th style="text-align: right; width: 140px;">Montant net</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in articles_liste %}
+            <tr>
+                <td>{{ item.titre }}</td>
+                <td style="text-align: center;">{{ item.qte_entier }}</td>
+                <td style="text-align: right;">{{ item.prix_entier }} FCFA</td>
+                <td style="text-align: center; color: #ef4444; font-weight: bold;">
+                    {{ item.remise_pourcent_entier }}
+                </td>
+                <td style="text-align: right; font-weight: bold;">
+                    {{ item.total_net_entier }} FCFA
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- TOTALISATION BAS DE PAGE -->
+    <div class="total-box">
+        <p>Sous-total Brut : {{ commande.total_brut_entier }} FCFA</p>
+        
+        {% if commande.montant_remise_global > 0 %}
+            <p class="text-danger">Remise globale accordée : -{{ commande.montant_remise_global_entier }} FCFA</p>
+        {% endif %}
+        
+        <p class="text-success">Net à payer : {{ commande.total_final_entier }} FCFA</p>
+    </div>
+
+    <!-- REMERCIEMENT FOOTER -->
+    <div class="merci-text">
+        Merci pour votre commande ! YaTout Impression vous remercie pour votre confiance.
+    </div>
+
+</body>
+</html>
