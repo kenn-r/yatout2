@@ -40,6 +40,7 @@ urlpatterns = [
     path('api/assistant/chat/', views.assistant_chatbot_api, name='assistant_chat_api'),
     path('impressions/admin/commandes/', views.liste_commandes_admin, name='liste_commandes_admin'),
     path('impressions/admin/valider/<int:commande_id>/', views.valider_commande_impression, name='valider_commande_impression'),
+    path('impressions/admin/livraison/<int:commande_id>/', views.voir_bon_livraison, name='voir_bon_livraison_admin'),
     path('impressions/admin/pdf/<int:commande_id>/', views.generer_bon_pdf, name='generer_bon_pdf'),
     path('impressions/', views.page_impressions, name='page_impressions'),
     path('impressions/api/panier/', views.modifier_panier_print_api, name='modifier_panier_print_api'),

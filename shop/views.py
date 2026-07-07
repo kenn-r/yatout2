@@ -1383,19 +1383,22 @@ def voir_bon_commande(request, commande_id):
                 f"{commande.telephone} dès que vos supports seront prêts pour la livraison.\n\n"
                 f"Merci pour votre confiance !"
             )
-            try:
+        try:
                 send_mail(sujet, message, 'noreply@yatout.com', [commande.email_client], fail_silently=True)
-            except Exception:
-                pass 
+        except Exception:
+                pass
+
+        messages.success(request, "Bon de Livraison généré et validé avec succès ! 🎉")
             
-            messages.success(request, "Bon de Livraison généré et validé avec succès !")
-            return redirect('voir_bon_livraison', commande_id=commande.id)
-        
+            # 🟢 Utilisation de la route absolue exacte de votre URL n°32
+        return redirect(f"/impression/bon-livraison/{commande.id}/")
+
+        # 🟢 Cette ligne doit être alignée avec le "if request.method == 'POST':"
     return render(request, 'shop/bon_commande.html', {
-        'commande': commande,
-        'articles_liste': articles_liste,
-        'pourcentage_actuel': pourcentage_actuel
-    })
+            'commande': commande,
+            'articles_liste': articles_liste,
+            'pourcentage_actuel': pourcentage_actuel
+        })
 
 def voir_bon_livraison(request, commande_id):
     """ Génère la page du Bon de Livraison officiel sans centimes """
