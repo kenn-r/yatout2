@@ -21,6 +21,20 @@
         .text-danger { color: #ef4444; font-weight: bold; }
         .text-success { color: #16a34a; font-size: 22px; font-weight: bold; }
         
+        /* 🎨 DESIGN HARMONISÉ DU BADGE DE SURFACE (Violet Premium) */
+        .surface-badge { 
+            display: inline-block; 
+            padding: 4px 10px; 
+            background-color: #f3e8ff; 
+            border: 1px solid #d8b4fe; 
+            border-radius: 6px; 
+            font-size: 11px; 
+            color: #6b21a8; 
+            font-weight: 700; 
+            margin-top: 5px; 
+            letter-spacing: 0.3px;
+        }
+        
         .merci-text { text-align: center; margin-top: 50px; font-weight: bold; color: #475569; border-top: 1px solid #e2e8f0; padding-top: 20px; }
         
         @media print { .btn-print { display: none !important; } }
@@ -61,14 +75,14 @@
         </tr>
     </table>
 
-    <!-- TABLEAU COMPTABLE CLIENT AVEC REMISE EN % -->
+    <!-- TABLEAU COMPTABLE CLIENT INTERFACE SYNCHRONISÉE -->
     <table class="items-table">
         <thead>
             <tr>
                 <th>Désignation de la prestation</th>
-                <th style="text-align: center; width: 100px;">Quantité</th>
+                <th style="text-align: center; width: 160px;">Qté / Mètres carrés</th>
                 <th style="text-align: right; width: 140px;">Prix unitaire</th>
-                <th style="text-align: center; width: 100px;">Rem. %</th>
+                <th style="text-align: center; width: 120px;">Remise / Art.</th>
                 <th style="text-align: right; width: 140px;">Montant net</th>
             </tr>
         </thead>
@@ -76,14 +90,27 @@
             {% for item in articles_liste %}
             <tr>
                 <td>{{ item.titre }}</td>
-                <td style="text-align: center;">{{ item.qte_entier }}</td>
-                <td style="text-align: right;">{{ item.prix_entier }} FCFA</td>
+                <td style="text-align: center;">
+                    <div style="font-weight: bold;">x{{ item.qte_formatee }}</div>
+                    
+                    <!-- 🟢 AJUSTEMENT : On vérifie les clés longueur_val et largeur_val générées par Python -->
+                    {% if item.longueur_val and item.largeur_val %}
+                        <div class="surface-badge">
+                            📏 {{ item.longueur_val }}m × {{ item.largeur_val }}m
+                        </div>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">{{ item.prix_formate }} FCFA</td>
                 <td style="text-align: center; color: #ef4444; font-weight: bold;">
-                    {{ item.remise_pourcent_entier }}
+                    {{ item.remise_formatee }}
                 </td>
                 <td style="text-align: right; font-weight: bold;">
-                    {{ item.total_net_entier }} FCFA
+                    {{ item.total_formate }} FCFA
                 </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">Aucun article disponible.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -91,13 +118,13 @@
 
     <!-- TOTALISATION BAS DE PAGE -->
     <div class="total-box">
-        <p>Sous-total Brut : {{ commande.total_brut_entier }} FCFA</p>
+        <p>Total Brut : {{ commande.total_brut_formate }} FCFA</p>
         
-        {% if commande.montant_remise_global > 0 %}
-            <p class="text-danger">Remise globale accordée : -{{ commande.montant_remise_global_entier }} FCFA</p>
+        {% if commande.montant_remise > 0 %}
+            <p class="text-danger">Remise globale : -{{ commande.montant_remise_formate }} FCFA</p>
         {% endif %}
         
-        <p class="text-success">Net à payer : {{ commande.total_final_entier }} FCFA</p>
+        <p class="text-success">NET A PAYER : {{ commande.total_final_formate }} FCFA</p>
     </div>
 
     <!-- REMERCIEMENT FOOTER -->

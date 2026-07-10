@@ -7,7 +7,7 @@
 <style>
     .print-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; font-family: system-ui, sans-serif; }
     .print-title-box { text-align: center; margin-bottom: 40px; }
-    .print-title-box h1 { color: #2e0854; font-size: 2.2rem; cursor: pointer; user-select: none; -webkit-user-select: none; }
+    .print-title-box h1 { color: #2e0854; font-size: 2.2rem; cursor: default; user-select: none; -webkit-user-select: none; }
     
     .print-layout { display: flex; gap: 30px; align-items: flex-start; }
     .products-column { flex: 1.3; } 
@@ -47,8 +47,9 @@
     .financial-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
     .final-total { border-top: 1px solid #cbd5e1; padding-top: 8px; font-weight: 800; color: #166534; font-size: 1.2rem; }
     
-    .input-field { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px; box-sizing: border-box; }
-    .btn-submit-order { width: 100%; padding: 14px; background: #166534; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+    .btn-submit-order { width: 100%; padding: 14px; background: #7b24cc; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+    .btn-submit-order:hover { background: #2e0854; }
+    .btn-submit-order:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
 
     /* --- STYLE DE L'ESPACE ADMIN MASQUÉ (MODALE) --- */
     .admin-modal {
@@ -94,13 +95,14 @@
 
 <div class="print-container">
     <div class="print-title-box">
+        <!-- Titre récepteur de l'appui long secret -->
         <h1 id="titre-secret-admin">🖨️ Espace Impression Professionnel YaTout</h1>
         <p>Découvrez nos offres à gauche et configurez votre estimation en temps réel à droite.</p>
     </div>
 
     <div class="print-layout">
         
-        <!-- 📋 COLONNE GAUCHE -->
+        <!-- 📋 COLONNE GAUCHE : CATALOGUE DES SUPPORTS -->
         <div class="products-column">
             <h2>📋 Nos supports d'impression</h2><br>
             <div class="catalog-list">
@@ -117,15 +119,15 @@
             </div>
         </div>
 
-        <!-- 🧮 COLONNE DROITE -->
+        <!-- 🧮 COLONNE DROITE : GALERIE ET CALCULATEUR SIMULATEUR -->
         <div class="cart-column">
-            <div class="cart-sticky">
-                
-                <!-- ✨ GALERIE -->
-                <h3 style="color: #2e0854; margin: 0 0 12px 0; font-size: 1.05rem; display: flex; align-items: center; gap: 6px; font-weight: bold;">
+            
+            <!-- ✨ BLOC GALERIE (HAUTEUR AGRANDIE À 320PX) -->
+            <div class="cart-sticky" style="padding: 15px;">
+                <h3 style="color: #2e0854; margin: 5px 0 12px 5px; font-size: 1.05rem; display: flex; align-items: center; gap: 6px; font-weight: bold;">
                     ✨ Galerie Réalisations Réelles
                 </h3>
-                <div class="carousel-container" style="position: relative; width: 100%; height: 165px; overflow: hidden; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                <div class="carousel-container" style="position: relative; width: 100%; height: 320px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
                     {% for produit in exemples_realisations %}
                         <div class="carousel-slide" style="display: {% if forloop.first %}block{% else %}none{% endif %}; width: 100%; height: 100%; position: relative;">
                             {% if produit.image %}
@@ -133,27 +135,29 @@
                             {% else %}
                                 <div style="width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #4b5563;">📷 Image non disponible</div>
                             {% endif %}
-                            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.75)); padding: 10px 15px; color: white; font-size: 0.85rem; font-weight: bold;">
+                            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.75)); padding: 15px; color: white; font-size: 0.9rem; font-weight: bold;">
                                 🔥 {{ produit.nom }} — Qualité Premium YaTout
                             </div>
                         </div>
                     {% empty %}
-                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #7b24cc, #2e0854); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.95rem; text-align: center; padding: 20px; box-sizing: border-box;">
-                            🎯 YaTout Impression<br><span style="font-size: 0.75rem; font-weight: normal; opacity: 0.9;">Commandes professionnelles & Finitions Premium</span>
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #7b24cc, #2e0854); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem; text-align: center; padding: 20px; box-sizing: border-box;">
+                            🎯 YaTout Impression<br><span style="font-size: 0.85rem; font-weight: normal; opacity: 0.9;">Commandes professionnelles & Finitions Premium</span>
                         </div>
                     {% endfor %}
                 </div>
+            </div>
 
-                <!-- SIMULATEUR -->
-                <h2 style="color: #2e0854; font-size: 1.3rem;">🧮 Simulateur & Prise de Commande</h2><br>
+            <!-- 🧮 BLOC SIMULATEUR -->
+            <div class="cart-sticky">
+                <h2 style="color: #2e0854; font-size: 1.3rem; margin-top: 0;">🧮 Simulateur de Prix</h2><br>
                 
                 <form method="POST" style="margin-bottom: 20px;">
                     {% csrf_token %}
                     <label style="font-weight: bold; font-size: 0.9rem; color: #2e0854; display: block; margin-bottom: 5px;">Choisir un support à simuler :</label>
-                    <select name="prestation_id" class="select-support" onchange="this.form.submit()">
+                    <select name="prestation_id" id="js-select-support" class="select-support" onchange="this.form.submit()">
                         <option value="">-- Sélectionnez un support --</option>
                         {% for prest in prestations %}
-                            <option value="{{ prest.id }}" {% if item_selectionne.id == prest.id %}selected{% endif %}>
+                            <option value="{{ prest.id }}" {% if item_selectionne.id == prest.id %}selected{% endif %} data-prix="{{ prest.prix_unitaire }}">
                                 {{ prest.titre }} ({{ prest.prix_unitaire }} FCFA / unité)
                             </option>
                         {% endfor %}
@@ -165,55 +169,39 @@
                         <div style="font-size: 1.1rem; font-weight: 700; color: #2e0854; margin-bottom: 10px;">
                             🎯 {{ item_selectionne.titre }}
                         </div>
-                        <form method="POST" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                            {% csrf_token %}
-                            <input type="hidden" name="prestation_id" value="{{ item_selectionne.id }}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
                             <span style="font-size: 0.85rem; font-weight: bold; color: #1e293b;">Quantité requise :</span>
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <input type="number" name="quantite" value="{{ quantite_actuelle|default:1 }}" min="1" class="qte-input">
-                                <button type="submit" name="maj_quantite" style="background: #f3e8ff; color: #7b24cc; border: 1px solid #7b24cc; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">🔄</button>
-                            </div>
-                        </form>
+                            <input type="number" id="js-quantite" name="quantite" value="{{ quantite_actuelle|default:1 }}" min="1" class="qte-input">
+                        </div>
                     </div>
 
-                   <!-- Section financière -->
                     <div class="financial-box">
                         <div class="financial-row">
                             <span>Prix Unitaire :</span>
-                            <strong>{{ item_selectionne.prix_unitaire }} FCFA</strong>
+                            <strong><span id="js-prix-unitaire">{{ item_selectionne.prix_unitaire }}</span> FCFA</strong>
                         </div>
                         <div class="financial-row">
-                            <span>Quantité :</span>
-                            <strong>x {{ quantite_actuelle|default:1 }}</strong>
+                            <span>Quantité choisie :</span>
+                            <strong>x <span id="js-affiche-quantite">{{ quantite_actuelle|default:1 }}</span></strong>
                         </div>
                         <div class="financial-row final-total">
                             <span>Total Estimé :</span>
-                            <span>{{ total_calcule }} FCFA</span>
+                            <strong><span id="js-total-estime">{{ total_calcule|default:0 }}</span> FCFA</strong>
                         </div>
                     </div>
-
-                    <!-- Formulaire de validation client -->
-                    <form method="POST" action="">
-                        {% csrf_token %}
-                        <input type="hidden" name="prestation_id" value="{{ item_selectionne.id }}">
-                        <input type="hidden" name="quantite_valide" value="{{ quantite_actuelle|default:1 }}">
-                        
-                        <h3 style="color: #2e0854; font-size: 1rem; margin-bottom: 10px;">👤 Informations de Livraison</h3>
-                        <input type="text" name="nom_client" placeholder="Votre nom complet *" class="input-field" required>
-                        <input type="tel" name="telephone_client" placeholder="Numéro de téléphone *" class="input-field" required>
-                        <textarea name="details_precision" placeholder="Précisions sur l'impression (Ex: Recto/Verso, pelliculage...)" class="input-field" style="height: 80px; font-family: inherit;"></textarea>
-                        
-                        <button type="submit" name="finaliser_commande" class="btn-submit-order">
-                            🚀 Confirmer et Envoyer ma Commande
-                        </button>
-                    </form>
                 {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Fenêtre Modale d'administration (Masquée par défaut) -->
+                <!-- Bouton calculateur -->
+                <button id="btn-calculateur" class="btn-submit-order" style="display: block; width: 100%; margin-top: 15px;" {% if not item_selectionne %}disabled{% endif %}>
+                    🧮 Lancer le Calcul de Simulation
+                </button>
+            </div> <!-- Fermeture .cart-sticky -->
+        </div> <!-- Fermeture .cart-column -->
+    </div> <!-- Fermeture .print-layout -->
+</div> <!-- Fermeture .print-container -->
+
+<!-- Fenêtre Modale d'administration (Affichée uniquement pour le staff) -->
+{% if user.is_authenticated and user.is_staff %}
 <div id="modalAdminCommandes" class="admin-modal">
     <div class="admin-content">
         <div class="admin-header">
@@ -233,290 +221,121 @@
                 </tr>
             </thead>
             <tbody>
-    {% for commande in toutes_les_commandes %}
-    <tr>
-        <!-- 1. Numéro de commande -->
-        <td>#{{ commande.id }}</td>
-        
-        <!-- 2. Client et Contact -->
-        <td>
-            <strong>{{ commande.nom_client }}</strong><br>
-            <small>📞 {{ commande.telephone }}</small>
-        </td>
-        
-        <!-- 3. Contenu de la commande (Liaison brute puisque c'est stocké en JSON) -->
-        <td>Bon d'Impression ({{ commande.total_brut }} FCFA)</td>
-        
-        <!-- 4. Quantité (Fixée à 1 ou laissée indicative car globale) -->
-        <td>1 u</td>
-        
-        <!-- 5. Statut ajusté sur les majuscules de views.py ('VALIDE') -->
-        <td>
-            {% if commande.statut == 'VALIDE' %}
-                <span class="badge-status badge-valide">Validée</span>
-            {% else %}
-                <span class="badge-status badge-attente">En attente</span>
-            {% endif %}
-        </td>
-        
-        <!-- 6. Actions connectées à vos vues réelles -->
-        <td>
-            <!-- Redirection vers votre vraie action Python de validation -->
-            <a href="{% url 'valider_commande_impression' commande.id %}" class="btn-admin-action btn-valider" style="text-decoration: none; display: inline-block;">
-                ✅ Valider
-            </a>
-            
-            <!-- Appel JavaScript épuré pour ouvrir le vrai Bon de Livraison avec son cachet bleu -->
-            <button class="btn-admin-action btn-transfert" onclick="genererBonLivration('{{ commande.id }}')">
-                📄 BL
-            </button>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
-            Aucune commande client reçue pour le moment.
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-<tbody>
-    {% for commande in toutes_les_commandes %}
-    <tr>
-        <!-- 1. Numéro de commande -->
-        <td>#{{ commande.id }}</td>
-        
-        <!-- 2. Client et Contact -->
-        <td>
-            <strong>{{ commande.nom_client }}</strong><br>
-            <small>📞 {{ commande.telephone }}</small>
-        </td>
-        
-        <!-- 3. Contenu de la commande (Liaison brute puisque c'est stocké en JSON) -->
-        <td>Bon d'Impression ({{ commande.total_brut }} FCFA)</td>
-        
-        <!-- 4. Quantité (Fixée à 1 ou laissée indicative car globale) -->
-        <td>1 u</td>
-        
-        <!-- 5. Statut ajusté sur les majuscules de views.py ('VALIDE') -->
-        <td>
-            {% if commande.statut == 'VALIDE' %}
-                <span class="badge-status badge-valide">Validée</span>
-            {% else %}
-                <span class="badge-status badge-attente">En attente</span>
-            {% endif %}
-        </td>
-        
-        <!-- 6. Actions connectées à vos vues réelles -->
-        <td>
-            <!-- Redirection vers votre vraie action Python de validation -->
-            <a href="{% url 'valider_commande_impression' commande.id %}" class="btn-admin-action btn-valider" style="text-decoration: none; display: inline-block;">
-                ✅ Valider
-            </a>
-            
-            <!-- Appel JavaScript épuré pour ouvrir le vrai Bon de Livraison avec son cachet bleu -->
-            <button class="btn-admin-action btn-transfert" onclick="genererBonLivration('{{ commande.id }}')">
-                📄 BL
-            </button>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
-            Aucune commande client reçue pour le moment.
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-<tbody>
-    {% for commande in toutes_les_commandes %}
-    <tr>
-        <!-- 1. Numéro de commande -->
-        <td>#{{ commande.id }}</td>
-        
-        <!-- 2. Client et Contact -->
-        <td>
-            <strong>{{ commande.nom_client }}</strong><br>
-            <small>📞 {{ commande.telephone }}</small>
-        </td>
-        
-        <!-- 3. Contenu de la commande (Liaison brute puisque c'est stocké en JSON) -->
-        <td>Bon d'Impression ({{ commande.total_brut }} FCFA)</td>
-        
-        <!-- 4. Quantité (Fixée à 1 ou laissée indicative car globale) -->
-        <td>1 u</td>
-        
-        <!-- 5. Statut ajusté sur les majuscules de views.py ('VALIDE') -->
-        <td>
-            {% if commande.statut == 'VALIDE' %}
-                <span class="badge-status badge-valide">Validée</span>
-            {% else %}
-                <span class="badge-status badge-attente">En attente</span>
-            {% endif %}
-        </td>
-        
-        <!-- 6. Actions connectées à vos vues réelles -->
-        <td>
-            <!-- Redirection vers votre vraie action Python de validation -->
-            <a href="{% url 'valider_commande_impression' commande.id %}" class="btn-admin-action btn-valider" style="text-decoration: none; display: inline-block;">
-                ✅ Valider
-            </a>
-            
-            <!-- Appel JavaScript épuré pour ouvrir le vrai Bon de Livraison avec son cachet bleu -->
-            <button class="btn-admin-action btn-transfert" onclick="genererBonLivration('{{ commande.id }}')">
-                📄 BL
-            </button>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
-            Aucune commande client reçue pour le moment.
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-<tbody>
-    {% for commande in toutes_les_commandes %}
-    <tr>
-        <!-- 1. Numéro de commande -->
-        <td>#{{ commande.id }}</td>
-        
-        <!-- 2. Client et Contact -->
-        <td>
-            <strong>{{ commande.nom_client }}</strong><br>
-            <small>📞 {{ commande.telephone }}</small>
-        </td>
-        
-        <!-- 3. Contenu de la commande (Liaison brute puisque c'est stocké en JSON) -->
-        <td>Bon d'Impression ({{ commande.total_brut }} FCFA)</td>
-        
-        <!-- 4. Quantité (Fixée à 1 ou laissée indicative car globale) -->
-        <td>1 u</td>
-        
-        <!-- 5. Statut ajusté sur les majuscules de views.py ('VALIDE') -->
-        <td>
-            {% if commande.statut == 'VALIDE' %}
-                <span class="badge-status badge-valide">Validée</span>
-            {% else %}
-                <span class="badge-status badge-attente">En attente</span>
-            {% endif %}
-        </td>
-        
-        <!-- 6. Actions connectées à vos vues réelles -->
-        <td>
-            <!-- Redirection vers votre vraie action Python de validation -->
-            <a href="{% url 'valider_commande_impression' commande.id %}" class="btn-admin-action btn-valider" style="text-decoration: none; display: inline-block;">
-                ✅ Valider
-            </a>
-            
-            <!-- Appel JavaScript épuré pour ouvrir le vrai Bon de Livraison avec son cachet bleu -->
-            <button class="btn-admin-action btn-transfert" onclick="genererBonLivration('{{ commande.id }}')">
-                📄 BL
-            </button>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
-            Aucune commande client reçue pour le moment.
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-<tbody>
-    {% for commande in toutes_les_commandes %}
-    <tr>
-        <!-- 1. Numéro de commande -->
-        <td>#{{ commande.id }}</td>
-        
-        <!-- 2. Client et Contact -->
-        <td>
-            <strong>{{ commande.nom_client }}</strong><br>
-            <small>📞 {{ commande.telephone }}</small>
-        </td>
-        
-        <!-- 3. Contenu de la commande (Liaison brute puisque c'est stocké en JSON) -->
-        <td>Bon d'Impression ({{ commande.total_brut }} FCFA)</td>
-        
-        <!-- 4. Quantité (Fixée à 1 ou laissée indicative car globale) -->
-        <td>1 u</td>
-        
-        <!-- 5. Statut ajusté sur les majuscules de views.py ('VALIDE') -->
-        <td>
-            {% if commande.statut == 'VALIDE' %}
-                <span class="badge-status badge-valide">Validée</span>
-            {% else %}
-                <span class="badge-status badge-attente">En attente</span>
-            {% endif %}
-        </td>
-        
-        <!-- 6. Actions connectées à vos vues réelles -->
-        <td>
-            <!-- Redirection vers votre vraie action Python de validation -->
-            <a href="{% url 'valider_commande_impression' commande.id %}" class="btn-admin-action btn-valider" style="text-decoration: none; display: inline-block;">
-                ✅ Valider
-            </a>
-            
-            <!-- Appel JavaScript épuré pour ouvrir le vrai Bon de Livraison avec son cachet bleu -->
-            <button class="btn-admin-action btn-transfert" onclick="genererBonLivration('{{ commande.id }}')">
-                📄 BL
-            </button>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
-            Aucune commande client reçue pour le moment.
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-               
+                {% for commande in toutes_les_commandes %}
+                <tr>
+                    <td>#{{ commande.id }}</td>
+                    <td>
+                        <strong>{{ commande.nom_client }}</strong><br>
+                        <small>📞 {{ commande.telephone }}</small>
+                    </td>
+                    <td>Bon d'Impression ({{ commande.total_brut }} FCFA)</td>
+                    <td>1 u</td>
+                    <td>
+                        {% if commande.statut == 'VALIDE' %}
+                            <span class="badge-status badge-valide">Validée</span>
+                        {% else %}
+                            <span class="badge-status badge-attente">En attente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'valider_commande_impression' commande.id %}" class="btn-admin-action btn-valider" style="text-decoration: none; display: inline-block;">
+                            ✅ Valider
+                        </a>
+                        <button class="btn-admin-action btn-transfert" onclick="genererBonLivration('{{ commande.id }}')">
+                            📄 BL
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
+                        Aucune commande client reçue pour le moment.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </div>
+{% endif %}
+
+<!-- Logic JavaScript -->
 <script>
-    const titreSecret = document.getElementById('titre-secret-admin');
-    let timerClicLong;
-    const codeSecretRequis = "1997"; // 🔑 Code secret d'accès à modifier ici
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantiteInput = document.getElementById('js-quantite');
+        const btnCalculateur = document.getElementById('btn-calculateur');
+        const afficheQuantite = document.getElementById('js-affiche-quantite');
+        const prixUnitaireSpan = document.getElementById('js-prix-unitaire');
+        const totalEstimeSpan = document.getElementById('js-total-estime');
+        const titreSecretAdmin = document.getElementById('titre-secret-admin');
 
-    // Détection du clic long sur Ordinateur (Souris)
-    titreSecret.addEventListener('mousedown', demarrerMinuteur);
-    titreSecret.addEventListener('mouseup', annulerMinuteur);
-    titreSecret.addEventListener('mouseleave', annulerMinuteur);
+        // Calculatrice instantanée déclenchée par le bouton
+        if (btnCalculateur && quantiteInput && prixUnitaireSpan) {
+            btnCalculateur.addEventListener('click', function(e) {
+                e.preventDefault();
+                const prixUnitaire = parseFloat(prixUnitaireSpan.textContent) || 0;
+                let qte = parseInt(quantiteInput.value) || 1;
+                if (qte < 1) qte = 1;
 
-    // Détection du clic long sur Mobile (Doigt)
-    titreSecret.addEventListener('touchstart', demarrerMinuteur);
-    titreSecret.addEventListener('touchend', annulerMinuteur);
-
-    function demarrerMinuteur(e) {
-        e.preventDefault();
-        timerClicLong = setTimeout(demanderCodeAcces, 3000); // 3 secondes de maintien
-    }
-
-    function annulerMinuteur() {
-        clearTimeout(timerClicLong);
-    }
-
-    function demanderCodeAcces() {
-        let codeSaisi = prompt("🔒 Saisissez le code secret administrateur pour voir les commandes :");
-        if (codeSaisi === codeSecretRequis) {
-            document.getElementById('modalAdminCommandes').style.display = 'flex';
-        } else if (codeSaisi !== null) {
-            alert("❌ Code incorrect. Accès refusé.");
+                totalEstimeSpan.textContent = "Calcul...";
+                setTimeout(() => {
+                    afficheQuantite.textContent = qte;
+                    totalEstimeSpan.textContent = (prixUnitaire * qte);
+                }, 200);
+            });
         }
-    }
+
+        // Système d'alternance automatique de la galerie d'images
+        let slides = document.querySelectorAll('.carousel-slide');
+        if (slides.length > 1) {
+            let currentSlide = 0;
+            setInterval(() => {
+                slides[currentSlide].style.display = 'none';
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].style.display = 'block';
+            }, 3500);
+        }
+
+        // Système d'appui long secret (3 secondes) pour demander le code d'accès
+        if (titreSecretAdmin) {
+            let timerAppui;
+            const tempsRequis = 3000; 
+            const codeSecretAttendu = "1234"; // MODIFIEZ CE CODE PAR VOTRE PROPRE CODE SECRET
+
+            function démarrerAppui(e) {
+                timerAppui = setTimeout(function() {
+                    const modalExiste = document.getElementById('modalAdminCommandes');
+                    if (!modalExiste) {
+                        alert("Accès refusé : Vous devez être connecté avec votre compte Admin.");
+                        return;
+                    }
+                    
+                    let codeSaisi = prompt("🔒 Saisissez le code secret d'accès Admin :");
+                    if (codeSaisi === codeSecretAttendu) {
+                        modalExiste.style.display = 'flex';
+                    } else if (codeSaisi !== null) {
+                        alert("❌ Code incorrect.");
+                    }
+                }, tempsRequis);
+            }
+
+            function annulerAppui() {
+                clearTimeout(timerAppui);
+            }
+
+            titreSecretAdmin.addEventListener('mousedown', démarrerAppui);
+            titreSecretAdmin.addEventListener('mouseup', annulerAppui);
+            titreSecretAdmin.addEventListener('mouseleave', annulerAppui);
+
+            titreSecretAdmin.addEventListener('touchstart', démarrerAppui, { passive: true });
+            titreSecretAdmin.addEventListener('touchend', annulerAppui);
+            titreSecretAdmin.addEventListener('touchcancel', annulerAppui);
+        }
+    });
 
     function fermerAdmin() {
-        document.getElementById('modalAdminCommandes').style.display = 'none';
-    }
-
-    // 🚀 LIAISON DIRECTE AVEC VOTRE ROUTE DJANGO POUR LE BON DE LIVRAISON (BL)
-    function genererBonLivration(id) {
-        // Cette ligne ouvre un nouvel onglet vers votre vraie page Django 'voir_bon_livraison'
-        // Elle va charger le template officiel contenant le cachet rond bleu, vos remises et vos totaux réels
-        window.open('/impressions/admin/livraison/' + id + '/', '_blank');
+        const modal = document.getElementById('modalAdminCommandes');
+        if (modal) modal.style.display = 'none';
     }
 </script>
 {% endblock %}

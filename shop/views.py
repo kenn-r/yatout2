@@ -1174,6 +1174,7 @@ def page_prestations(request):
 
 
 
+
 def detail_prestation(request, prestation_id):
     prestation = get_object_or_404(Prestation, id=prestation_id)
     
@@ -1206,13 +1207,13 @@ def detail_prestation(request, prestation_id):
             prix_total = int(quantite_saisie * prestation.prix_unitaire)
             unite_texte = f"{int(quantite_saisie)} lettres"
 
-        # 2. Validation finale et envoi vers la page intermédiaire WhatsApp
+        # 2. Traitement lors du clic sur le bouton de commande (Soumission du formulaire)
         if 'valider_whatsapp' in request.POST or 'valider_commande' in request.POST:
-            nom = request.POST.get('nom_client')
-            email = request.POST.get('email_client', '')
-            tel = request.POST.get('telephone_client')
+            nom = request.POST.get('nom_client', '').strip()
+            email = request.POST.get('email_client', '').strip()
+            tel = request.POST.get('telephone_client', '').strip()
             
-            # Structure de base de l'élément du panier
+            # Structure de l'élément du panier inséré dans le JSON
             item_panier = {
                 'titre': prestation.titre,
                 'type_unite': prestation.type_unite,
@@ -1220,7 +1221,7 @@ def detail_prestation(request, prestation_id):
                 'total': prix_total
             }
 
-            # Ajout des spécificités géométriques dans le JSON si c'est du m² (utile pour Flutter / Web)
+            # Ajout des spécificités géométriques si c'est du m²
             if prestation.type_unite == 'M2':
                 item_panier['longueur'] = longueur
                 item_panier['largeur'] = largeur
@@ -1230,9 +1231,11 @@ def detail_prestation(request, prestation_id):
 
             structure_tableau_json = [item_panier]
             
+            # Application de la remise commerciale
             montant_remise = int(prix_total * 0.05)
             total_final = prix_total - montant_remise
 
+            # Enregistrement en base de données
             commande = CommandeImpression.objects.create(
                 nom_client=nom,
                 email_client=email,
@@ -1244,34 +1247,37 @@ def detail_prestation(request, prestation_id):
                 statut='EN_ATTENTE'
             )
             
-            # Si le client clique sur "Ajouter au panier", on effectue une action spécifique
-            if 'valider_commande' in request.POST:
-                # Adaptez ici selon la redirection de votre panier multi-vendeurs global
-                return render(request, 'shop/bon_impression_pret.html', {'commande': commande})
-
-            # Sinon, on génère le flux WhatsApp classique
+            # Récupération du numéro de bon généré automatiquement par votre modèle
             numero_bon = commande.numero_bon()
 
+            # Formatage propre du prix avec séparateur de milliers pour WhatsApp
+            total_final_formate = f"{total_final:,}".replace(',', '.')
+
+            # Préparation du texte pré-rempli pour la discussion WhatsApp
             message_brut = (
-                f"Bonjour YaTout, je valide ma commande.\n"
-                f"Bon : {numero_bon}\n"
-                f"Client : {nom}\n"
-                f"Prestation : {prestation.titre}\n"
-                f"Détails : {unite_texte}\n"
-                f"Net a payer : {total_final} FCFA"
+                f"🛍️ *NOUVELLE COMMANDE - YATOUT*\n\n"
+                f"📦 *Bon N° :* #{numero_bon}\n"
+                f"👤 *Client :* {nom}\n"
+                f"📞 *Contact :* {tel}\n"
+                f"🎯 *Impression :* {prestation.titre}\n"
+                f"📏 *Spécifications :* {unite_texte}\n\n"
+                f"💵 *Net à payer :* *{total_final_formate} FCFA*\n\n"
+                f"Bonjour YaTout, je viens de vérifier mon récapitulatif et je confirme ma commande !"
             )
 
-            # Utilisation de urllib pour un encodage URL plus robuste (gère les accents et caractères spéciaux)
+            # Encodage sécurisé de la chaîne de texte pour l'URL
             texte_url = urllib.parse.quote(message_brut)
             numero_entreprise = "2250574702092"
-            lien_whatsapp_final = f"https://wa.me/{numero_entreprise}?text={texte_url}"
+            lien_whatsapp_final = f"https://wa.me{numero_entreprise}?text={texte_url}"
             
+            # 🟢 LA SÉPARATION EST ICI : On envoie d'abord le client sur l'écran intermédiaire pour relecture
             return render(request, 'shop/bon_impression_pret.html', {
                 'commande': commande,
-                'lien_whatsapp': lien_whatsapp_final
+                'lien_whatsapp': lien_whatsapp_final,
+                'prestation': prestation
             })
 
-    # Rendu final (GET ou après calcul d'estimation brute)
+    # Rendu initial (GET) ou après calcul d'estimation brute (POST "calculer")
     return render(request, 'shop/detail_prestation.html', {
         'prestation': prestation,
         'quantite_saisie': int(quantite_saisie) if isinstance(quantite_saisie, (int, float)) and quantite_saisie.is_integer() else quantite_saisie,
@@ -1280,13 +1286,10 @@ def detail_prestation(request, prestation_id):
         'largeur': largeur
     })
 
-
-# 2. Placez ce décorateur juste AU-DESSUS de votre fonction
 @csrf_exempt
 def voir_bon_commande(request, commande_id):
     commande = get_object_or_404(CommandeImpression, id=commande_id)
     articles_liste = json.loads(commande.details_json)
-    # ... (le reste de votre code reste identique)
     
     # 1. Préparation initiale des variables entières pour l'affichage (GET)
     for art in articles_liste:
@@ -1294,7 +1297,7 @@ def voir_bon_commande(request, commande_id):
         prix_unitaire = int(float(art.get('prix', 0)))
         brut_ligne = quantite_securisee * prix_unitaire
         
-        # Lecture du pourcentage de remise stocké (ex: 25)
+        # Lecture du pourcentage de remise stocké (ex: 5)
         taux_remise = int(float(art.get('remise_pourcent', 0)))
         montant_remise_ligne = round(brut_ligne * (taux_remise / 100.0))
         total_net_ligne = max(0, brut_ligne - montant_remise_ligne)
@@ -1315,58 +1318,73 @@ def voir_bon_commande(request, commande_id):
     pourcentage_actuel = int((commande.montant_remise / commande.total_brut) * 100) if commande.total_brut > 0 else 0
 
     if request.method == "POST":
-        # ACTION 1 : MISE A JOUR DES REMISES EN POURCENTAGE PAR ARTICLE INDIVIDUEL
+        # ACTION 1 : MISE A JOUR DES REMISES PAR ARTICLE INDIVIDUEL
         if 'appliquer_remises_articles' in request.POST:
             nouveau_total_brut_global = 0
             total_remise_cumulee = 0
             
             for index, art in enumerate(articles_liste):
                 cle_remise = f"remise_{index}"
-                
-                # Le vendeur saisit un pourcentage entier sur l'interface (ex: 25)
                 taux_remise = int(float(request.POST.get(cle_remise, 0)))
                 
                 quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
                 prix_unitaire = int(float(art.get('prix', 0)))
                 total_brut_ligne = quantite_securisee * prix_unitaire
                 
-                # Calcul de la réduction en FCFA (arrondi à l'entier)
                 montant_reduction_ligne = round(total_brut_ligne * (taux_remise / 100.0))
                 total_net_ligne = max(0, total_brut_ligne - montant_reduction_ligne)
                 
-                # Enregistrement des valeurs définitives dans le JSON
                 art['remise_pourcent'] = taux_remise
                 art['remise'] = montant_reduction_ligne
                 art['total'] = total_net_ligne
                 
-                # Cumul des montants pour la commande globale
                 nouveau_total_brut_global += total_brut_ligne
                 total_remise_cumulee += montant_reduction_ligne
             
-            # Recalcul de la remise globale basée sur le nouveau brut
-            nouveau_montant_remise_global = round(nouveau_total_brut_global * (pourcentage_actuel / 100))
-            
-            # Sauvegarde finale en base de données (Nombres entiers stricts)
             commande.details_json = json.dumps(articles_liste)
             commande.total_brut = int(nouveau_total_brut_global)
-            commande.montant_remise = int(total_remise_cumulee + nouveau_montant_remise_global)
-            commande.total_final = int(nouveau_total_brut_global - commande.montant_remise)
+            commande.montant_remise = int(total_remise_cumulee)
+            commande.total_final = int(nouveau_total_brut_global - total_remise_cumulee)
             commande.save()
             
             messages.success(request, "Les remises par article ont été appliquées avec succès !")
             return redirect('voir_bon_commande', commande_id=commande.id)
 
-        # ACTION 2 : MISE A JOUR DE LA REMISE GLOBALE EN POURCENTAGE
+        # CORRECTION DE L'ACTION 2 : REPERCUTER LA REMISE GLOBALE SUR CHAQUE ARTICLE
         elif 'changer_remise' in request.POST:
-            nouvelle_remise_pourcent = int(float(request.POST.get('pourcentage_remise', 5)))
-            total_brut = int(commande.total_brut)
-            montant_remise = round(total_brut * (nouvelle_remise_pourcent / 100))
+            # On récupère la valeur entrée (ex: 5 depuis le champ input 'pourcentage_remise')
+            # Si votre champ s'appelle différemment dans le HTML, ajustez la clé 'pourcentage_remise'
+            nouvelle_remise_pourcent = int(float(request.POST.get('pourcentage_remise', request.POST.get('remise_globale', 5))))
             
-            commande.montant_remise = int(montant_remise)
-            commande.total_final = int(total_brut - montant_remise)
+            nouveau_total_brut_global = 0
+            total_remise_cumulee = 0
+            
+            # On boucle sur chaque article pour inscrire et calculer le même pourcentage partout
+            for art in articles_liste:
+                quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
+                prix_unitaire = int(float(art.get('prix', 0)))
+                total_brut_ligne = quantite_securisee * prix_unitaire
+                
+                # Calcul basé sur la nouvelle remise globale
+                montant_reduction_ligne = round(total_brut_ligne * (nouvelle_remise_pourcent / 100.0))
+                total_net_ligne = max(0, total_brut_ligne - montant_reduction_ligne)
+                
+                # Écriture dans le dictionnaire JSON de l'article
+                art['remise_pourcent'] = nouvelle_remise_pourcent
+                art['remise'] = montant_reduction_ligne
+                art['total'] = total_net_ligne
+                
+                nouveau_total_brut_global += total_brut_ligne
+                total_remise_cumulee += montant_reduction_ligne
+            
+            # Sauvegarde en Base de Données
+            commande.details_json = json.dumps(articles_liste)
+            commande.total_brut = int(nouveau_total_brut_global)
+            commande.montant_remise = int(total_remise_cumulee)
+            commande.total_final = int(nouveau_total_brut_global - total_remise_cumulee)
             commande.save()
             
-            messages.success(request, f"Remise globale mise à jour à {nouvelle_remise_pourcent}%")
+            messages.success(request, f"Remise globale de {nouvelle_remise_pourcent}% appliquée à l'ensemble des articles !")
             return redirect('voir_bon_commande', commande_id=commande.id)
             
         # ACTION 3 : GENERATION DU BON DE LIVRAISON + ENVOI MAIL
@@ -1383,22 +1401,20 @@ def voir_bon_commande(request, commande_id):
                 f"{commande.telephone} dès que vos supports seront prêts pour la livraison.\n\n"
                 f"Merci pour votre confiance !"
             )
-        try:
+            try:
                 send_mail(sujet, message, 'noreply@yatout.com', [commande.email_client], fail_silently=True)
-        except Exception:
+            except Exception:
                 pass
 
-        messages.success(request, "Bon de Livraison généré et validé avec succès ! 🎉")
-            
-            # 🟢 Utilisation de la route absolue exacte de votre URL n°32
-        return redirect(f"/impression/bon-livraison/{commande.id}/")
+            messages.success(request, "Bon de Livraison généré et validé avec succès ! 🎉")
+            return redirect(f"/impression/bon-livraison/{commande.id}/")
 
-        # 🟢 Cette ligne doit être alignée avec le "if request.method == 'POST':"
     return render(request, 'shop/bon_commande.html', {
-            'commande': commande,
-            'articles_liste': articles_liste,
-            'pourcentage_actuel': pourcentage_actuel
-        })
+        'commande': commande,
+        'articles_liste': articles_liste,
+        'pourcentage_actuel': pourcentage_actuel
+    })
+
 
 def voir_bon_livraison(request, commande_id):
     """ Génère la page du Bon de Livraison officiel sans centimes """
@@ -1431,48 +1447,63 @@ def voir_bon_livraison(request, commande_id):
         'commande': commande,
         'articles_liste': articles_liste
     })
+from django.shortcuts import get_object_or_404, render
+import json
 
 def voir_bon_commande_public(request, commande_id):
     """ Permet au client de visualiser son bon sans aucune décimale avec séparateur de milliers par un point """
     commande = get_object_or_404(CommandeImpression, id=commande_id)
     articles_liste = json.loads(commande.details_json)
     
-    for art in articles:
-    # 1. Récupération sécurisée de la quantité et du prix unitaire
-        qte_valeur = int(art.get('qte', art.get('quantite', 1)))
-        prix_unitaire = int(float(art.get('prix', 0)))
-        brut_ligne = qte_valeur * prix_unitaire
+    for art in articles_liste:
+        # 1. Récupération sécurisée du type d'unité pour adapter l'affichage des quantités
+        type_unite = art.get('type_unite', '')
         
-        # 2. Récupération du pourcentage de remise (ex: 5)
-        # On cherche d'abord la clé 'remise_pourcent'
+        # 2. Récupération sécurisée de la quantité et du prix unitaire
+        qte_brute = art.get('qte', art.get('quantite', 1))
+        prix_unitaire = int(float(art.get('prix', 0)))
+        
+        # Récupération de la longueur et de la largeur pour les produits au M²
+        longueur_val = art.get('longueur')
+        largeur_val = art.get('largeur')
+        
+        # 3. Calcul de la quantité réelle et du montant brut de la ligne
+        if type_unite == 'M2' and longueur_val and largeur_val:
+            # Pour le M2, la quantité stockée en BDD correspond à la surface (longueur * largeur)
+            qte_valeur = float(qte_brute)
+            brut_ligne = int(qte_valeur * prix_unitaire)
+            # Formatage de la quantité sous forme de surface (ex: 1.0)
+            art['qte_formatee'] = f"{qte_valeur:.1f}" if qte_valeur.is_integer() else f"{qte_valeur:.2f}"
+            
+            # Injection des dimensions pour forcer l'affichage de la case mètre carré dans le HTML
+            art['longueur_val'] = longueur_val
+            art['largeur_val'] = largeur_val
+        else:
+            qte_valeur = int(float(qte_brute))
+            brut_ligne = qte_valeur * prix_unitaire
+            art['qte_formatee'] = qte_valeur
+
+        # 4. Récupération et traitement sécurisé du pourcentage de remise (ex: 5)
         taux_remise = int(float(art.get('remise_pourcent', 0)))
         
         # Si 'remise_pourcent' n'existe pas mais qu'un montant en FCFA est stocké dans 'remise'
         if taux_remise == 0 and int(art.get('remise', 0)) > 0:
             taux_remise = int(round((int(art.get('remise', 0)) / brut_ligne) * 100))
             
-        # 3. Calculs des montants nets de la ligne
+        # 5. Calculs des montants nets de la ligne
         montant_remise_ligne = round(brut_ligne * (taux_remise / 100.0))
         total_net_ligne = max(0, brut_ligne - montant_remise_ligne)
         
-        # 4. Formatage avec des points pour les milliers (Ex: 45.000)
-        prix_formate = f"{prix_unitaire:,}".replace(',', '.')
-        total_formate = f"{total_net_ligne:,}".replace(',', '.')
-        
-        # Préparation du texte en pourcentage pour la colonne
-        remise_formatee = f"{taux_remise} %" if taux_remise > 0 else "0 %"
+        # 6. Formatage avec des points pour les milliers (Ex: 45.000)
+        # Ces clés seront lues directement dans votre fichier HTML "bon_commande_public.html"
+        art['prix_formate'] = f"{prix_unitaire:,}".replace(',', '.')
+        art['remise_formatee'] = f"{taux_remise} %" if taux_remise > 0 else "0 %"
+        art['total_formate'] = f"{total_net_ligne:,}".replace(',', '.')
 
-        # 5. Injection directe dans le tableau de ReportLab
-        data.append([
-            Paragraph(f"<b>{art['titre']}</b>", normal_style),
-            Paragraph(f"{prix_formate} FCFA", style_prix_cellule),
-            Paragraph(f"x{qte_valeur}", bold_style),
-            
-            # 🟢 CORRECTION ICI : On remplace l'ancien texte par la variable en pourcentage
-            Paragraph(remise_formatee, style_prix_cellule), 
-            
-            Paragraph(f"{total_formate} FCFA", style_prix_cellule)
-        ])
+    # Formatage des totaux généraux de la commande pour l'affichage public
+    commande.total_brut_formate = f"{int(commande.total_brut):,}".replace(',', '.')
+    commande.montant_remise_formate = f"{int(commande.montant_remise):,}".replace(',', '.')
+    commande.total_final_formate = f"{int(commande.total_final):,}".replace(',', '.')
 
     return render(request, 'shop/bon_commande_public.html', {
         'commande': commande,
