@@ -1,0 +1,222 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Validation de votre commande - YaTout{% endblock %}
+
+{% block content %}
+<style>
+    /* Conteneur principal et structure globale */
+    .checkout-wrapper {
+        max-width: 480px;
+        margin: 40px auto;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Bouton de retour discret */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: #7c3aed;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 20px;
+        transition: transform 0.2s ease;
+    }
+    .back-link:hover {
+        transform: translateX(-4px);
+    }
+
+    /* Carte principale */
+    .checkout-card {
+        background-color: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Typographie de l'en-tête */
+    .checkout-title {
+        color: #1e1b4b;
+        font-size: 1.5rem;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: -0.025em;
+        margin-bottom: 6px;
+    }
+    .checkout-subtitle {
+        color: #64748b;
+        font-size: 0.875rem;
+        text-align: center;
+        line-height: 1.5;
+        margin-bottom: 28px;
+    }
+
+    /* Encart récapitulatif du produit */
+    .summary-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 28px;
+    }
+    .summary-tag {
+        color: #7c3aed;
+        font-weight: 700;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: block;
+    }
+    .summary-product {
+        display: block;
+        color: #0f172a;
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+    .summary-divider {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px dashed #cbd5e1;
+    }
+    .summary-spec {
+        color: #475569;
+        font-size: 0.875rem;
+    }
+    .summary-spec strong {
+        color: #0f172a;
+    }
+    .summary-price {
+        color: #10b981;
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    /* Formulaire et champs de saisie */
+    .form-field-group {
+        margin-bottom: 20px;
+    }
+    .form-field-label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+    .form-field-label .required-star {
+        color: #ef4444;
+    }
+    .form-field-input {
+        width: 100%;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        padding: 14px 16px;
+        border: 1.5px solid #cbd5e1;
+        background-color: #ffffff;
+        color: #0f172a;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    .form-field-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        background-color: #ffffff;
+    }
+    .form-field-input::placeholder {
+        color: #94a3b8;
+    }
+
+    /* Bouton d'action principal (WhatsApp) */
+    .whatsapp-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 16px;
+        background-color: #25D366;
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+        margin-top: 8px;
+    }
+    .whatsapp-submit-btn:hover {
+        background-color: #128C7E;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+    }
+    .whatsapp-submit-btn:active {
+        transform: translateY(1px);
+    }
+    .whatsapp-icon {
+        margin-right: 8px;
+        font-size: 1.2rem;
+    }
+</style>
+
+<div class="container px-3">
+    <div class="checkout-wrapper">
+        
+        <!-- Retour -->
+        <a href="javascript:history.back()" class="back-link">
+            ← Modifier mon choix de lot
+        </a>
+
+        <!-- Formulaire de paiement -->
+        <div class="checkout-card">
+            
+            <h2 class="checkout-title">Finaliser ma commande</h2>
+            <p class="checkout-subtitle">Veuillez renseigner vos coordonnées pour générer votre bon de commande numérique.</p>
+
+            <!-- Détails de la commande -->
+            <div class="summary-box">
+                <span class="summary-tag">Votre sélection</span>
+                <strong class="summary-product">{{ commande_session.prestation_titre }}</strong>
+                
+                <div class="summary-divider">
+                    <span class="summary-spec">Spécification : <strong>{{ commande_session.unite_texte }}</strong></span>
+                    <span class="summary-price">{{ commande_session.total_final_formate }} FCFA</span>
+                </div>
+            </div>
+
+            <!-- Formulaire de saisie -->
+            <form method="POST" action="">
+                {% csrf_token %}
+                
+                <div class="form-field-group">
+                    <label class="form-field-label">
+                        Nom complet (Prénoms et Nom) <span class="required-star">*</span>
+                    </label>
+                    <input type="text" name="nom_client" placeholder="Ex: Jean-Eudes Kouassi" class="form-field-input" required>
+                </div>
+
+                <div class="form-field-group" style="margin-bottom: 28px;">
+                    <label class="form-field-label">
+                        Numéro de téléphone portable (WhatsApp) <span class="required-star">*</span>
+                    </label>
+                    <input type="tel" name="telephone_client" placeholder="Ex: 0574702092" class="form-field-input" required>
+                </div>
+
+                <input type="hidden" name="email_client" value="client@yatout.ci">
+
+                <button type="submit" class="whatsapp-submit-btn">
+                    <span class="whatsapp-icon">💬</span> Confirmer et Envoyer sur WhatsApp
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

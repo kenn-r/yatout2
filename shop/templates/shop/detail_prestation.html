@@ -1,179 +1,280 @@
 {% extends 'shop/base.html' %}
 {% load static %}
 
-{% block title %}{{ prestation.titre }} - Atelier d'Impression{% endblock %}
+{% block title %}{{ prestation.titre }} - Configuration - YaTout{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: system-ui, sans-serif;">
+<style>
+    .col-custom-visual { 
+        width: calc(33.33% - 12px) !important; 
+        max-width: 33.33% !important;
+    }
+    @media (max-width: 576px) {
+        .col-custom-visual { 
+            width: calc(50% - 8px) !important; 
+            max-width: 50% !important;
+        }
+    }
+    .visual-container {
+        background-color: #f8fafc;
+        height: 120px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .visual-container span { font-size: 42px !important; }
+    .visual-footer { padding: 12px 8px !important; font-size: 1rem !important; text-align: center; }
     
-    <!-- Bouton Retour au Catalogue -->
-    <a href="{% url 'page_prestations' %}" style="color: #7c3aed; text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px;">
-        ⬅️ Retour aux prestations
-    </a>
+    .active-option {
+        border-color: #7c3aed !important;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.12) !important;
+    }
+</style>
 
-    <div style="border: 1px solid #e2e8f0; border-radius: 12px; background: white; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-        
-        <!-- Titre et Description du produit -->
-        <h2 style="color: #2e0854; margin-top: 0; font-size: 1.8rem;">{{ prestation.titre }}</h2>
-        <p style="color: #4b5563; line-height: 1.6; font-size: 15px; white-space: pre-line;">{{ prestation.description }}</p>
-        
-        <!-- Rappel informatif du tarif unitaire de base -->
-        <p style="font-size: 14px; color: #6b7280; margin-top: 10px; background: #f8fafc; padding: 8px 12px; border-radius: 6px; display: inline-block;">
-            Tarif de base : <strong style="color: #7c3aed;">{{ prestation.prix_unitaire }} FCFA</strong> 
-            ({% if prestation.type_unite == 'M2' %}au m²{% elif prestation.type_unite == 'LOT_100' %}par lot de 100 flyers{% elif prestation.type_unite == 'UNITE' %}par unité{% else %}par lettre{% endif %})
-        </p>
+<div class="container my-4 px-3" style="width: 100%; max-width: 100%;">
+    <div class="card shadow-sm border-0 p-4" style="background-color: #ffffff; border-radius: 16px; width: 100%;">
+    
+        <a href="{% url 'page_prestations' %}" style="text-decoration: none; color: #7c3aed; font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 15px;">
+            ← Retour au catalogue
+        </a>
 
-        <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e7eb;">
-
-        <!-- UNIQUE FORMULAIRE HTML DE GESTION -->
-        <form method="POST" id="form-prestation">
-            {% csrf_token %}
+        <div class="card shadow-sm border-0 p-3 text-center" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05)!important;">
             
-            <!-- CAS DE SAISIE ADAPTATIF SELON LE TYPE D'UNITÉ -->
-            <div style="margin-bottom: 20px;">
-                
-                {% if prestation.type_unite == 'M2' %}
-                    <!-- CAS 1 : PRODUIT AU METRE CARRE (Bâche, Autocollant géant) -->
-                    <div style="display: flex; gap: 15px;">
-                        <div style="flex: 1;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">Longueur (mètres) :</label>
-                            <input type="number" name="longueur" id="js-longueur" value="{{ longueur_saisie|default:'1' }}" min="0.1" step="any" required 
-                                   style="padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
+            <!-- Image produit -->
+            <div class="bg-light rounded-lg p-2 mb-3 d-flex align-items-center justify-content-center" style="height: 280px; border-radius: 12px; background-color: #f8fafc;">
+                {% if prestation.image %}
+                    <img src="{{ prestation.image.url }}" class="img-fluid" style="max-height: 100%; object-fit: contain;" alt="{{ prestation.titre }}">
+                {% else %}
+                    <span class="text-muted small">Aucun visuel disponible</span>
+                {% endif %}
+            </div>
+
+            <h2 class="h5 font-weight-bold text-dark mb-1" style="font-size: 1.25rem; font-weight: 700; color: #2e0854; text-align: left;">{{ prestation.titre }}</h2>
+            <div class="my-3" style="width: 50px; height: 3px; background-color: #dc3545; border-radius: 2px;"></div>
+
+            <!-- FORMULAIRE -->
+            <form method="POST" id="form-prestation" class="text-left mt-2">
+                {% csrf_token %}
+                <input type="hidden" id="type_quantite" name="type_quantite" value="lot">
+
+                <!-- ========================================================================= -->
+                <!-- AFFICHAGE CONDITIONNEL 1 : TYPE SURFACE                                   -->
+                <!-- ========================================================================= -->
+                {% if prestation.type_unite == 'SURFACE' %}
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%;">
+                        
+                        <!-- Formats Statiques Prédéfinis -->
+                        {% comment %} Boucle explicite pour assurer l'affichage parfait {% endcomment %}
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual active-option" style="background: #ffffff; border: 2px solid #7c3aed; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="dimensions_m2" value="1x1" checked style="display: none !important;">
+                                <div class="visual-container"><span>📐</span></div>
+                                <div class="visual-footer" style="background-color: #f5f3ff;">
+                                    <strong style="display: block; color: #1e293b;">1m x 1m</strong>
+                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">4 750 F (-5%)</span>
+                                </div>
+                            </label>
                         </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">Largeur (mètres) :</label>
-                            <input type="number" name="largeur" id="js-largeur" value="{{ largeur_saisie|default:'1' }}" min="0.1" step="any" required 
-                                   style="padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="dimensions_m2" value="1x2" style="display: none !important;">
+                                <div class="visual-container"><span>📐</span></div>
+                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">1m x 2m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">9 500 F</span></div>
+                            </label>
+                        </div>
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="dimensions_m2" value="2x2" style="display: none !important;">
+                                <div class="visual-container"><span>📐</span></div>
+                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">2m x 2m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">19 000 F</span></div>
+                            </label>
+                        </div>
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="dimensions_m2" value="1x3" style="display: none !important;">
+                                <div class="visual-container"><span>📐</span></div>
+                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">1m x 3m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">14 250 F</span></div>
+                            </label>
+                        </div>
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="dimensions_m2" value="2x3" style="display: none !important;">
+                                <div class="visual-container"><span>📐</span></div>
+                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">2m x 3m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">28 500 F</span></div>
+                            </label>
+                        </div>
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="dimensions_m2" value="3x3" style="display: none !important;">
+                                <div class="visual-container"><span>📐</span></div>
+                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">3m x 3m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">42 750 F</span></div>
+                            </label>
+                        </div>
+
+                        <!-- Autre Dimension (Saisie libre au m²) -->
+                        <div class="col-custom-visual" style="min-width: 220px;">
+                            <div id="btn-m2-libre" class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 10px;">
+                                <input type="radio" name="dimensions_m2" value="custom" style="display: none !important;">
+                                <div style="color: #d97706; font-weight: bold; text-align: center; margin-bottom: 5px;">✨ Autre dimension</div>
+                                <div style="display: flex; gap: 5px; align-items: center; justify-content: center;">
+                                    <input type="number" name="largeur_custom" placeholder="L (m)" min="0.1" step="0.1" style="width: 70px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px;">
+                                    <span>x</span>
+                                    <input type="number" name="hauteur_custom" placeholder="H (m)" min="0.1" step="0.1" style="width: 70px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px;">
+                                </div>
+                                <div style="text-align: center; font-size: 0.75rem; color: #16a34a; margin-top: 5px; font-weight: 500;">4 750 F / m² (-5%)</div>
+                            </div>
                         </div>
                     </div>
-                    <input type="hidden" name="quantite" id="js-quantite" value="1">
-
-                {% else %}
-                    <!-- CAS 2 : PRODUIT A L'UNITE, EN LOT OU PAR LETTRE -->
-                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #1f2937; font-size: 14px;">
-                        {% if prestation.type_unite == 'LOT_100' %}
-                            Entrez le nombre de flyers désiré (Ex: 6500) :
-                        {% elif prestation.type_unite == 'UNITE' %}
-                            Entrez la quantité souhaitée :
-                        {% else %}
-                            Entrez le nombre de lettres / autocollants requis :
-                        {% endif %}
-                    </label>
-                    <input type="number" name="quantite" id="js-quantite" value="{{ quantite_saisie|default:'1' }}" min="1" step="any" required 
-                           style="padding: 10px; width: 160px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-weight: bold; color: #2e0854;">
                 {% endif %}
 
-            </div>
+               <!-- ========================================================================= -->
+                <!-- AFFICHAGE CONDITIONNEL 2 : TYPES FLYER, UNITE & PAGES (Lots Adaptatifs)   -->
+                <!-- ========================================================================= -->
+                {% if prestation.type_unite == 'FLYER' or prestation.type_unite == 'UNITE' or prestation.type_unite == 'PAGES' %}
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%;">
+                        
+                        {% if formats_flyer and prestation.type_unite == 'FLYER' %}
+                            <input type="hidden" name="format_choisi" value="{{ formats_flyer.0.id }}">
+                        {% endif %}
 
-            <!-- UN SEUL BOUTON EN HAUT : METTRE À JOUR LE PRIX -->
-            <div style="margin-bottom: 25px;">
-                <button type="submit" name="calculer" formnovalidate 
-                        style="width: 100%; background-color: #2e0854; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; transition: background 0.2s;">
-                    🔄 Mettre à jour le prix
-                </button>
-            </div>
+                        <!-- PALIER 1 -->
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual active-option" style="background: #ffffff; border: 2px solid #7c3aed; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}10{% else %}100{% endif %}" checked style="display: none !important;">
+                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
+                                <div class="visual-footer" style="background-color: #f5f3ff;">
+                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}10{% else %}100{% endif %} ex.</strong>
+                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
+                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
+                                </div>
+                            </label>
+                        </div>
 
-            <!-- BOÎTE D'AFFICHAGE DU PRIX RECALCULÉ -->
-            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: inset 0 2px 4px rgba(22,163,74,0.02);">
-                <span style="font-size: 12px; color: #16a34a; font-weight: bold; display: block; text-transform: uppercase; letter-spacing: 0.05em;">
-                    Estimation brute actuelle
-                </span>
-                <strong style="font-size: 2rem; color: #15803d; display: block; margin-top: 5px; font-weight: 800;">
-                    <span id="js-prix-total">{{ prix_total|default:prestation.prix_unitaire }}</span> FCFA
-                </strong>
-            </div>
+                        <!-- PALIER 2 -->
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}20{% else %}200{% endif %}" style="display: none !important;">
+                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
+                                <div class="visual-footer">
+                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}20{% else %}200{% endif %} ex.</strong>
+                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
+                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
+                                </div>
+                            </label>
+                        </div>
 
-            <!-- COORDONNÉES DE LIVRAISON -->
-            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 22px; border-radius: 10px; margin-bottom: 25px;">
-                <h3 style="color: #2e0854; font-size: 1rem; margin: 0 0 15px 0; font-weight: bold; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
-                    📋 Coordonnées de livraison (Requises pour WhatsApp)
-                </h3>
-                
-                <div style="margin-bottom: 12px;">
-                    <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Nom et Prénoms *</label>
-                    <input type="text" name="nom_client" value="{{ nom_client_saisi|default:'' }}" placeholder="Ex: Kouassi Koffi Jean" required 
-                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
-                </div>
+                        <!-- PALIER 3 -->
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}30{% else %}300{% endif %}" style="display: none !important;">
+                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
+                                <div class="visual-footer">
+                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}30{% else %}300{% endif %} ex.</strong>
+                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
+                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
+                                </div>
+                            </label>
+                        </div>
 
-                <div style="margin-bottom: 12px;">
-                    <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Adresse E-mail (Optionnel)</label>
-                    <input type="email" name="email_client" value="{{ email_client_saisi|default:'' }}" placeholder="Ex: monadresse@gmail.com" 
-                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
-                </div>
+                        <!-- PALIER 4 -->
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}40{% else %}400{% endif %}" style="display: none !important;">
+                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
+                                <div class="visual-footer">
+                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}40{% else %}400{% endif %} ex.</strong>
+                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
+                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
+                                </div>
+                            </label>
+                        </div>
 
-                <div style="margin-bottom: 20px;">
-                    <label style="display:block; font-size:12px; font-weight:600; color:#4b5563; margin-bottom:4px;">Numéro de téléphone portable *</label>
-                    <input type="tel" name="telephone_client" value="{{ telephone_client_saisi|default:'' }}" placeholder="Ex: 0574702092" 
-                           required 
-                           pattern="[0-9]{10}" 
-                           maxlength="10"
-                           style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none;">
-                </div>
-            </div>
+                        <!-- PALIER 5 -->
+                        <div class="col-custom-visual">
+                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
+                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}50{% else %}500{% endif %}" style="display: none !important;">
+                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
+                                <div class="visual-footer">
+                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}50{% else %}500{% endif %} ex.</strong>
+                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
+                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
+                                </div>
+                            </label>
+                        </div>
 
-            <!-- 🟢 POSITIONNÉ ET STYLISÉ EN BAS : BOUTON VERT WHATSAPP DE COMMANDE -->
-            <button type="submit" name="valider_commande" 
-                    style="width: 100%; background-color: #25d366; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                💬 Valider et commander sur WhatsApp
-            </button>
+                        <!-- Case Quantité Libre -->
+                        <div class="col-custom-visual" style="min-width: 200px;">
+                            <div id="btn-quantite-libre" class="card-option-visual text-center" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 10px;">
+                                <input type="radio" name="quantite_lot" value="custom" style="display: none !important;">
+                                <div style="color: #d97706; font-weight: bold; margin-bottom: 5px;">✨ Quantité libre</div>
+                                <input type="number" id="input_qte_libre" name="quantite_custom" placeholder="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}Ex: 60{% else %}Ex: 600{% endif %}" min="1" style="width: 110px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; font-weight: bold;">
+                                <span id="badge_remise_libre" class="badge bg-success text-white d-block mt-2" style="font-size: 0.75rem;">Remise 5%</span>
+                            </div>
+                        </div>
 
-        </form>
-    </div>
-</div>
+                    </div>
+                {% endif %}
+
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const prixUnitaireBase = parseFloat("{{ prestation.prix_unitaire }}") || 0;
-        const typeUnite = "{{ prestation.type_unite }}";
-        
-        const inputLongueur = document.getElementById("js-longueur");
-        const inputLargeur = document.getElementById("js-largeur");
-        const inputQuantite = document.getElementById("js-quantite");
-        const affichagePrixTotal = document.getElementById("js-prix-total");
+    document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll('.card-option-visual');
+        const hiddenTypeQuantite = document.getElementById('type_quantite');
 
-        // Fonction utilitaire pour ajouter les points comme séparateurs de milliers
-        function formaterMilliers(valeur) {
-            return Math.round(valeur).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        // Gestion de la sélection visuelle des cartes
+        cards.forEach(card => {
+            card.addEventListener('click', function (e) {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
+
+                const radio = this.querySelector('input[type="radio"]');
+                
+                this.closest('div').querySelectorAll('.card-option-visual').forEach(c => {
+                    c.classList.remove('active-option');
+                    const footer = c.querySelector('.visual-footer');
+                    if (footer) footer.style.backgroundColor = 'transparent';
+                });
+
+                this.classList.add('active-option');
+                if (radio) {
+                    radio.checked = true;
+                    if (hiddenTypeQuantite) {
+                        if (radio.value === 'custom') {
+                            hiddenTypeQuantite.value = 'libre';
+                        } else {
+                            hiddenTypeQuantite.value = (radio.name === 'dimensions_m2') ? 'm2' : 'lot';
+                        }
+                    }
+                }
+
+                const footer = this.querySelector('.visual-footer');
+                if (footer) footer.style.backgroundColor = '#f5f3ff';
+            });
+        });
+
+        // Détection de la saisie clavier quantité libre (>500 ex. -> Remise 10%)
+        const inputQteLibre = document.getElementById('input_qte_libre');
+        if (inputQteLibre) {
+            inputQteLibre.addEventListener('input', function () {
+                const parentCard = this.closest('#btn-quantite-libre');
+                const radio = parentCard.querySelector('input[type="radio"]');
+                const badge = document.getElementById('badge_remise_libre');
+                
+                if (radio) radio.checked = true;
+                if (hiddenTypeQuantite) hiddenTypeQuantite.value = 'libre';
+                
+                cards.forEach(c => c.classList.remove('active-option'));
+                parentCard.classList.add('active-option');
+
+                const qte = parseInt(this.value) || 0;
+                if (qte > 500) {
+                    badge.textContent = "Remise 10% 🔥";
+                    badge.className = "badge bg-danger text-white d-block mt-2";
+                } else {
+                    badge.textContent = "Remise 5%";
+                    badge.className = "badge bg-success text-white d-block mt-2";
+                }
+            });
         }
-
-        function recalculerPrixEnDirect() {
-            if (!affichagePrixTotal) return;
-            let total = 0;
-
-            if (typeUnite === "M2") {
-                // Logique Bâche / M² : Longueur * Largeur * Prix unitaire
-                const longueur = parseFloat(inputLongueur.value) || 0;
-                const largeur = parseFloat(inputLargeur.value) || 0;
-                total = longueur * largeur * prixUnitaireBase;
-            } else if (typeUnite === "LOT_100") {
-                // Logique Lot de 100 Flyers : (Quantité saisie / 100) * Prix unitaire du lot
-                const quantite = parseFloat(inputQuantite.value) || 0;
-                total = (quantite / 100) * prixUnitaireBase;
-            } else {
-                // Logique standard Unitaire ou par Lettre : Quantité * Prix unitaire
-                const quantite = parseFloat(inputQuantite.value) || 0;
-                total = quantite * prixUnitaireBase;
-            }
-
-            // Affichage propre arrondi et formaté avec des points (Ex: 45.000)
-            affichagePrixTotal.textContent = formaterMilliers(total);
-        }
-
-        // Branchement des écouteurs (input pour la saisie clavier, change pour les flèches haut/bas du navigateur)
-        if (inputLongueur) {
-            inputLongueur.addEventListener("input", recalculerPrixEnDirect);
-            inputLongueur.addEventListener("change", recalculerPrixEnDirect);
-        }
-        if (inputLargeur) {
-            inputLargeur.addEventListener("input", recalculerPrixEnDirect);
-            inputLargeur.addEventListener("change", recalculerPrixEnDirect);
-        }
-        if (inputQuantite) {
-            inputQuantite.addEventListener("input", recalculerPrixEnDirect);
-            inputQuantite.addEventListener("change", recalculerPrixEnDirect);
-        }
-
-        // Lancer un premier calcul automatique pour initialiser l'affichage au chargement de la page
-        recalculerPrixEnDirect();
     });
 </script>
 {% endblock %}

@@ -111,19 +111,20 @@ class MessageAssistant(models.Model):
         return f"{expediteur} : {self.message[:30]}"
     
 
+import datetime
+from django.db import models
 
 class Prestation(models.Model):
     CHOIX_UNITE = [
-        ('M2', 'Au mètre carré (m²)'),
-        ('UNITE', 'À l\'unité (Quantité × Prix)'), # <--- Plus simple pour Flutter et le Web
-        ('LOT_100', 'Par lot de 100 flyers'),
-        ('LETTRE', 'À la lettre / Autocollant'),
+        ('SURFACE', 'Au mètre carré (Bâche, Vinyle, Affiche)'),
+        ('FLYER', 'Lots & Paliers par Format (Flyer, Dépliant, Carte)'),
+        ('UNITE', 'À l\'unité simple (Roll-up, Goodies, Reliure)'),
+        ('PAGES', 'Au document multipage (Brochure, Catalogue)'),
     ]
 
     titre = models.CharField(max_length=200, verbose_name="Nom de la prestation")
     description = models.TextField(blank=True, verbose_name="Description")
-    type_unite = models.CharField(max_length=10, choices=CHOIX_UNITE, default='M2', verbose_name="Type de calcul")
-    prix_unitaire = models.IntegerField(verbose_name="Prix unitaire (FCFA)")
+    type_unite = models.CharField(max_length=10, choices=CHOIX_UNITE, default='UNITE', verbose_name="Type de calcul")
     image = models.ImageField(upload_to='prestations/', blank=True, null=True, verbose_name="Image du produit")
 
     class Meta:
@@ -131,9 +132,58 @@ class Prestation(models.Model):
 
     def __str__(self):
         return self.titre
-    
+
+# 1. POUR LES PRODUITS 'SURFACE' (Bâche, Vinyle, Affiche)
+class GrilleTarifaireSurface(models.Model):
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='grilles_surface')
+    dimensions = models.CharField(max_length=50, help_text="Ex: 1x1m, 2x3m, A0")
+    surface_m2 = models.FloatField(verbose_name="Surface en m²")
+    prix_total = models.IntegerField(verbose_name="Prix total pour cette dimension (FCFA)")
+    # NOUVEAU : Image spécifique à cette dimension
+    image = models.ImageField(upload_to='surfaces/', blank=True, null=True, verbose_name="Image de démonstration")
+
+    def __str__(self):
+        return f"{self.prestation.titre} - {self.dimensions} ({self.prix_total} FCFA)"
+
+
+# 2. POUR LES FLYERS / DÉPLIANTS
+class FormatFlyer(models.Model):
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='formats_flyer')
+    nom_format = models.CharField(max_length=50, help_text="Ex: Format A5, Format A6, Standard (Carte)")
+    prix_unitaire = models.IntegerField(verbose_name="Prix unitaire de base (FCFA)")
+    # NOUVEAU : Image spécifique à ce format
+    image = models.ImageField(upload_to='flyers/', blank=True, null=True, verbose_name="Image du format")
+
+    def __str__(self):
+        return f"{self.prestation.titre} - {self.nom_format} ({self.prix_unitaire} FCFA/unité)"
     
 
+# 3. NOUVEAU - POUR LES QUANTITÉS ET LOTS (100 ex, 200 ex...)
+class OptionQuantite(models.Model):
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='options_quantite')
+    quantite = models.IntegerField(verbose_name="Quantité (exemples)", help_text="Ex: 100, 200, 500")
+    remise_pourcentage = models.IntegerField(default=0, verbose_name="Remise en %")
+
+    def __str__(self):
+        return f"{self.prestation.titre} - Lot {self.quantite} ex. (-{self.remise_pourcentage}%)"
+
+
+# 4. POUR LES PRODUITS À L'UNITÉ (T-shirts, Objets) AVEC TARIFS DÉGRESSIFS
+class PalierPrixUnitaire(models.Model):
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='paliers_unite')
+    quantite_minimale = models.IntegerField(verbose_name="Quantité minimale", help_text="Ex: 1, 10, 50, 100")
+    prix_unitaire = models.IntegerField(verbose_name="Prix unitaire pour ce palier (FCFA)")
+    image = models.ImageField(upload_to='paliers/', blank=True, null=True, verbose_name="Image du palier")
+
+    class Meta:
+        ordering = ['quantite_minimale']  # Trie automatiquement du plus petit au plus grand lot
+
+    def __str__(self):
+        return f"{self.prestation.titre} - Dès {self.quantite_minimale} ex. ({self.prix_unitaire} FCFA/u)"
+    
+
+    
+# 3. STRUCTURE DE COMMANDE UNIVERSELLE
 class CommandeImpression(models.Model):
     STATUT_CHOICES = [
         ('EN_ATTENTE', 'En attente'),
@@ -145,7 +195,6 @@ class CommandeImpression(models.Model):
     email_client = models.EmailField()
     telephone = models.CharField(max_length=20)
     
-    # Contient le récapitulatif JSON complet de la commande pour l'historique
     details_json = models.TextField(verbose_name="Détails de la commande (JSON)")
     
     total_brut = models.IntegerField(default=0)
@@ -154,23 +203,24 @@ class CommandeImpression(models.Model):
     
     date_commande = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='EN_ATTENTE')
-    remise_active = models.BooleanField(default=True, verbose_name="Remise de 5% appliquée")
-
-    # 🛠️ NOUVEAUX CHAMPS POUR VOTRE LOGIQUE DE VALIDATION ET TRANSFERT EN BL
+    
     validee_par_client = models.BooleanField(default=False, verbose_name="Validé par le client")
     bl_genere = models.BooleanField(default=False, verbose_name="Transféré en Bon de Livraison")
 
     def numero_bon(self):
-        # Utilisation sécurisée de l'année pour éviter les bugs avant la première sauvegarde
         annee = self.date_commande.year if self.date_commande else datetime.datetime.now().year
         return f"BON-{annee}-{self.id:03d}" if self.id else f"BON-{annee}-000"
 
     def __str__(self):
         return f"Commande #{self.numero_bon()} - {self.nom_client}"
-    
+
+
 
 
 class Realisation(models.Model):
+    # LIGNE À RAJOUTER ABSOLUMENT : Lie la réalisation à un produit spécifique
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='realisations', null=True, blank=True)
+    
     titre = models.CharField(max_length=200, verbose_name="Nom de la réalisation (ex: Bâche Pro)")
     commentaire = models.CharField(max_length=255, verbose_name="Texte accrocheur (ex: Qualité Premium YaTout)")
     image = models.ImageField(upload_to='realisations/', verbose_name="Photo du rendu réel")
@@ -178,3 +228,6 @@ class Realisation(models.Model):
 
     def __str__(self):
         return self.titre
+    
+
+

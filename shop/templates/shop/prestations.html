@@ -4,39 +4,44 @@
 {% block title %}Nos Supports & Tarifs - YaTout{% endblock %}
 
 {% block content %}
-<!-- EFFET DE DÉFILEMENT FLUIDE INSTANTANÉ AU CHARGEMENT DE L'ANCRE -->
 <style>
     html { scroll-behavior: smooth; }
-    /* Neutralise le style des liens pour que la carte garde son design propre */
+    body { background-color: #f1f5f9 !important; }
+    
     .lien-carte {
         text-decoration: none;
         color: inherit;
         display: block;
     }
-    /* Styles pour la grille de simulation */
-    .input-field {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        margin-bottom: 15px;
-        box-sizing: border-box;
-        font-size: 0.95rem;
+    .product-grid {
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); 
+        gap: 30px; 
+        margin-bottom: 50px;
     }
-    .btn-submit-order {
-        width: 100%;
-        padding: 14px;
-        border: none;
-        font-weight: bold;
-        border-radius: 8px;
+    .product-card {
+        border: 1px solid #e8e3f0; 
+        border-radius: 16px; 
+        overflow: hidden; 
+        background: white; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02); 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between; 
+        transition: transform 0.2s, box-shadow 0.2s; 
+        height: 100%; 
         cursor: pointer;
-        font-size: 1rem;
-        transition: background 0.2s;
+    }
+    .product-card:hover {
+        transform: translateY(-4px); 
+        box-shadow: 0 10px 20px rgba(123,36,204,0.08); 
+        border-color: #7c3aed;
     }
 </style>
 
 <div class="container" style="max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif;">
     
+    <!-- En-tête -->
     <div style="text-align: center; margin-bottom: 45px;">
         <h1 style="color: #2e0854; font-size: 2.3rem; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #7c3aed; padding-bottom: 15px; display: inline-block;">
             📋 Notre Catalogue de Supports
@@ -46,16 +51,13 @@
         </p>
     </div>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 30px; margin-bottom: 50px;">
+    <!-- Grille des cartes prestations -->
+    <div class="product-grid">
         {% for prestation in prestations %}
-            <!-- 🔗 REND LA CARTE ENTIÈREMENT CLIQUABLE VERS LE FORMULAIRE DE CALCUL -->
             <a href="{% url 'detail_prestation' prestation.id %}" class="lien-carte">
-                
-                <!-- CONFIGURATION DE L'ID DE L'ANCRE DYNAMIQUE -->
-                <div id="prestation-{{ prestation.id }}" style="border: 1px solid #e8e3f0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; height: 100%; cursor: pointer;" 
-                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 20px rgba(123,36,204,0.08)'; this.style.borderColor='#7c3aed';" 
-                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.02)'; this.style.borderColor='#e8e3f0';">
+                <div class="product-card">
                     
+                    <!-- Zone Image -->
                     <div style="background-color: #f8fafc; height: 190px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border-bottom: 1px solid #f0edf5;">
                         {% if prestation.image %}
                             <img src="{{ prestation.image.url }}" alt="{{ prestation.titre }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -64,6 +66,7 @@
                         {% endif %}
                     </div>
                     
+                    <!-- Textes et Bouton d'action -->
                     <div style="padding: 22px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 15px;">
                         <div>
                             <h3 style="margin: 0 0 8px 0; color: #2e0854; font-size: 1.15rem; font-weight: 700;">{{ prestation.titre }}</h3>
@@ -76,10 +79,14 @@
                             </p>
                         </div>
                         
-                        <span style="display: block; text-align: center; background-color: #f3e8ff; color: #7c3aed; border: 1px solid #7c3aed; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.95rem;">
-                            💰 Prix Base : {{ prestation.prix_unitaire }} FCFA
+                        <!-- 🟢 MODIFICATION : Remplacement du prix par le bouton VOIR LES TARIFS -->
+                        <span style="display: block; text-align: center; background-color: #f3e8ff; color: #7c3aed; border: 1px solid #7c3aed; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; transition: background 0.2s;"
+                              onmouseover="this.style.backgroundColor='#7c3aed'; this.style.color='#ffffff';"
+                              onmouseout="this.style.backgroundColor='#f3e8ff'; this.style.color='#7c3aed';">
+                            🔎 Voir les tarifs
                         </span>
                     </div>
+
                 </div>
             </a>
         {% empty %}
@@ -87,61 +94,6 @@
                 💡 Aucun support d'impression n'est disponible dans le catalogue pour le moment.
             </div>
         {% endfor %}
-    </div>
-
-    <!-- 🧮 LE FORMULAIRE DU SIMULATEUR AJUSTÉ AU RENDU DE L'ÉCRAN -->
-    <div style="background: white; border: 1px solid #e8e3f0; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); max-width: 650px; margin: 0 auto;">
-        
-        <!-- ZONE DES DIMENSIONS -->
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <div style="flex: 1;">
-                <label style="font-weight: bold; font-size: 0.9rem; color: #2e0854; display: block; margin-bottom: 5px;">Longueur (mètres) :</label>
-                <input type="number" name="longueur" value="1" min="1" class="input-field" style="margin-bottom: 0;">
-            </div>
-            <div style="flex: 1;">
-                <label style="font-weight: bold; font-size: 0.9rem; color: #2e0854; display: block; margin-bottom: 5px;">Largeur (mètres) :</label>
-                <input type="number" name="largeur" value="1" min="1" class="input-field" style="margin-bottom: 0;">
-            </div>
-        </div>
-
-        <!-- UNIQUE BOUTON EN HAUT : METTRE À JOUR LE PRIX -->
-        <div style="margin-bottom: 25px;">
-            <button type="button" id="btn-maj-prix" style="width: 100%; padding: 12px; background: #2e0854; color: white; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
-                🔄 Mettre à jour le prix
-            </button>
-        </div>
-
-        <!-- ZONE D'AFFICHAGE DE L'ESTIMATION BRUTE -->
-        <div style="background: #e2f1e8; border: 1px solid #cbd5e1; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-            <span style="font-size: 0.85rem; font-weight: bold; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Estimation brute actuelle</span>
-            <h2 style="font-size: 2.2rem; color: #166534; margin: 5px 0 0 0; font-weight: 800;"><span id="js-prix-affichage">4500</span> FCFA</h2>
-        </div>
-
-        <!-- LE FORMULAIRE DES COORDONNÉES DE LIVRAISON -->
-        <form method="POST" action="">
-            {% csrf_token %}
-            
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
-                <input type="checkbox" id="coords-livraison" checked disabled style="cursor: not-allowed;">
-                <label for="coords-livraison" style="font-weight: bold; font-size: 0.95rem; color: #1e293b;">
-                    📋 Coordonnées de livraison (Requises pour WhatsApp)
-                </label>
-            </div>
-
-            <label style="font-weight: bold; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Nom et Prénoms *</label>
-            <input type="text" name="nom_client" placeholder="Ex: Kouassi Koffi Jean" class="input-field" required>
-
-            <label style="font-weight: bold; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Adresse E-mail (Optionnel)</label>
-            <input type="email" name="email_client" placeholder="Ex: monadresse@gmail.com" class="input-field">
-
-            <label style="font-weight: bold; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Numéro de téléphone portable *</label>
-            <input type="tel" name="telephone_client" placeholder="Ex: 0574702092" class="input-field" required>
-
-            <!-- 🟢 CORRECTION : Le bouton final est maintenant tout en bas du formulaire et stylisé WhatsApp -->
-            <button type="submit" name="finaliser_commande_whatsapp" class="btn-submit-order" style="background: #25d366; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px;">
-                💬 Valider et commander sur WhatsApp
-            </button>
-        </form>
     </div>
 </div>
 {% endblock %}

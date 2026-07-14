@@ -34,7 +34,7 @@ from django.http import HttpResponse
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from .models import Produit, Prestation, CommandeImpression
+from .models import Produit, Prestation, CommandeImpression, FormatFlyer, GrilleTarifaireSurface
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import os
 from django.conf import settings
@@ -1171,120 +1171,327 @@ def page_prestations(request):
     prestations = Prestation.objects.all()
     return render(request, 'shop/prestations.html', {'prestations': prestations})
 
-
-
-
+import urllib.parse
+import json
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Prestation
 
 def detail_prestation(request, prestation_id):
     prestation = get_object_or_404(Prestation, id=prestation_id)
+    realisations = prestation.realisations.all()
+    titre_inf = prestation.titre.lower()
     
-    # Valeurs par défaut au premier chargement (GET)
-    quantite_saisie = 1
-    longueur = 1.0
-    largeur = 1.0
-    prix_total = prestation.prix_unitaire 
-    unite_texte = f"{quantite_saisie} unité(s)"
+    # Émojis et prix unitaires de base par défaut (sécurité visuelle)
+    if 'tasse' in titre_inf or 'mug' in titre_inf: define_prix_u, define_emoji = 2500, "☕"
+    elif 'casquette' in titre_inf or 'casque' in titre_inf: define_prix_u, define_emoji = 3500, "🪖"
+    elif 't-shirt' in titre_inf or 'tshirt' in titre_inf: define_prix_u, define_emoji = 6500, "👕"
+    elif 'sac' in titre_inf: define_prix_u, define_emoji = 800, "🛍️"
+    elif 'rollup' in titre_inf or 'roll-up' in titre_inf: define_prix_u, define_emoji = 25000, "🧍"
+    elif 'impression' in titre_inf: define_prix_u, define_emoji = 100, "🖨️"
+    elif 'reliure' in titre_inf: define_prix_u, define_emoji = 1500, "📚"
+    else: define_prix_u, define_emoji = 1000, "📦"
+
+    type_unite_clean = prestation.type_unite.upper()
 
     if request.method == "POST":
-        # 1. Règles de calcul selon l'unité et récupération des champs
-        if prestation.type_unite == 'M2':
-            longueur = float(request.POST.get('longueur', 1))
-            largeur = float(request.POST.get('largeur', 1))
-            surface_m2 = longueur * largeur
-            prix_total = int(surface_m2 * prestation.prix_unitaire)
-            unite_texte = f"Surface: {surface_m2:.2f} m² ({longueur}m x {largeur}m)"
-            quantite_saisie = surface_m2 # Utilisé pour la cohérence
-        elif prestation.type_unite == 'LOT_100':
-            quantite_saisie = float(request.POST.get('quantite', 1))
-            prix_total = int((quantite_saisie / 100) * prestation.prix_unitaire)
-            unite_texte = f"{int(quantite_saisie)} exemplaires"
-        elif prestation.type_unite == 'UNITE':
-            quantite_saisie = float(request.POST.get('quantite', 1))
-            prix_total = int(quantite_saisie * prestation.prix_unitaire)
-            unite_texte = f"{int(quantite_saisie)} unité(s)"
-        else: # LETTRE
-            quantite_saisie = float(request.POST.get('quantite', 1))
-            prix_total = int(quantite_saisie * prestation.prix_unitaire)
-            unite_texte = f"{int(quantite_saisie)} lettres"
+        prix_brut = 0
+        montant_remise = 0
+        remise_texte_whatsapp = "Aucune"
+        unite_texte = ""
+        
+        # Structure de base de l'élément commandé
+        item_panier = {
+            'id': prestation.id,
+            'titre': prestation.titre,
+            'type_unite': prestation.type_unite,
+        }
 
-        # 2. Traitement lors du clic sur le bouton de commande (Soumission du formulaire)
-        if 'valider_whatsapp' in request.POST or 'valider_commande' in request.POST:
-            nom = request.POST.get('nom_client', '').strip()
-            email = request.POST.get('email_client', '').strip()
-            tel = request.POST.get('telephone_client', '').strip()
-            
-            # Structure de l'élément du panier inséré dans le JSON
-            item_panier = {
-                'titre': prestation.titre,
-                'type_unite': prestation.type_unite,
-                'prix': prestation.prix_unitaire,
-                'total': prix_total
-            }
-
-            # Ajout des spécificités géométriques si c'est du m²
-            if prestation.type_unite == 'M2':
-                item_panier['longueur'] = longueur
-                item_panier['largeur'] = largeur
-                item_panier['surface_m2'] = round(surface_m2, 2)
+        # --- LOGIQUE 1 : TYPE SURFACE ---
+        if type_unite_clean in ['SURFACE', 'M2']:
+            dimensions_m2 = request.POST.get('dimensions_m2', '1x1')
+            if dimensions_m2 == 'custom':
+                try:
+                    largeur = float(request.POST.get('largeur_custom', 1.0))
+                    hauteur = float(request.POST.get('hauteur_custom', 1.0))
+                except ValueError:
+                    largeur, hauteur = 1.0, 1.0
+                surface = largeur * hauteur
+                prix_brut = int(surface * 4750) 
+                montant_remise = int(prix_brut * 0.05)
+                remise_texte_whatsapp = "5% (Sur-mesure)"
             else:
-                item_panier['qte'] = int(quantite_saisie) if quantite_saisie.is_integer() else quantite_saisie
+                grille_obj = prestation.grilles_surface.filter(dimensions=dimensions_m2).first()
+                if grille_obj:
+                    prix_brut = grille_obj.prix_total
+                    surface = grille_obj.surface_m2
+                else:
+                    surface, prix_brut = 1.0, 4750
+                montant_remise = 0 
+                remise_texte_whatsapp = "Inclus (Tarif catalogue)"
 
-            structure_tableau_json = [item_panier]
+            unite_texte = f"Format {dimensions_m2} ({surface:.2f} m²)"
+            item_panier.update({'dimensions': dimensions_m2, 'surface': surface})
+
+        # --- LOGIQUE 2 : TYPE FLYER / LOTS ---
+        elif type_unite_clean == 'FLYER':
+            format_id = request.POST.get('format_choisi')
             
-            # Application de la remise commerciale
-            montant_remise = int(prix_total * 0.05)
-            total_final = prix_total - montant_remise
+            # SÉCURITÉ : On vérifie si format_id est bien un nombre valide avant de chercher en BDD
+            if format_id and format_id.isdigit():
+                format_obj = prestation.formats_flyer.filter(id=int(format_id)).first()
+            else:
+                format_obj = None
 
-            # Enregistrement en base de données
+            # Si le format existe en BDD, on prend son prix, sinon on utilise la valeur par défaut
+            prix_unitaire = format_obj.prix_unitaire if format_obj else define_prix_u
+            nom_technique = format_obj.nom_format if format_obj else "Standard"
+            
+            quantite_saisie = request.POST.get('quantite_lot')
+            if quantite_saisie == 'custom':
+                qte = int(request.POST.get('quantite_custom', 600))
+                remise_pct = 10 if qte > 500 else 5
+            else:
+                qte = int(quantite_saisie) if quantite_saisie else 100
+                lot_db = prestation.options_quantite.filter(quantite=qte).first()
+                remise_pct = lot_db.remise_pourcentage if lot_db else 5
+
+            prix_brut = qte * prix_unitaire
+            montant_remise = int(prix_brut * (remise_pct / 100))
+            remise_texte_whatsapp = f"{remise_pct}%"
+            unite_texte = f"{qte} ex. ({nom_technique})"
+            item_panier.update({'qte': qte})
+
+        # --- LOGIQUE 3 : TYPE UNITE ---
+        elif type_unite_clean == 'UNITE':
+            quantite_choisie = request.POST.get('quantite_unite_radio', '1')
+            qte = int(request.POST.get('quantite_custom_unite', 1)) if quantite_choisie == 'custom' else int(quantite_choisie)
+
+            paliers = prestation.paliers_unite.filter(quantite_minimale__lte=qte).order_by('-quantite_minimale')
+            if paliers.exists():
+                prix_unitaire_degressif = paliers.first().prix_unitaire
+                remise_texte_whatsapp = f"Tarif dégressif ({paliers.first().quantite_minimale}+)"
+            else:
+                prix_unitaire_degressif = define_prix_u
+                remise_texte_whatsapp = "Tarif de base"
+
+            prix_brut = qte * prix_unitaire_degressif
+            montant_remise = 0 
+            unite_texte = f"{qte} unité(s)"
+            item_panier.update({'qte': qte})
+
+        # --- LOGIQUE 4 : CAS PAR DÉFAUT ---
+        else:
+            qte = int(request.POST.get('quantite_lot', 1))
+            prix_brut = qte * define_prix_u
+            unite_texte = f"{qte} exemplaire(s)"
+            item_panier.update({'qte': qte})
+
+        # Calculs financiers finaux
+        total_final = prix_brut - montant_remise
+        item_panier.update({'prix': prix_brut, 'total': total_final})
+
+        # 🚀 SAUVEGARDE EN SESSION DE LA COMMANDE TEMPORAIRE
+        request.session['commande_temporaire'] = {
+            'prestation_id': prestation.id,
+            'prestation_titre': prestation.titre,
+            'unite_texte': unite_texte,
+            'remise_texte_whatsapp': remise_texte_whatsapp,
+            'total_brut': prix_brut,
+            'montant_remise': montant_remise,
+            'total_final': total_final,
+            'total_final_formate': f"{total_final:,}".replace(',', ' '),
+            'item_panier': item_panier
+        }
+        request.session.modified = True
+
+        # Redirection immédiate vers l'étape de validation des coordonnées
+        return redirect('confirmer_commande_client')
+
+    # 4. ENVOI DU CONTEXTE VERS LE BON TEMPLATE (AIGUILLAGE AUTOMATIQUE)
+    context = {
+        'prestation': prestation,
+        'realisations': realisations,
+        'define_prix_u': define_prix_u,
+        'define_emoji': define_emoji,
+        'grilles_surface': prestation.grilles_surface.all(),
+        'formats_flyer': prestation.formats_flyer.all(),
+        'options_quantite': prestation.options_quantite.all(),
+        'paliers_unite': prestation.paliers_unite.all(),
+    }
+
+    # Nettoyage et vérification de la casse pour charger le bon gabarit
+    type_unite_lower = prestation.type_unite.lower()
+
+    if type_unite_lower in ['m2', 'surface']:
+        # Force le chargement de votre fichier Surface (Bâches)
+        return render(request, 'shop/prestation_surface.html', context)
+        
+    elif type_unite_lower == 'flyer':
+        # Chargera le fichier Flyer quand nous le ferons
+        return render(request, 'shop/prestation_flyer.html', context)
+        
+    elif type_unite_lower == 'unite':
+        # Chargera le fichier Unité quand nous le ferons
+        return render(request, 'shop/prestation_unite.html', context)
+        
+    else:
+        # En cas de sécurité, si aucun type n'est reconnu
+        return render(request, 'shop/prestation_surface.html', context)
+
+import json
+import re
+import urllib.parse
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Prestation, CommandeImpression # Ajustez selon vos modèles
+
+import json
+import json
+import re
+import urllib.parse
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Prestation, CommandeImpression
+
+def confirmer_commande_client(request):
+    """ ÉTAPE 2 : Formulaire de coordonnées, insertion BDD et routage WhatsApp """
+    
+    # 1. FORÇAGE : Si la requête vient du formulaire Unité, on ignore l'ancienne session
+    # et on force le recalcul immédiat pour la tasse/casquette courante.
+    est_produit_unite = request.method == "POST" and request.POST.get('type_quantite') == 'unite_palier'
+    
+    if est_produit_unite:
+        commande_session = None
+    else:
+        # Sinon, on récupère classiquement la session existante (pour les surfaces)
+        commande_session = request.session.get('commande_temporaire')
+    
+    # 2. CAS PRODUIT À L'UNITÉ : Calcul et écriture propre des données à la volée
+    if not commande_session and request.method == "POST" and request.POST.get('type_quantite') == 'unite_palier':
+        prestation_id = request.POST.get('prestation_id')
+        if not prestation_id:
+            return redirect('page_prestations')
+            
+        prestation_obj = get_object_or_404(Prestation, id=prestation_id)
+        quantite_radio = request.POST.get('quantite_unite_radio')
+        
+        # Saisie quantité exacte libre
+        if quantite_radio == "custom":
+            quantite = int(request.POST.get('quantite_custom_unite', 1))
+        else:
+            quantite = int(quantite_radio if quantite_radio else 1)
+            
+        # Recherche du bon palier de prix en base de données pour ce produit précis
+        palier = prestation_obj.paliers_unite.filter(quantite_minimale__lte=quantite).last()
+        if not palier:
+            palier = prestation_obj.paliers_unite.first()
+            
+        prix_unitaire = palier.prix_unitaire if palier else 0
+        total_calculer = quantite * prix_unitaire
+        specification_texte = f"{quantite} exemplaires"
+        
+        # On écrase l'ancienne session en écrivant les données fraîches de la tasse
+        commande_session = {
+            'prestation_id': prestation_obj.id,
+            'prestation_titre': prestation_obj.titre,
+            'unite_texte': specification_texte,
+            'total_brut': total_calculer,
+            'montant_remise': 0,
+            'total_final': total_calculer,
+            'total_final_formate': f"{total_calculer:,}".replace(',', ' '),
+            'remise_texte_whatsapp': "Aucune",
+            'item_panier': {
+                'titre': prestation_obj.titre,
+                'specification': specification_texte,
+                'prix': total_calculer
+            }
+        }
+        request.session['commande_temporaire'] = commande_session
+
+    # 3. Sécurité anti-page blanche
+    if not commande_session:
+        return redirect('page_prestations')
+
+    # Récupération de l'objet prestation courant
+    prestation = get_object_or_404(Prestation, id=commande_session['prestation_id'])
+
+    # 4. SÉCURISATION DE LA TRANSMISSION DU FORMULAIRE DE COORDONNÉES
+    # On s'assure de ne déclencher l'écriture en BDD que si le bouton WhatsApp final a été cliqué
+    if request.method == "POST" and 'nom_client' in request.POST:
+        nom = request.POST.get('nom_client', '').strip()
+        tel = request.POST.get('telephone_client', '').strip()
+        email = request.POST.get('email_client', 'client@yatout.ci').strip()
+        
+        structure_tableau_json = [commande_session['item_panier']]
+
+        try:
             commande = CommandeImpression.objects.create(
                 nom_client=nom,
                 email_client=email,
                 telephone=tel,
-                details_json=json.dumps(structure_tableau_json),
-                total_brut=prix_total,
-                montant_remise=montant_remise,
-                total_final=total_final,
+                details_json=json.dumps(structure_tableau_json, ensure_ascii=False),
+                total_brut=commande_session['total_brut'],
+                montant_remise=commande_session['montant_remise'],
+                total_final=commande_session['total_final'],
                 statut='EN_ATTENTE'
             )
             
-            # Récupération du numéro de bon généré automatiquement par votre modèle
             numero_bon = commande.numero_bon()
 
-            # Formatage propre du prix avec séparateur de milliers pour WhatsApp
-            total_final_formate = f"{total_final:,}".replace(',', '.')
+            # --- CALCUL DE LA REMISE AUTOMATIQUE ---
+            titre_prestation = str(commande_session.get('prestation_titre', '')).lower()
+            unite_texte = str(commande_session.get('unite_texte', '')).lower()
+            
+            quantite_trouvee = re.search(r'\d+', unite_texte)
+            quantite = int(quantite_trouvee.group()) if quantite_trouvee else 0
 
-            # Préparation du texte pré-rempli pour la discussion WhatsApp
+            if "flyer" in titre_prestation and quantite > 500:
+                texte_remise = "10%"
+            else:
+                total_brut = float(commande_session.get('total_brut', 0))
+                total_final = float(commande_session.get('total_final', 0))
+                if total_brut > 0:
+                    pourcentage = round(((total_brut - total_final) / total_brut) * 100)
+                    texte_remise = f"{pourcentage}%" if pourcentage > 0 else "5%"
+                else:
+                    texte_remise = "5%"
+
+            # MESSAGE PORTABLE WHATSAPP
             message_brut = (
                 f"🛍️ *NOUVELLE COMMANDE - YATOUT*\n\n"
                 f"📦 *Bon N° :* #{numero_bon}\n"
                 f"👤 *Client :* {nom}\n"
                 f"📞 *Contact :* {tel}\n"
-                f"🎯 *Impression :* {prestation.titre}\n"
-                f"📏 *Spécifications :* {unite_texte}\n\n"
-                f"💵 *Net à payer :* *{total_final_formate} FCFA*\n\n"
+                f"🎯 *Impression :* {commande_session['prestation_titre']}\n"
+                f"📏 *Spécifications :* {commande_session['unite_texte']}\n"
+                f"🎁 *Remise appliquée :* {texte_remise}\n\n"
+                f"💵 *Net à payer :* *{commande_session['total_final_formate']} FCFA*\n\n"
                 f"Bonjour YaTout, je viens de vérifier mon récapitulatif et je confirme ma commande !"
             )
 
-            # Encodage sécurisé de la chaîne de texte pour l'URL
             texte_url = urllib.parse.quote(message_brut)
             numero_entreprise = "2250574702092"
-            lien_whatsapp_final = f"https://wa.me{numero_entreprise}?text={texte_url}"
+            # LA LIGNE CORRIGÉE :
+            lien_whatsapp_final = f"https://api.whatsapp.com/send?phone={numero_entreprise}&text={texte_url}"
             
-            # 🟢 LA SÉPARATION EST ICI : On envoie d'abord le client sur l'écran intermédiaire pour relecture
+            if 'commande_temporaire' in request.session:
+                del request.session['commande_temporaire']
+            
             return render(request, 'shop/bon_impression_pret.html', {
                 'commande': commande,
                 'lien_whatsapp': lien_whatsapp_final,
                 'prestation': prestation
             })
+            
+        except Exception as e:
+            print(f"Erreur création commande : {e}")
+            return redirect('page_prestations')
 
-    # Rendu initial (GET) ou après calcul d'estimation brute (POST "calculer")
-    return render(request, 'shop/detail_prestation.html', {
-        'prestation': prestation,
-        'quantite_saisie': int(quantite_saisie) if isinstance(quantite_saisie, (int, float)) and quantite_saisie.is_integer() else quantite_saisie,
-        'prix_total': prix_total,
-        'longueur': longueur,
-        'largeur': largeur
+    # Affichage normal de la page formulaire coordonnées
+    return render(request, 'shop/validation_coordonnees.html', {
+        'commande_session': commande_session,
+        'prestation': prestation  # <-- AJOUTEZ CETTE LIGNE ICI
     })
+
 
 @csrf_exempt
 def voir_bon_commande(request, commande_id):

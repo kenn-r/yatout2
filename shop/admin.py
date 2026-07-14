@@ -6,7 +6,11 @@ from .models import (
     Vendeur, Produit, Commande, LigneCommande, 
     Prestation, CommandeImpression, Realisation
 )
+from django.utils.html import format_html
 
+# ✅ VÉRIFIEZ BIEN CETTE LIGNE : ajoutez les modèles manquants à la fin
+from .models import Prestation, GrilleTarifaireSurface, FormatFlyer, Realisation, OptionQuantite, PalierPrixUnitaire
+from .models import Prestation, Realisation  # Cet import donne accès aux modèles de votre application
 # =========================================================================
 # 1. GESTION DES BOUTIQUES & PRODUITS
 # =========================================================================
@@ -50,16 +54,78 @@ class CommandeAdmin(admin.ModelAdmin):
         return "Non spécifié"
 
 
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import Prestation, GrilleTarifaireSurface, FormatFlyer
+from django.contrib import admin
+from django.utils.html import format_html
+# Importation de tous vos modèles nécessaires
+from .models import Prestation, GrilleTarifaireSurface, FormatFlyer, Realisation, OptionQuantite, PalierPrixUnitaire
+
 # =========================================================================
-# 3. GESTION DES SUPPORTS D'IMPRESSION (PRESTATIONS)
+# 1. DÉCLARATION DES INLINES (FORMULAIRES IMBRIQUÉS)
 # =========================================================================
+
+# Permet d'ajouter les prix au m² (Bâches, Vinyles) + Image
+class GrilleTarifaireSurfaceInline(admin.TabularInline):
+    model = GrilleTarifaireSurface
+    extra = 1
+    fields = ('dimensions', 'surface_m2', 'prix_total', 'image')
+
+# Permet d'ajouter les prix par formats (A5, A6...) + Image
+class FormatFlyerInline(admin.TabularInline):
+    model = FormatFlyer
+    extra = 1
+    fields = ('nom_format', 'prix_unitaire', 'image')
+
+# ✅ CONFIGURATION MANQUANTE : Gestion des lots de quantités (100 ex, 200 ex...)
+class OptionQuantiteInline(admin.TabularInline):
+    model = OptionQuantite
+    extra = 3
+
+# ✅ CONFIGURATION MANQUANTE : Tarifs dégressifs pour les produits vendus à l'unité
+# ✅ CONFIGURATION MANUELLE DES CHAMPS VISIBLES DANS L'ADMIN
+class PalierPrixUnitaireInline(admin.TabularInline):
+    model = PalierPrixUnitaire
+    extra = 3
+    # LIGNE CRITIQUE À RAJOUTER POUR SÉCURISER L'AFFICHAGE DE L'IMAGE
+    fields = ['quantite_minimale', 'prix_unitaire', 'image']
+
+
+# admin.py
+
+class RealisationInline(admin.TabularInline):
+    model = Realisation
+    extra = 3
+    # On ajoute un aperçu de l'image directement dans la ligne pour l'admin
+    fields = ('titre', 'commentaire', 'image', 'aperçu_miniature')
+    readonly_fields = ('aperçu_miniature',)
+
+    def aperçu_miniature(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="width: 80px; height: auto; border-radius: 4px;" />', obj.image.url)
+        return "Pas d'image"
+    aperçu_miniature.short_description = "Aperçu"
+
+# =========================================================================
+# 2. CONFIGURATION DE L'ADMINISTRATION PRINCIPALE
+# =========================================================================
+
 @admin.register(Prestation)
 class PrestationAdmin(admin.ModelAdmin):
-    # Ajout de l'aperçu de l'image directement dans la liste
-    list_display = ('id', 'titre', 'type_unite', 'prix_unitaire', 'aperçu_image')
+    list_display = ('id', 'titre', 'type_unite', 'aperçu_image')
     search_fields = ('titre',)
     list_filter = ('type_unite',)
-    list_editable = ('prix_unitaire',)
+    list_editable = ('type_unite',)
+
+    # Tous vos formulaires imbriqués apparaissent ensemble sur la même page, dans le bon ordre !
+    inlines = [
+        GrilleTarifaireSurfaceInline, 
+        FormatFlyerInline, 
+        OptionQuantiteInline, 
+        PalierPrixUnitaireInline, 
+        RealisationInline
+    ]
 
     @admin.display(description='Miniature')
     def aperçu_image(self, obj):
@@ -68,10 +134,8 @@ class PrestationAdmin(admin.ModelAdmin):
         return "Pas d'image"
 
 
-
-
 # =========================================================================
-# 5. HISTORIQUE DES RÉALISATIONS (PORTFOLIO CLIENTS)
+# 3. HISTORIQUE DES RÉALISATIONS (PORTFOLIO CLIENTS)
 # =========================================================================
 @admin.register(Realisation)
 class RealisationAdmin(admin.ModelAdmin):
