@@ -1921,3 +1921,101 @@ textarea.form-input {
 html {
     scroll-behavior: smooth;
 }
+
+
+/* ==========================================================================
+   1. NETTOYAGE DU MENU (Pour tous les écrans)
+   ========================================================================== */
+
+/* Cache définitivement la petite case blanche inutile pour l'utilisateur */
+.menu-checkbox {
+    display: none !important;
+}
+
+/* Cache le bouton burger sur ordinateur (il n'apparaîtra que sur téléphone) */
+.hamburger {
+    display: none !important;
+}
+
+
+/* ==========================================================================
+   2. VERSION TÉLÉPHONE UNIQUEMENT (Écrans inférieurs à 768px)
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+    
+    /* Force le body à se centrer sur mobile */
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Force la barre de navigation à prendre toute la largeur du mobile */
+    .navbar {
+        width: 100%;
+        position: relative;
+    }
+
+    .container {
+        width: 100%;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Fait apparaître le bouton burger uniquement sur téléphone */
+    .hamburger {
+        display: block !important;
+        font-size: 26px;
+        cursor: pointer;
+        color: #1e293b; /* Modifiez la couleur du burger si nécessaire */
+    }
+
+    /* Transforme vos boutons en menu vertical déroulant sur mobile */
+    .nav-actions {
+        display: none !important; /* Masqué par défaut sur mobile */
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #ffffff; /* Fond blanc pour le menu déroulant mobile */
+        padding: 20px;
+        gap: 15px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+
+    /* Force les liens et boutons à occuper toute la largeur du menu mobile */
+    .nav-actions a, 
+    .nav-actions form,
+    .nav-actions button {
+        width: 100%;
+        text-align: center;
+        display: block;
+    }
+
+    /* ACTION MAGIQUE : Déroule le menu au clic sur le burger (Boutique et Impression) */
+    #menu-toggle-shop:checked ~ .nav-actions,
+    #menu-toggle-imp:checked ~ .nav-actions {
+        display: flex !important;
+    }
+
+    /* Centrage du contenu de vos pages de la boutique */
+    .main-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .content-container {
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}

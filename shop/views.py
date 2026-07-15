@@ -1171,11 +1171,7 @@ def page_prestations(request):
     prestations = Prestation.objects.all()
     return render(request, 'shop/prestations.html', {'prestations': prestations})
 
-import urllib.parse
-import json
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Prestation
+
 
 def detail_prestation(request, prestation_id):
     prestation = get_object_or_404(Prestation, id=prestation_id)
@@ -1339,18 +1335,7 @@ def detail_prestation(request, prestation_id):
         # En cas de sécurité, si aucun type n'est reconnu
         return render(request, 'shop/prestation_surface.html', context)
 
-import json
-import re
-import urllib.parse
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Prestation, CommandeImpression # Ajustez selon vos modèles
 
-import json
-import json
-import re
-import urllib.parse
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Prestation, CommandeImpression
 
 def confirmer_commande_client(request):
     """ ÉTAPE 2 : Formulaire de coordonnées, insertion BDD et routage WhatsApp """
@@ -1409,7 +1394,7 @@ def confirmer_commande_client(request):
 
     # 3. Sécurité anti-page blanche
     if not commande_session:
-        return redirect('page_prestations')
+        return redirect('detail_prestation')
 
     # Récupération de l'objet prestation courant
     prestation = get_object_or_404(Prestation, id=commande_session['prestation_id'])

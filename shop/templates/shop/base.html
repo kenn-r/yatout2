@@ -6,19 +6,156 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}YaTout Ci{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
+    
+    <!-- 🟢 STYLES DU MENU BURGER ET COMPORTEMENT MOBILE -->
+    <style>
+    /* STYLES GENERAUX DES NAVBARS */
+    .navbar, .navbar-impression {
+        position: relative !important;
+        background-color: #7c3aed !important; /* Couleur par défaut */
+        padding: 10px 0 !important;
+        z-index: 100000 !important;
+    }
+    .navbar-impression {
+        background-color: #1e293b !important; /* Fond sombre pour la navbar impression */
+    }
+
+    /* ALIGNEMENT INTERNE : LOGO À GAUCHE, BURGER À DROITE */
+    .navbar .container, 
+    .navbar-impression .container {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 0 20px !important;
+        box-sizing: border-box !important;
+    }
+
+    .nav-logo {
+        color: white !important;
+        text-decoration: none !important;
+        font-weight: bold !important;
+        font-size: 1.2rem !important;
+    }
+
+    /* BOUTON BURGER */
+    .burger-menu {
+        display: flex !important;
+        flex-direction: column;
+        gap: 5px;
+        background: none !important;
+        border: none !important;
+        cursor: pointer;
+        padding: 10px !important;
+        z-index: 100002 !important;
+    }
+    .burger-menu span {
+        width: 25px;
+        height: 3px;
+        background-color: white !important;
+        border-radius: 2px;
+        transition: 0.3s ease;
+    }
+
+    /* CONTENEUR DE NAVIGATION MOBILE EN DISQUE DÉROULANT COMPLET */
+    .nav-actions {
+        display: none !important; 
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important; /* Centre horizontalement tous les boutons */
+        position: absolute !important;
+        top: 100% !important; 
+        left: 0 !important;
+        width: 100% !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+        padding: 30px 20px !important; 
+        box-sizing: border-box !important;
+        gap: 15px !important;
+        z-index: 100001 !important;
+    }
+
+    /* APPLICATION DU FOND SELON LE CONTEXTE */
+    .navbar .nav-actions {
+        background-color: #7c3aed !important;
+    }
+    .navbar-impression .nav-actions {
+        background-color: #1e293b !important;
+    }
+
+    /* OUVERTURE ACTIVE */
+    .nav-actions.open {
+        display: flex !important;
+    }
+
+    /* CENTRAGE ET RE-TAILLAGE DU CONTENU UNIQUE SUR LE TELEPHONE */
+    .nav-actions a, 
+    .nav-actions form, 
+    .nav-actions button,
+    .nav-actions span {
+        width: 100% !important;
+        max-width: 320px !important; /* Largeur idéale et homogène sur tous les smartphones */
+        text-align: center !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        text-decoration: none !important;
+        margin: 0 auto !important; /* Centrage horizontal absolu */
+    }
+
+    /* TYPOGRAPHIES DU MENU */
+    .nav-actions a, .nav-actions button {
+        color: white !important;
+        font-size: 1.1rem !important;
+        padding: 10px 0 !important;
+    }
+    
+    /* BOUTON METTRE EN AVANT STYLE BOUTIQUE */
+    .nav-actions .btn-nav-white {
+        background-color: white !important;
+        color: #7c3aed !important;
+        border-radius: 6px !important;
+        font-weight: bold !important;
+        padding: 12px 0 !important;
+    }
+
+    .nav-welcome {
+        color: rgba(255,255,255,0.9) !important;
+        font-size: 1rem !important;
+        padding-bottom: 5px !important;
+    }
+
+    /* ANIMATION CROIX (X) SUR LE MENU OUVERT */
+    .burger-menu.open span:nth-child(1) {
+        transform: translateY(8px) rotate(45deg) !important;
+    }
+    .burger-menu.open span:nth-child(2) {
+        opacity: 0 !important;
+    }
+    .burger-menu.open span:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg) !important;
+    }
+</style>
 </head>
 <body>
 
-    <!-- 1. SÉPARATION DES HEADERS VIA DJANGO (SANS JS) -->
-    {% if "impression" in request.path %}
+    <!-- 1. SÉPARATION DES HEADERS VIA DJANGO -->
+    {% if "impression" in request.path or prestation %}
         
         <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
         <nav class="navbar navbar-impression">
             <div class="container">
                 <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Impression</a>
+                
+                <!-- 🟢 BOUTON BURGER (BIEN PLACÉ À DROITE) -->
+                <button class="burger-menu" onclick="basculerMenuMobile(this)">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- 🟢 CONTENEUR DES ACTIONS DE L'IMPRESSION -->
                 <div class="nav-actions">
                     <a href="{% url 'page_prestations' %}" class="btn-nav btn-prestations">Nos Prestations</a>
-                    <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                    <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; width: 100%; box-sizing: border-box;">
                         💬 Parler à un conseiller
                     </a>
                 </div>
@@ -31,17 +168,25 @@
         <nav class="navbar">
             <div class="container">
                 <a href="{% url 'accueil' %}" class="nav-logo">🔮 YaTout Ci</a>
-                <div class="nav-actions" style="display: flex; align-items: center; gap: 10px;">
-                    <a href="{% url 'panier_detail' %}" class="link-nav" style="margin-right: 10px;">🛒 Mon Panier</a>
+                
+                <!-- 🟢 BOUTON BURGER (BIEN PLACÉ À DROITE) -->
+                <button class="burger-menu" onclick="basculerMenuMobile(this)">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- 🟢 CONTENEUR DES ACTIONS DE LA BOUTIQUE -->
+                <div class="nav-actions">
+                    <a href="{% url 'panier_detail' %}" class="link-nav">🛒 Mon Panier</a>
                     {% if user.is_authenticated %}
                         <span class="nav-welcome">Bonjour, <strong>{{ user.username }}</strong></span>
                         <a href="{% url 'dashboard_vendeur' %}" class="btn-nav btn-nav-purple">Tableau de bord</a>
                         <a href="{% url 'ajouter_produit' %}" class="btn-nav btn-nav-purple">＋ Ajouter produit</a>
                         
-                        <!-- 🔴 AJOUT DU BOUTON DE DÉCONNEXION SÉCURISÉ (POST) -->
-                        <form method="POST" action="{% url 'deconnexion_vendeur' %}" style="margin: 0; display: inline;">
+                        <form method="POST" action="{% url 'deconnexion_vendeur' %}" style="margin: 0; width: 100%;">
                             {% csrf_token %}
-                            <button type="submit" class="btn-nav" style="background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                            <button type="submit" class="btn-nav" style="background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">
                                 🚪 Déconnexion
                             </button>
                         </form>
@@ -70,18 +215,13 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- 🤖 ASSISTANT CHATBOT FLOTTANT GEMINI IA (VISIBLE PARTOUT)             -->
+    <!-- 🤖 ASSISTANT CHATBOT FLOTTANT GEMINI IA                              -->
     <!-- ===================================================================== -->
-    
-    <!-- Bouton rond avec l'émoji robot -->
     <div id="btn-flottant-ia" onclick="basculerFenetreChat()" style="position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: #7c3aed; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(124,58,237,0.4); z-index: 999999; transition: transform 0.2s;">
         🤖
     </div>
 
-    <!-- Fenêtre de tchat masquée par défaut -->
     <div id="fenetre-chat-ia" style="display: none; position: fixed; bottom: 95px; right: 25px; width: 380px; height: 460px; background: white; border: 1px solid #e8e3f0; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); overflow: hidden; flex-direction: column; z-index: 999999; font-family: system-ui, sans-serif;">
-        
-        <!-- En-tête de la fenêtre -->
         <div style="background: #1e293b; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 20px;">🤖</span>
@@ -93,97 +233,61 @@
             <span onclick="basculerFenetreChat()" style="cursor: pointer; font-weight: bold; font-size: 16px; padding: 0 5px;">✕</span>
         </div>
         
-        <!-- Zone de messages -->
         <div id="chat-box-global" style="flex-grow: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
             <div style="align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 85%; font-size: 0.85rem; line-height: 1.4;">
                 Bonjour ! ✨ Je suis l'IA officielle de YaTout. Je connais nos stocks, nos promos et nos supports d'impression en temps réel. Posez-moi votre question !
             </div>
         </div>
 
-        <!-- Zone de saisie -->
         <div style="background: white; padding: 10px 15px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px;">
             <input type="text" id="global-message-input" placeholder="Posez votre question..." style="flex-grow: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.85rem;" onkeypress="if(event.key === 'Enter') envoyerMessageGlobalIA()">
             <button type="button" onclick="envoyerMessageGlobalIA()" style="background: #7b24cc; color: white; border: none; padding: 8px 12px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Envoyer</button>
         </div>
     </div>
 
-    <!-- SCRIPT DU COMPORTEMENT DE L'IA -->
+    <!-- 🟢 SCRIPT SECURISE SANS ERREUR DE SYNTAXE -->
     <script>
-        function basculerFenetreChat() {
-            const tchat = document.getElementById('fenetre-chat-ia');
-            const bouton = document.getElementById('btn-flottant-ia');
-            if (tchat.style.display === 'none' || tchat.style.display === '') {
-                tchat.style.display = 'flex';
-                bouton.style.transform = 'scale(0.9)';
-                const box = document.getElementById('chat-box-global');
-                box.scrollTop = box.scrollHeight;
-            } else {
-                tchat.style.display = 'none';
-                bouton.style.transform = 'scale(1)';
-            }
-        }
+       function basculerMenuMobile(bouton) {
+    const navActions = bouton.parentElement.querySelector('.nav-actions');
+    if (navActions) {
+        navActions.classList.toggle('open');
+        bouton.classList.toggle('open');
+    }
+}
 
-        function envoyerMessageGlobalIA() {
-            const chatBox = document.getElementById('chat-box-global');
-            const inputField = document.getElementById('global-message-input');
-            const messageText = inputField.value.trim();
-            
-            if (!messageText) return;
+function basculerFenetreChat() {
+    const tchat = document.getElementById('fenetre-chat-ia');
+    const bouton = document.getElementById('btn-flottant-ia');
+    if (!tchat || !bouton) return;
 
-            inputField.value = '';
-            chatBox.innerHTML += `
-                <div style="align-self: flex-end; background: #7c3aed; color: white; padding: 10px 14px; border-radius: 12px 12px 0 12px; max-width: 85%; font-size: 0.85rem;">
-                    ${messageText}
-                </div>
-            `;
-            chatBox.scrollTop = chatBox.scrollHeight;
+    if (tchat.style.display === 'none' || tchat.style.display === '') {
+        tchat.style.display = 'flex';
+        bouton.style.transform = 'scale(0.9)';
+        const box = document.getElementById('chat-box-global');
+        if (box) box.scrollTop = box.scrollHeight;
+    } else {
+        tchat.style.display = 'none';
+        bouton.style.transform = 'scale(1)';
+    }
+}
 
-            const idAttente = 'msg-attente-glom-' + Date.now();
-            chatBox.innerHTML += `
-                <div id="${idAttente}" style="align-self: flex-start; background: #f1f5f9; color: #64748b; padding: 8px 12px; border-radius: 12px; font-size: 0.8rem; font-style: italic;">
-                    🤖 Analyse en cours...
-                </div>
-            `;
-            chatBox.scrollTop = chatBox.scrollHeight;
+function envoyerMessageGlobalIA() {
+    const chatBox = document.getElementById('chat-box-global');
+    const inputField = document.getElementById('global-message-input');
+    if (!chatBox || !inputField) return;
 
-            fetch("{% url 'assistant_chat_api' %}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: messageText })
-            })
-            .then(response => response.json())
-            .then(data => {
-                const elAttente = document.getElementById(idAttente);
-                if(elAttente) elAttente.remove();
-                
-                if (data.reponse) {
-                    const reponseFormatee = data.reponse.replace(/\n/g, "<br>");
-                    chatBox.innerHTML += `
-                        <div style="align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 85%; font-size: 0.85rem; line-height: 1.4;">
-                            ${reponseFormatee}
-                        </div>
-                    `;
-                } else {
-                    chatBox.innerHTML += `
-                        <div style="align-self: flex-start; background: #fef2f2; color: #991b1b; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem;">
-                            ❌ Erreur de lecture de l'assistant.
-                        </div>
-                    `;
-                }
-                chatBox.scrollTop = chatBox.scrollHeight;
-            })
-            .catch(error => {
-                const elAttente = document.getElementById(idAttente);
-                if(elAttente) elAttente.remove();
-                chatBox.innerHTML += `
-                    <div style="align-self: flex-start; background: #fef2f2; color: #991b1b; padding: 10px 14px; border-radius: 12px; font-size: 0.85rem;">
-                        ❌ Erreur réseau de connexion à l'IA.
-                    </div>
-                `;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        }
-    </script>
+    const messageText = inputField.value.trim();
+    if (!messageText) return;
 
-</body>
-</html>
+    inputField.value = '';
+    
+    // 🟢 Correction : Utilisation obligatoire des backticks (``) pour encadrer le HTML
+    chatBox.innerHTML += `
+        <div style="align-self: flex-end; background: #7c3aed; color: white; padding: 10px 14px; border-radius: 12px 12px 0 12px; max-width: 85%; font-size: 0.85rem;">
+            ${messageText}
+        </div>
+    `;
+    
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+</script>

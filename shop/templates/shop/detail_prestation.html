@@ -5,276 +5,388 @@
 
 {% block content %}
 <style>
-    .col-custom-visual { 
-        width: calc(33.33% - 12px) !important; 
-        max-width: 33.33% !important;
+    /* 📱 COUPE ET RESPONSIVE DE LA PAGE PRODUIT CENTRALE */
+    .product-page-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 15px;
+        font-family: system-ui, -apple-system, sans-serif;
     }
-    @media (max-width: 576px) {
-        .col-custom-visual { 
-            width: calc(50% - 8px) !important; 
-            max-width: 50% !important;
-        }
+
+    /* 📸 DIAPORAMA CENTRALISÉ (SANS DOUBLONS) */
+    .gallery-section {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto 30px auto;
+        text-align: center;
+    }
+    .carousel-container {
+        position: relative;
+        width: 100%;
+        height: 380px;
+        background-color: #f8fafc;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+    }
+    .carousel-slides {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+    .slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .slide.active {
+        opacity: 1;
+        z-index: 5;
+    }
+    .slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background-color: #f8fafc;
+    }
+    .slide-caption {
+        position: absolute;
+        bottom: 15px;
+        background: rgba(30, 41, 59, 0.85);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e2e8f0;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .prev-btn { left: 15px; }
+    .next-btn { right: 15px; }
+
+    /* 🛒 FICHE DE CONFIGURATION DE COMMANDE */
+    .order-section {
+        width: 100%;
+        max-width: 650px;
+        margin: 0 auto;
+    }
+    .order-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+    .product-title {
+        font-size: 1.5rem;
+        color: #2e0854;
+        font-weight: 700;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+    .title-line {
+        width: 50px;
+        height: 3px;
+        background-color: #dc3545;
+        border-radius: 2px;
+        margin: 0 auto 25px auto;
+    }
+
+    /* GRILLE POUR LES CARTES D'OPTIONS (SURFACE / M²) */
+    .visual-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .col-custom-visual { 
+        width: calc(33.33% - 8px); 
+        max-width: 33.33%;
+    }
+    .card-option-visual {
+        background: #ffffff; 
+        border: 2px solid #e2e8f0; 
+        border-radius: 12px; 
+        display: block; 
+        width: 100%; 
+        overflow: hidden; 
+        cursor: pointer; 
+        padding: 0;
+        transition: all 0.2s ease;
     }
     .visual-container {
         background-color: #f8fafc;
-        height: 120px !important;
+        height: 90px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-bottom: 1px solid #e2e8f0;
     }
-    .visual-container span { font-size: 42px !important; }
-    .visual-footer { padding: 12px 8px !important; font-size: 1rem !important; text-align: center; }
+    .visual-container span { font-size: 32px; }
+    .visual-footer { padding: 10px 5px; font-size: 0.9rem; text-align: center; }
     
+    /* Carte Active */
     .active-option {
         border-color: #7c3aed !important;
-        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.12) !important;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15) !important;
+    }
+
+    /* Saisie Dimensions Libres */
+    .input-grid {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+    }
+    .form-input:focus { border-color: #7c3aed; }
+
+    /* BOUTON VERT VALIDER COMMANDE */
+    .btn-submit-order {
+        width: 100%;
+        background-color: #22c55e;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(34,197,94,0.3);
+        margin-top: 15px;
+    }
+
+    @media (max-width: 576px) {
+        .col-custom-visual { 
+            width: calc(50% - 6px); 
+            max-width: 50%;
+        }
+        .carousel-container { height: 260px; }
+        .order-card { padding: 20px; }
     }
 </style>
 
-<div class="container my-4 px-3" style="width: 100%; max-width: 100%;">
-    <div class="card shadow-sm border-0 p-4" style="background-color: #ffffff; border-radius: 16px; width: 100%;">
+<div class="product-page-container">
     
-        <a href="{% url 'page_prestations' %}" style="text-decoration: none; color: #7c3aed; font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 15px;">
-            ← Retour au catalogue
-        </a>
+    <a href="{% url 'page_prestations' %}" style="text-decoration: none; color: #7c3aed; font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 20px; text-align: left;">
+        ← Retour au catalogue
+    </a>
 
-        <div class="card shadow-sm border-0 p-3 text-center" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05)!important;">
-            
-            <!-- Image produit -->
-            <div class="bg-light rounded-lg p-2 mb-3 d-flex align-items-center justify-content-center" style="height: 280px; border-radius: 12px; background-color: #f8fafc;">
+    <!-- 📸 1. DIAPORAMA DES IMAGES (FUSION DES SOURCES SANS DOUBLONS) -->
+    <div class="gallery-section">
+        <div class="carousel-container">
+            <button class="carousel-btn prev-btn" onclick="changerImage(-1)">❮</button>
+            <div class="carousel-slides">
+                
                 {% if prestation.image %}
-                    <img src="{{ prestation.image.url }}" class="img-fluid" style="max-height: 100%; object-fit: contain;" alt="{{ prestation.titre }}">
-                {% else %}
-                    <span class="text-muted small">Aucun visuel disponible</span>
+                    <div class="slide active">
+                        <img src="{{ prestation.image.url }}" alt="{{ prestation.titre }}">
+                        <span class="slide-caption">Modèle Standard</span>
+                    </div>
                 {% endif %}
+
+                {% for inline in prestation.realisationinline.all %}
+                    <div class="slide {% if not prestation.image and forloop.first %}active{% endif %}">
+                        <img src="{{ inline.image.url }}" alt="Exemple Réel {{ forloop.counter }}">
+                        <span class="slide-caption">Réalisation {{ forloop.counter }}</span>
+                    </div>
+                {% endfor %}
+
             </div>
+            <button class="carousel-btn next-btn" onclick="changerImage(1)">❯</button>
+        </div>
+    </div>
 
-            <h2 class="h5 font-weight-bold text-dark mb-1" style="font-size: 1.25rem; font-weight: 700; color: #2e0854; text-align: left;">{{ prestation.titre }}</h2>
-            <div class="my-3" style="width: 50px; height: 3px; background-color: #dc3545; border-radius: 2px;"></div>
+    <!-- 🛒 2. DESIGN DU FORMULAIRE UNIQUE ET ADAPTATIF -->
+    <div class="order-section">
+        <div class="order-card">
+            <h1 class="product-title">{{ prestation.titre }}</h1>
+            <div class="title-line"></div>
 
-            <!-- FORMULAIRE -->
-            <form method="POST" id="form-prestation" class="text-left mt-2">
+            <form method="POST" action="{% url 'confirmer_commande_client' %}" id="form-prestation">
                 {% csrf_token %}
+                <!-- Le script mettra à jour cette valeur automatiquement pour correspondre à votre views.py -->
                 <input type="hidden" id="type_quantite" name="type_quantite" value="lot">
 
+                <!-- Champs cachés pour transmettre la largeur/hauteur calculée à Python -->
+                <input type="hidden" id="hidden_largeur" name="largeur" value="1">
+                <input type="hidden" id="hidden_hauteur" name="hauteur" value="1">
+
                 <!-- ========================================================================= -->
-                <!-- AFFICHAGE CONDITIONNEL 1 : TYPE SURFACE                                   -->
+                <!-- CONFIGURATION CONDITIONNELLE SUIVANT VOTRE BDD                            -->
                 <!-- ========================================================================= -->
+                
+                {# CAS A : PRODUIT FORMAT SURFACE (Ex: Bâche publicitaire) #}
                 {% if prestation.type_unite == 'SURFACE' %}
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%;">
-                        
-                        <!-- Formats Statiques Prédéfinis -->
-                        {% comment %} Boucle explicite pour assurer l'affichage parfait {% endcomment %}
+                    <div class="visual-grid">
+                        <!-- Format 1m x 1m -->
                         <div class="col-custom-visual">
-                            <label class="card-option-visual active-option" style="background: #ffffff; border: 2px solid #7c3aed; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="dimensions_m2" value="1x1" checked style="display: none !important;">
+                            <label class="card-option-visual active-option">
+                                <input type="radio" name="dimensions_m2" value="1x1" data-w="1" data-h="1" checked style="display: none;">
                                 <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer" style="background-color: #f5f3ff;">
-                                    <strong style="display: block; color: #1e293b;">1m x 1m</strong>
-                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">4 750 F (-5%)</span>
-                                </div>
+                                <div class="visual-footer" style="background-color: #f5f3ff;"><strong>1m x 1m</strong></div>
                             </label>
                         </div>
+                        <!-- Format 1m x 2m -->
                         <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="dimensions_m2" value="1x2" style="display: none !important;">
+                            <label class="card-option-visual">
+                                <input type="radio" name="dimensions_m2" value="1x2" data-w="1" data-h="2" style="display: none;">
                                 <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">1m x 2m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">9 500 F</span></div>
+                                <div class="visual-footer"><strong>1m x 2m</strong></div>
                             </label>
                         </div>
+                        <!-- Format 2m x 2m -->
                         <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="dimensions_m2" value="2x2" style="display: none !important;">
+                            <label class="card-option-visual">
+                                <input type="radio" name="dimensions_m2" value="2x2" data-w="2" data-h="2" style="display: none;">
                                 <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">2m x 2m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">19 000 F</span></div>
+                                <div class="visual-footer"><strong>2m x 2m</strong></div>
                             </label>
                         </div>
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="dimensions_m2" value="1x3" style="display: none !important;">
-                                <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">1m x 3m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">14 250 F</span></div>
-                            </label>
-                        </div>
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="dimensions_m2" value="2x3" style="display: none !important;">
-                                <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">2m x 3m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">28 500 F</span></div>
-                            </label>
-                        </div>
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="dimensions_m2" value="3x3" style="display: none !important;">
-                                <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer"><strong style="display: block; color: #1e293b;">3m x 3m</strong><span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">42 750 F</span></div>
-                            </label>
-                        </div>
-
-                        <!-- Autre Dimension (Saisie libre au m²) -->
-                        <div class="col-custom-visual" style="min-width: 220px;">
-                            <div id="btn-m2-libre" class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 10px;">
-                                <input type="radio" name="dimensions_m2" value="custom" style="display: none !important;">
-                                <div style="color: #d97706; font-weight: bold; text-align: center; margin-bottom: 5px;">✨ Autre dimension</div>
-                                <div style="display: flex; gap: 5px; align-items: center; justify-content: center;">
-                                    <input type="number" name="largeur_custom" placeholder="L (m)" min="0.1" step="0.1" style="width: 70px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px;">
-                                    <span>x</span>
-                                    <input type="number" name="hauteur_custom" placeholder="H (m)" min="0.1" step="0.1" style="width: 70px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px;">
-                                </div>
-                                <div style="text-align: center; font-size: 0.75rem; color: #16a34a; margin-top: 5px; font-weight: 500;">4 750 F / m² (-5%)</div>
-                            </div>
-                        </div>
+                        <!-- Saisie sur-mesure libre -->
+                        <div class="col-custom-visual" style="min-width: 100%;">
+                            <label class="card-option-visual" id="btn-dimension-libre" style="padding: 15px;">
+                                <input type="radio" name="dimensions_m2" value="custom" style="display: none;">
+                                <strong>✏️ Entrer des dimensions personnalisées</strong>
+                                <input type="hidden" name="type_quantite" value="unite_palier">
+                    <div class="form-group">
+                        <label for="quantite_custom_unite">🔢 Saisissez la quantité exacte souhaitée (Unité) :</label>
+                        <input type="number" id="quantite_custom_unite" name="quantite_custom_unite" min="1" value="1" class="form-input" required>
                     </div>
                 {% endif %}
 
-               <!-- ========================================================================= -->
-                <!-- AFFICHAGE CONDITIONNEL 2 : TYPES FLYER, UNITE & PAGES (Lots Adaptatifs)   -->
-                <!-- ========================================================================= -->
-                {% if prestation.type_unite == 'FLYER' or prestation.type_unite == 'UNITE' or prestation.type_unite == 'PAGES' %}
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%;">
-                        
-                        {% if formats_flyer and prestation.type_unite == 'FLYER' %}
-                            <input type="hidden" name="format_choisi" value="{{ formats_flyer.0.id }}">
-                        {% endif %}
+                <!-- Bouton de validation final -->
+                <button type="submit" class="btn-submit-order">
+                    🛒 Valider et passer à la commande
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
-                        <!-- PALIER 1 -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual active-option" style="background: #ffffff; border: 2px solid #7c3aed; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}10{% else %}100{% endif %}" checked style="display: none !important;">
-                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
-                                <div class="visual-footer" style="background-color: #f5f3ff;">
-                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}10{% else %}100{% endif %} ex.</strong>
-                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
-                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- PALIER 2 -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}20{% else %}200{% endif %}" style="display: none !important;">
-                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
-                                <div class="visual-footer">
-                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}20{% else %}200{% endif %} ex.</strong>
-                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
-                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- PALIER 3 -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}30{% else %}300{% endif %}" style="display: none !important;">
-                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
-                                <div class="visual-footer">
-                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}30{% else %}300{% endif %} ex.</strong>
-                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
-                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- PALIER 4 -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}40{% else %}400{% endif %}" style="display: none !important;">
-                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
-                                <div class="visual-footer">
-                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}40{% else %}400{% endif %} ex.</strong>
-                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
-                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- PALIER 5 -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 0;">
-                                <input type="radio" name="quantite_lot" value="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}50{% else %}500{% endif %}" style="display: none !important;">
-                                <div class="visual-container"><span>{{ define_emoji }}</span></div>
-                                <div class="visual-footer">
-                                    <strong style="display: block; color: #1e293b;">{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}50{% else %}500{% endif %} ex.</strong>
-                                    <span class="badge bg-success text-white mt-1" style="font-size: 0.75rem;">Remise 5%</span>
-                                    <small style="display: block; color: #64748b; margin-top: 4px; font-size: 0.8rem;">Soit : <span style="color: #7c3aed; font-weight: bold;">{% widthratio define_prix_u 100 95 %} F</span> / u</small>
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- Case Quantité Libre -->
-                        <div class="col-custom-visual" style="min-width: 200px;">
-                            <div id="btn-quantite-libre" class="card-option-visual text-center" style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; display: block; width: 100%; overflow: hidden; cursor: pointer; padding: 10px;">
-                                <input type="radio" name="quantite_lot" value="custom" style="display: none !important;">
-                                <div style="color: #d97706; font-weight: bold; margin-bottom: 5px;">✨ Quantité libre</div>
-                                <input type="number" id="input_qte_libre" name="quantite_custom" placeholder="{% if 'tasse' in prestation.titre.lower or 'casquette' in prestation.titre.lower or 't-shirt' in prestation.titre.lower %}Ex: 60{% else %}Ex: 600{% endif %}" min="1" style="width: 110px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; font-weight: bold;">
-                                <span id="badge_remise_libre" class="badge bg-success text-white d-block mt-2" style="font-size: 0.75rem;">Remise 5%</span>
-                            </div>
-                        </div>
-
-                    </div>
-                {% endif %}
-
+<!-- ===================================================================== -->
+<!-- SCRIPT DE LOGIQUE APPLICATIVE ET INTERACTION (BURGER / SESSIONS / CARROUSEL) -->
+<!-- ===================================================================== -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const cards = document.querySelectorAll('.card-option-visual');
-        const hiddenTypeQuantite = document.getElementById('type_quantite');
+        const hiddenType = document.getElementById('type_quantite');
+        const hiddenW = document.getElementById('hidden_largeur');
+        const hiddenH = document.getElementById('hidden_hauteur');
 
-        // Gestion de la sélection visuelle des cartes
+        // 1. Initialisation automatique du type pour correspondre aux attentes de views.py
+        if (hiddenType) {
+            if (document.getElementById('quantite_lot')) {
+                hiddenType.value = 'lot';
+            } else if (document.getElementById('quantite_custom_unite')) {
+                hiddenType.value = 'unite_palier';
+            } else {
+                hiddenType.value = 'surface';
+            }
+        }
+
+        // 2. Gestion adaptative des clics sur vos cartes d'options
         cards.forEach(card => {
             card.addEventListener('click', function (e) {
-                if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
+                if (e.target.tagName === 'INPUT') return;
 
                 const radio = this.querySelector('input[type="radio"]');
                 
-                this.closest('div').querySelectorAll('.card-option-visual').forEach(c => {
+                // Nettoie l'état actif de toutes les autres cartes
+                document.querySelectorAll('.card-option-visual').forEach(c => {
                     c.classList.remove('active-option');
-                    const footer = c.querySelector('.visual-footer');
-                    if (footer) footer.style.backgroundColor = 'transparent';
+                    const ft = c.querySelector('.visual-footer');
+                    if (ft) ft.style.backgroundColor = 'transparent';
                 });
 
+                // Applique le style sur la carte sélectionnée
                 this.classList.add('active-option');
+                
                 if (radio) {
                     radio.checked = true;
-                    if (hiddenTypeQuantite) {
-                        if (radio.value === 'custom') {
-                            hiddenTypeQuantite.value = 'libre';
-                        } else {
-                            hiddenTypeQuantite.value = (radio.name === 'dimensions_m2') ? 'm2' : 'lot';
-                        }
+                    
+                    if (radio.value === 'custom') {
+                        if (hiddenType) hiddenType.value = 'surface';
+                        if (hiddenW) hiddenW.value = document.getElementById('custom_w').value || 1;
+                        if (hiddenH) hiddenH.value = document.getElementById('custom_h').value || 1;
+                    } else {
+                        if (hiddenType) hiddenType.value = 'surface';
+                        if (hiddenW) hiddenW.value = radio.getAttribute('data-w') || 1;
+                        if (hiddenH) hiddenH.value = radio.getAttribute('data-h') || 1;
+                        
+                        const ft = this.querySelector('.visual-footer');
+                        if (ft) ft.style.backgroundColor = '#f5f3ff';
                     }
                 }
-
-                const footer = this.querySelector('.visual-footer');
-                if (footer) footer.style.backgroundColor = '#f5f3ff';
             });
         });
 
-        // Détection de la saisie clavier quantité libre (>500 ex. -> Remise 10%)
-        const inputQteLibre = document.getElementById('input_qte_libre');
-        if (inputQteLibre) {
-            inputQteLibre.addEventListener('input', function () {
-                const parentCard = this.closest('#btn-quantite-libre');
-                const radio = parentCard.querySelector('input[type="radio"]');
-                const badge = document.getElementById('badge_remise_libre');
-                
-                if (radio) radio.checked = true;
-                if (hiddenTypeQuantite) hiddenTypeQuantite.value = 'libre';
-                
-                cards.forEach(c => c.classList.remove('active-option'));
-                parentCard.classList.add('active-option');
-
-                const qte = parseInt(this.value) || 0;
-                if (qte > 500) {
-                    badge.textContent = "Remise 10% 🔥";
-                    badge.className = "badge bg-danger text-white d-block mt-2";
-                } else {
-                    badge.textContent = "Remise 5%";
-                    badge.className = "badge bg-success text-white d-block mt-2";
+        // 3. Écoute de la saisie sur-mesure (Largeur x Hauteur)
+        const customW = document.getElementById('custom_w');
+        const customH = document.getElementById('custom_h');
+        const btnLibre = document.getElementById('btn-dimension-libre');
+        
+        if (customW && customH && btnLibre) {
+            const syncCustom = () => {
+                if (btnLibre.classList.contains('active-option')) {
+                    if (hiddenW) hiddenW.value = customW.value || 1;
+                    if (hiddenH) hiddenH.value = customH.value || 1;
                 }
-            });
+            };
+            customW.addEventListener('input', syncCustom);
+            customH.addEventListener('input', syncCustom);
         }
     });
+
+    // 📸 4. ROULEMENT DU CARROUSEL CENTRAL (SANS DOUBLONS)
+    let slideIndex = 0;
+    
+    function changerImage(direction) {
+        const slides = document.querySelectorAll('.slide');
+        if (slides.length <= 1) return;
+
+        slides[slideIndex].classList.remove('active');
+        slideIndex += direction;
+
+        if (slideIndex >= slides.length) {
+            slideIndex = 0;
+        } else if (slideIndex < 0) {
+            slideIndex = slides.length - 1;
+        }
+
+        slides[slideIndex].classList.add('active');
+    }
 </script>
 {% endblock %}
