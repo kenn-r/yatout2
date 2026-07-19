@@ -7,10 +7,11 @@
     <title>{% block title %}YaTout Ci{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
     
-  <!-- 🟢 STYLES DU MENU BURGER ET COMPORTEMENT MOBILE CORRIGÉS -->
-    <!-- 🟢 CONFIGURATION STRICTE POUR UN RENDU CENTRÉ ET PROPRE -->
+    <!-- 🟢 CONFIGURATION RESPONSIVE ET SÉCURISÉE DU SITE -->
     <style>
-    /* 🔴 VERROUILLAGE GLOBAL DE L'ÉCRAN MOBILE */
+    /* ===================================================================== */
+    /* 🔴 1. VERROUILLAGE DU SCROLL HORIZONTAL GENERAL DE LA PAGE            */
+    /* ===================================================================== */
     html, body {
         max-width: 100% !important;
         overflow-x: hidden !important;
@@ -19,20 +20,19 @@
         width: 100% !important;
     }
 
-    /* Évite que les paddings et bordures n'élargissent les éléments */
     *, *:before, *:after {
         box-sizing: border-box !important;
     }
 
-    /* Force tous les textes à rester dans l'écran */
-    h1, h2, h3, h4, p, span, div, .titre-principal {
+    h1, h2, h3, h4, p, span, div {
         max-width: 100% !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
-        white-space: normal !important;
     }
 
-    /* STYLES GENERAUX DES NAVBARS */
+    /* ===================================================================== */
+    /* 💻 2. BASE DE LA NAVBAR POUR ORDINATEUR (ÉCRANS LARGES)               */
+    /* ===================================================================== */
     .navbar, .navbar-impression {
         position: relative !important;
         background-color: #7c3aed !important; 
@@ -44,16 +44,16 @@
         background-color: #1e293b !important; 
     }
 
-    /* ALIGNEMENT NAVBAR : LOGO À GAUCHE, BURGER À DROITE */
     .navbar .container, 
     .navbar-impression .container {
         display: flex !important;
+        flex-direction: row !important;
         justify-content: space-between !important;
         align-items: center !important;
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
         padding: 0 20px !important;
-        box-sizing: border-box !important;
     }
 
     .nav-logo {
@@ -64,210 +64,175 @@
         flex-shrink: 0 !important;
     }
 
-    /* BOUTON BURGER IMPECCABLEMENT À DROITE */
+    /* SUR ORDINATEUR : Le bouton burger est totalement invisible */
     .burger-menu {
-        display: flex !important;
-        flex-direction: column;
-        gap: 5px;
-        background: none !important;
-        border: none !important;
-        cursor: pointer;
-        padding: 10px !important;
-        z-index: 100002 !important;
-        margin-left: auto !important; 
-    }
-    .burger-menu span {
-        width: 25px;
-        height: 3px;
-        background-color: white !important;
-        border-radius: 2px;
-        transition: 0.3s ease;
-    }
-
-    /* CONTENEUR DE NAVIGATION MOBILE EN DISQUE DÉROULANT COMPLET */
-    .nav-actions {
         display: none !important; 
-        flex-direction: column !important;
-        justify-content: flex-start !important;
-        align-items: flex-end !important; 
-        position: absolute !important;
-        top: 100% !important; 
-        left: 0 !important;
-        width: 100% !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
-        padding: 30px 20px !important; 
-        box-sizing: border-box !important;
-        gap: 15px !important;
-        z-index: 100001 !important;
     }
 
-    .navbar .nav-actions {
-        background-color: #7c3aed !important;
-    }
-    .navbar-impression .nav-actions {
-        background-color: #1e293b !important;
-    }
-
-    .nav-actions.open {
-        display: flex !important;
-    }
-
-    /* MENU MOBILE ALIGNÉ À DROITE */
-    .nav-actions a, 
-    .nav-actions form, 
-    .nav-actions button,
-    .nav-actions span {
-        width: 100% !important;
-        max-width: 320px !important; 
-        text-align: right !important; 
-        box-sizing: border-box !important;
-        display: block !important;
-        text-decoration: none !important;
-        margin: 0 0 0 auto !important; 
+    /* SUR ORDINATEUR : Tous les éléments du menu s'alignent horizontalement */
+    .nav-actions {
+        display: flex !important; 
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 20px !important;
+        position: static !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: auto !important;
+        background: transparent !important;
     }
 
-    .nav-actions a, .nav-actions button {
+    .nav-actions a, .nav-actions button, .nav-actions span {
         color: white !important;
-        font-size: 1.1rem !important;
-        padding: 10px 0 !important;
+        text-decoration: none !important;
+        display: inline-block !important;
     }
-    
+
     .nav-actions .btn-nav-white {
         background-color: white !important;
         color: #7c3aed !important;
         border-radius: 6px !important;
         font-weight: bold !important;
-        padding: 12px 0 !important;
+        padding: 8px 16px !important;
     }
 
-    .nav-welcome {
-        color: rgba(255,255,255,0.9) !important;
-        font-size: 1rem !important;
-        padding-bottom: 5px !important;
-    }
-
-    .burger-menu.open span:nth-child(1) {
-        transform: translateY(8px) rotate(45deg) !important;
-    }
-    .burger-menu.open span:nth-child(2) {
-        opacity: 0 !important;
-    }
-    .burger-menu.open span:nth-child(3) {
-        transform: translateY(-8px) rotate(-45deg) !important;
+    /* SUR ORDINATEUR : On masque la liste spécifique au mobile */
+    .supports-mobile-only {
+        display: none !important;
     }
 
     /* ===================================================================== */
-    /* 💻 STYLE DE LA GRILLE ORDINATEUR                                      */
-    /* ===================================================================== */
-    .lots-grid-unified, .visual-grid, .surface-grid {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        gap: 16px;
-        width: 100%;
-        margin-bottom: 30px;
-        justify-content: center;
-        box-sizing: border-box;
-    }
-
-    .card-lot-modern, .col-custom-visual, .card-option-visual {
-        background: #ffffff;
-        border: 2px solid #e2e8f0;
-        border-radius: 16px;
-        flex: 1;
-        min-width: 240px;
-        max-width: 320px;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        display: flex;
-        flex-direction: column;
-        box-sizing: border-box;
-    }
-
-    .lot-card-visual-wrapper, .visual-container {
-        background-color: #f8fafc;
-        height: 140px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-bottom: 1px solid #e2e8f0;
-        padding: 12px;
-        box-sizing: border-box;
-    }
-
-    .lot-card-body, .visual-footer {
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        flex-grow: 1;
-        box-sizing: border-box;
-        background: #ffffff;
-    }
-
-    /* ===================================================================== */
-    /* 📲 RENDU MOBILE : DEUX OPTIONS PROPRES ET NETTES                      */
+    /* 📱 3. PASSAGE EN MODE MOBILE STABLE (ÉCRANS INFÉRIEURS À 992PX)       */
     /* ===================================================================== */
     @media (max-width: 992px) {
         
-        /* 1. Aligne toutes les cartes verticalement et les centre comme la page d'accueil */
-        .lots-grid-unified, 
-        .visual-grid, 
-        .surface-grid {
-            flex-direction: column !important;
-            align-items: center !important; 
-            width: 100% !important;
-            padding: 0 20px !important;
-            box-sizing: border-box !important;
-        }
-
-        /* 2. Taille de la carte pour qu'elle ressemble exactement au bloc blanc de bienvenue */
-        .card-lot-modern, .col-custom-visual, .card-option-visual {
-            width: 100% !important;
-            max-width: 340px !important; /* Limite la largeur sur mobile */
-            min-width: 0 !important;
-            height: auto !important;
-            flex-direction: column !important; /* Garde l'image en haut et le texte en bas */
-            margin: 0 auto 20px auto !important;
-            border-radius: 16px !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
-            overflow: hidden !important;
-        }
-        
-        /* 3. Zone de l'image : REDIMENSIONNEMENT OBLIGATOIRE POUR ÉVITER LE BUG */
-        .lot-card-visual-wrapper, .visual-container {
-            width: 100% !important;
-            height: 180px !important; /* Fixe une hauteur maximale raisonnable pour l'image */
+        /* On affiche le bouton burger à droite */
+        .burger-menu {
             display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            background-color: #f8fafc !important;
+            flex-direction: column !important;
+            gap: 5px;
+            background: none !important;
+            border: none !important;
+            cursor: pointer;
             padding: 10px !important;
-            box-sizing: border-box !important;
-            border-bottom: 1px solid #e2e8f0 !important;
-            border-right: none !important;
+            z-index: 100002 !important;
+            margin-left: auto !important;
         }
-        
-        /* Force l'image du flyer à rester sagement dans son cadre sans déborder */
-        .lot-card-visual-wrapper img, .visual-container img {
-            max-width: 100% !important;
-            max-height: 100% !important;
-            object-fit: contain !important; /* Empêche la déformation du flyer */
-            display: block !important;
+
+        .burger-menu span {
+            width: 25px;
+            height: 3px;
+            background-color: white !important;
+            border-radius: 2px;
+            transition: 0.3s ease;
         }
-        
-        /* 4. Le texte sous le flyer */
-        .lot-card-body, .visual-footer {
-            align-items: center !important;
-            text-align: center !important;
-            padding: 15px !important;
+
+        /* SUR MOBILE : On cache la barre d'action par défaut pour en faire un menu déroulant */
+        .nav-actions {
+            display: none !important; 
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            align-items: flex-end !important;
+            position: absolute !important;
+            top: 100% !important; 
+            left: 0 !important;
             width: 100% !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+            padding: 30px 20px !important; 
+            gap: 15px !important;
+            z-index: 100001 !important;
+        }
+
+        /* Définition de la couleur de fond du menu déroulant mobile selon la page */
+        .navbar .nav-actions { background-color: #7c3aed !important; }
+        .navbar-impression .nav-actions { background-color: #1e293b !important; }
+        
+        /* Règle d'activation déclenchée au clic par le JavaScript */
+        .nav-actions.open {
+            display: flex !important;
+        }
+
+        /* Force l'alignement vertical de tous les liens à droite sans déborder */
+        .nav-actions a, 
+        .nav-actions form, 
+        .nav-actions button,
+        .nav-actions span {
+            width: 100% !important;
+            max-width: 100% !important; 
+            text-align: right !important; 
+            display: block !important;
+            margin: 0 0 0 auto !important; 
             box-sizing: border-box !important;
         }
 
-        /* Fenêtre de chat Gemini */
+        .nav-actions a, .nav-actions button {
+            padding: 10px 0 !important;
+            font-size: 1.1rem !important;
+        }
+
+        .nav-actions .btn-nav-white {
+            padding: 12px 0 !important;
+        }
+
+        /* Animation des trois barres blanches en forme de croix (X) */
+        .burger-menu.open span:nth-child(1) { transform: translateY(8px) rotate(45deg) !important; }
+        .burger-menu.open span:nth-child(2) { opacity: 0 !important; }
+        .burger-menu.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg) !important; }
+
+        /* 🔴 A. MASQUAGE SUR LA PAGE PRINCIPALE POUR ÉVITER LE DOUBLON */
+        body > div.flex-grow div[class*="supports"],
+        body > div.flex-grow section[class*="supports"],
+        body > div.flex-grow .lots-grid-unified {
+            display: none !important;
+        }
+
+        /* 🟢 B. FORCE L'AFFICHAGE ET L'EMPILEMENT VERTICAL DANS LE MENU DÉROULANT VIOLET */
+        .nav-actions .supports-mobile-only {
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: flex-end !important;  
+            gap: 8px !important;
+            width: 100% !important;
+            margin-top: 15px !important;
+            padding-top: 15px !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-sizing: border-box !important;
+        }
+
+        .nav-actions .btn-support-item {
+            display: block !important;
+            width: 100% !important;
+            text-align: right !important;
+            color: #f1f5f9 !important;
+            font-size: 1.05rem !important;
+            padding: 8px 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        .nav-actions .menu-section-title {
+            display: block !important;
+            width: 100% !important;
+            text-align: right !important;
+            font-size: 0.9rem !important;
+            font-weight: bold !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            margin-bottom: 5px !important;
+        }
+
+        /* 🎯 C. LA GALERIE GLISSE ET PREND TOUTE LA PLACE CENTRALE */
+        body > div.flex-grow div[class*="galerie"], 
+        body > div.flex-grow section[class*="galerie"], 
+        body > div.flex-grow .visual-grid {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 auto !important;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Redimensionnement adaptatif de la fenêtre du Chatbot IA */
         #fenetre-chat-ia {
             width: calc(100% - 40px) !important;
             right: 20px !important;
@@ -292,13 +257,36 @@
                     <span></span>
                 </button>
 
+                <!-- 🟢 CONTENEUR DES ACTIONS DE L'IMPRESSION (CORRIGÉ SANS ERREURS) -->
                 <div class="nav-actions">
                     <a href="{% url 'page_prestations' %}" class="btn-nav btn-prestations">Nos Prestations</a>
-                    <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; width: 100%; box-sizing: border-box;">
+                    <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
                         💬 Parler à un conseiller
                     </a>
-                </div>
-            </div>
+
+                   <div class="supports-mobile-only">
+    <span class="menu-section-title">📁 Nos supports :</span>
+    
+    {% if prestations %}
+        {% for p in prestations %}
+            <!-- 🟢 Lien dynamique configuré selon votre ligne 49 des URLs -->
+            <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
+                📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
+            </a>
+        {% endfor %}
+    {% elif listes_prestations %}
+        {% for p in listes_prestations %}
+            <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
+                📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
+            </a>
+        {% endfor %}
+    {% else %}
+        <!-- Bouton de secours si la variable dynamique n'est pas accessible sur cette vue -->
+        <a href="{% url 'page_prestations' %}" class="btn-support-item" style="color: #38bdf8 !important;">
+            ✨ Voir tous nos supports d'impression
+        </a>
+    {% endif %}
+</div>
         </nav>
 
     {% else %}
@@ -348,9 +336,10 @@
     <!-- 3. ZONE DYNAMIQUE D'INJECTION DES PAGES -->
     <div class="flex-grow">
         {% block content %}
-        {% endblock %}
-    </div>
 
+        {% endblock %}
+        </div>
+       
     <!-- ===================================================================== -->
     <!-- 🤖 ASSISTANT CHATBOT FLOTTANT GEMINI IA                              -->
     <!-- ===================================================================== -->
@@ -382,7 +371,7 @@
         </div>
     </div>
 
-    <!-- 🟢 SCRIPTS JAVASCRIPT CORRIGES -->
+    <!-- 🟢 SCRIPTS JAVASCRIPT NETTOYÉS SANS ERREURS -->
     <script>
     function basculerMenuMobile(bouton) {
         const navActions = bouton.parentElement.querySelector('.nav-actions');
@@ -418,7 +407,7 @@
 
         inputField.value = '';
         
-        /* 🟢 Ajout des backticks (``) indispensables pour encapsuler le HTML en JS */
+        /* 🟢 Utilisation obligatoire des backticks (``) pour éviter les crashs JS */
         chatBox.innerHTML += `
             <div style="align-self: flex-end; background: #7c3aed; color: white; padding: 10px 14px; border-radius: 12px 12px 0 12px; max-width: 85%; font-size: 0.85rem;">
                 ${messageText}
@@ -428,3 +417,5 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
     </script>
+</body>
+</html>
