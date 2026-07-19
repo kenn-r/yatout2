@@ -104,9 +104,16 @@
         
         <!-- 📋 COLONNE GAUCHE : CATALOGUE DES SUPPORTS -->
         <div class="products-column">
-            <h2>📋 Nos supports d'impression</h2><br>
-            <div class="catalog-list">
-                {% for prest in prestations %}
+    <!-- 🟢 BLOC ENVELOPPE POUR LE TEXTE À PLACER ICI -->
+    <div class="catalog-header">
+        <h2>📋 Notre Catalogue de Supports</h2>
+        <p>Cliquez sur le support de votre choix pour découvrir ses caractéristiques techniques, ses finitions et ses tarifs.</p>
+    </div>
+
+    <div class="catalog-list">
+        {% for prest in prestations %}
+    
+                <!-- ... reste de votre code inchangé ... -->
                     <div class="item-list-row">
                         <h3>🖨️ {{ prest.titre }}</h3>
                         <a href="{% url 'page_prestations' %}#prestation-{{ prest.id }}" class="btn-link-prestation">

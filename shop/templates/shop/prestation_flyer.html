@@ -36,15 +36,14 @@
                         Format du flyer :
                     </label>
                     <select name="format_choisi" id="format_choisi" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;" required>
-    <option value="" disabled selected>-- Choisir un format --</option>
-    {% for format in formats_flyer %}
-        <!-- 🟢 AJOUT : data-img transmet l'adresse de l'image du format à JavaScript -->
-        <option value="{{ format.id }}" data-img="{% if format.image %}{{ format.image.url }}{% endif %}">
-            {{ format.nom_format }}
-        </option>
-    {% endfor %}
-</select>
-</div>
+                        <option value="" disabled selected>-- Choisir un format --</option>
+                        {% for format in formats_flyer %}
+                            <option value="{{ format.id }}" data-img="{% if format.image %}{{ format.image.url }}{% endif %}">
+                                {{ format.nom_format }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
                 <!-- Sélection du volume (Alimenté dynamiquement selon le format choisi) -->
                 <div style="margin-bottom: 20px;">
@@ -80,7 +79,7 @@ document.getElementById('format_choisi').addEventListener('change', function() {
     const formatId = this.value;
     const qteSelect = document.getElementById('quantite_lot');
     
-    // 🟢 1. MISE À JOUR DYNAMIQUE DE L'IMAGE À GAUCHE
+    // 1. MISE À JOUR DYNAMIQUE DE L'IMAGE À GAUCHE
     const optionSelectionnee = this.options[this.selectedIndex];
     const urlImageFormat = optionSelectionnee.getAttribute('data-img');
     const grandeImage = document.getElementById('image-prestation');
@@ -88,11 +87,10 @@ document.getElementById('format_choisi').addEventListener('change', function() {
     if (urlImageFormat && grandeImage) {
         grandeImage.src = urlImageFormat;
     } else if (grandeImage) {
-        // Si le format n'a pas d'image, on remet l'image par défaut de la prestation
         grandeImage.src = "{{ prestation.image.url }}";
     }
     
-    // 🟢 2. RECONSTRUCTION DES OPTIONS DE QUANTITÉS LIÉES
+    // 2. RECONSTRUCTION DES OPTIONS DE QUANTITÉS LIÉES
     qteSelect.innerHTML = '<option value="" disabled selected>-- Choisir la quantité --</option>';
     
     // Injection dynamique des lots liés au format via Django
@@ -115,12 +113,17 @@ document.getElementById('format_choisi').addEventListener('change', function() {
 // Affiche ou masque la case numérique si choix "Saisir une quantité libre"
 document.getElementById('quantite_lot').addEventListener('change', function() {
     const customField = document.getElementById('wrapper-custom-flyer');
+    const customInput = document.getElementById('quantite_custom');
     const btnSubmit = document.getElementById('btn-submit');
     
+    /* 🟢 CORRECTION DE LA SYNTAXE ICI (.style.style.display supprimé) */
     if (this.value === 'custom') {
-        customField.style.style.display = 'block';
+        customField.style.display = 'block';
+        customInput.required = true;
+        customInput.focus();
     } else {
-        customField.style.style.display = 'none';
+        customField.style.display = 'none';
+        customInput.required = false;
     }
     
     // Débloque le gros bouton violet dès qu'une quantité est fixée

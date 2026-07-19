@@ -6,9 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}YaTout Ci{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
-    
-    <!-- 🟢 CONFIGURATION RESPONSIVE ET SÉCURISÉE DU SITE -->
     <style>
+    <!-- 🟢 CONFIGURATION RESPONSIVE ET SÉCURISÉE DU SITE -->
     /* ===================================================================== */
     /* 🔴 1. VERROUILLAGE DU SCROLL HORIZONTAL GENERAL DE LA PAGE            */
     /* ===================================================================== */
@@ -101,145 +100,191 @@
         display: none !important;
     }
 
-    /* ===================================================================== */
-    /* 📱 3. PASSAGE EN MODE MOBILE STABLE (ÉCRANS INFÉRIEURS À 992PX)       */
-    /* ===================================================================== */
-    @media (max-width: 992px) {
-        
-        /* On affiche le bouton burger à droite */
-        .burger-menu {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 5px;
-            background: none !important;
-            border: none !important;
-            cursor: pointer;
-            padding: 10px !important;
-            z-index: 100002 !important;
-            margin-left: auto !important;
-        }
-
-        .burger-menu span {
-            width: 25px;
-            height: 3px;
-            background-color: white !important;
-            border-radius: 2px;
-            transition: 0.3s ease;
-        }
-
-        /* SUR MOBILE : On cache la barre d'action par défaut pour en faire un menu déroulant */
-        .nav-actions {
-            display: none !important; 
-            flex-direction: column !important;
-            justify-content: flex-start !important;
-            align-items: flex-end !important;
-            position: absolute !important;
-            top: 100% !important; 
-            left: 0 !important;
-            width: 100% !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
-            padding: 30px 20px !important; 
-            gap: 15px !important;
-            z-index: 100001 !important;
-        }
-
-        /* Définition de la couleur de fond du menu déroulant mobile selon la page */
-        .navbar .nav-actions { background-color: #7c3aed !important; }
-        .navbar-impression .nav-actions { background-color: #1e293b !important; }
-        
-        /* Règle d'activation déclenchée au clic par le JavaScript */
-        .nav-actions.open {
-            display: flex !important;
-        }
-
-        /* Force l'alignement vertical de tous les liens à droite sans déborder */
-        .nav-actions a, 
-        .nav-actions form, 
-        .nav-actions button,
-        .nav-actions span {
-            width: 100% !important;
-            max-width: 100% !important; 
-            text-align: right !important; 
-            display: block !important;
-            margin: 0 0 0 auto !important; 
-            box-sizing: border-box !important;
-        }
-
-        .nav-actions a, .nav-actions button {
-            padding: 10px 0 !important;
-            font-size: 1.1rem !important;
-        }
-
-        .nav-actions .btn-nav-white {
-            padding: 12px 0 !important;
-        }
-
-        /* Animation des trois barres blanches en forme de croix (X) */
-        .burger-menu.open span:nth-child(1) { transform: translateY(8px) rotate(45deg) !important; }
-        .burger-menu.open span:nth-child(2) { opacity: 0 !important; }
-        .burger-menu.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg) !important; }
-
-        /* 🔴 A. MASQUAGE SUR LA PAGE PRINCIPALE POUR ÉVITER LE DOUBLON */
-        body > div.flex-grow div[class*="supports"],
-        body > div.flex-grow section[class*="supports"],
-        body > div.flex-grow .lots-grid-unified {
-            display: none !important;
-        }
-
-        /* 🟢 B. FORCE L'AFFICHAGE ET L'EMPILEMENT VERTICAL DANS LE MENU DÉROULANT VIOLET */
-        .nav-actions .supports-mobile-only {
-            display: flex !important; 
-            flex-direction: column !important; 
-            align-items: flex-end !important;  
-            gap: 8px !important;
-            width: 100% !important;
-            margin-top: 15px !important;
-            padding-top: 15px !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-sizing: border-box !important;
-        }
-
-        .nav-actions .btn-support-item {
-            display: block !important;
-            width: 100% !important;
-            text-align: right !important;
-            color: #f1f5f9 !important;
-            font-size: 1.05rem !important;
-            padding: 8px 0 !important;
-            box-sizing: border-box !important;
-        }
-
-        .nav-actions .menu-section-title {
-            display: block !important;
-            width: 100% !important;
-            text-align: right !important;
-            font-size: 0.9rem !important;
-            font-weight: bold !important;
-            color: rgba(255, 255, 255, 0.6) !important;
-            margin-bottom: 5px !important;
-        }
-
-        /* 🎯 C. LA GALERIE GLISSE ET PREND TOUTE LA PLACE CENTRALE */
-        body > div.flex-grow div[class*="galerie"], 
-        body > div.flex-grow section[class*="galerie"], 
-        body > div.flex-grow .visual-grid {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-width: 100% !important;
-            margin: 0 auto !important;
-            padding-left: 10px !important;
-            padding-right: 10px !important;
-            box-sizing: border-box !important;
-        }
-
-        /* Redimensionnement adaptatif de la fenêtre du Chatbot IA */
-        #fenetre-chat-ia {
-            width: calc(100% - 40px) !important;
-            right: 20px !important;
-            left: 20px !important;
-        }
+   /* ===================================================================== */
+/* 📱 ZONE COMMUNE MEDIA QUERIES (ÉCRANS INFÉRIEURS À 992PX)             */
+/* ===================================================================== */
+@media (max-width: 992px) {
+    
+    /* ----------------------------------------------------------------- */
+    /* 🎛️ 1. GESTION DE LA NAVBAR ET DU MENU DÉROULANT (BURGER)          */
+    /* ----------------------------------------------------------------- */
+    
+    /* Force l'affichage du bouton burger (3 barres blanches) sur mobile */
+    .navbar .burger-menu,
+    .navbar-impression .burger-menu {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        width: 28px !important;
+        height: 18px !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        z-index: 100002 !important;
     }
-    </style>
+
+    .navbar .burger-menu span,
+    .navbar-impression .burger-menu span {
+        display: block !important;
+        width: 100% !important;
+        height: 3px !important;
+        background-color: white !important;
+        border-radius: 2px !important;
+    }
+
+    /* Par défaut, cache la liste des actions horizontales PC */
+    .navbar .nav-actions,
+    .navbar-impression .nav-actions {
+        display: none !important;
+    }
+
+    /* Structure absolue du menu déroulant lorsqu'il s'ouvre (classe .active) */
+    .navbar .nav-actions.active,
+    .navbar-impression .nav-actions.active {
+        display: flex !important;
+        flex-direction: column !important;
+        position: absolute !important;
+        top: 100% !important; /* Se cale pile sous la barre de navigation */
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        background-color: #1e293b !important; /* Couleur de fond sombre et propre */
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        gap: 12px !important;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
+        z-index: 100001 !important;
+    }
+
+    /* Styles des liens et boutons dans le menu déroulé mobile */
+    .navbar .nav-actions.active a,
+    .navbar-impression .nav-actions.active button {
+        color: white !important;
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+        padding: 12px 10px !important;
+        text-decoration: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Force l'apparition de la sous-section des supports dans le menu mobile */
+    .navbar-impression .nav-actions.active .supports-mobile-only {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+    }
+
+    .navbar-impression .nav-actions.active .supports-mobile-only a {
+        padding-left: 20px !important; /* Décale les sous-liens pour la hiérarchie */
+        font-size: 0.95rem !important;
+        color: #cbd5e1 !important;
+    }
+
+
+    /* ----------------------------------------------------------------- */
+    /* 🧱 2. ARCHITECTURE ET EMPLEMENT DES BLOCS PRINCIPAUX DE LA PAGE   */
+    /* ----------------------------------------------------------------- */
+    
+    /* Conteneur global de la page d'impression */
+    .print-container {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Boîte de titre d'accueil (Reste tout en haut en position 1) */
+    .print-title-box {
+        order: 1 !important;
+        text-align: center !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .print-title-box h1 {
+        font-size: 1.4rem !important;
+    }
+
+    /* Grille principale (Prend la suite en dessous du grand titre) */
+    .print-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        order: 2 !important;
+        gap: 25px !important;
+        width: 100% !important;
+    }
+
+
+    /* ----------------------------------------------------------------- */
+    /* 📋 3. COLONNE GAUCHE : LE CATALOGUE DES SUPPORTS                  */
+    /* ----------------------------------------------------------------- */
+    
+    .products-column {
+        display: flex !important;
+        flex-direction: column !important;
+        order: 1 !important; /* S'affiche avant la galerie et le simulateur */
+        width: 100% !important;
+    }
+
+    /* Le titre du catalogue remonte au tout début de sa zone */
+    .catalog-header {
+        order: -1 !important;
+        text-align: center !important;
+        margin-bottom: 15px !important;
+        width: 100% !important;
+    }
+    
+    .catalog-header h2 {
+        font-size: 1.3rem !important;
+    }
+    
+    .catalog-header p {
+        color: #64748b !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Liste des boîtes de produits (Flyers, Bâches...) */
+    .catalog-list {
+        order: 2 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 15px !important;
+        width: 100% !important;
+    }
+
+
+    /* ----------------------------------------------------------------- */
+    /* 🧮 4. COLONNE DROITE : GALERIE & CALCULATEUR SIMULATEUR           */
+    /* ----------------------------------------------------------------- */
+    
+    .cart-column {
+        display: flex !important;
+        flex-direction: column !important;
+        order: 2 !important; /* Se glisse sous le catalogue de supports */
+        width: 100% !important;
+        gap: 25px !important;
+    }
+
+    /* LE BLOC DE LA GALERIE VISUELLE (Premier bloc .cart-sticky) */
+    .cart-column > .cart-sticky:first-of-type {
+        order: 1 !important; /* Positionné juste après le catalogue */
+        width: 100% !important;
+        max-width: 420px !important; /* Empêche le carousel de trop s'élargir */
+        margin: 0 auto !important;
+    }
+
+    /* LE BLOC DU SIMULATEUR DE PRIX (Deuxième bloc .cart-sticky) */
+    .cart-column > .cart-sticky:last-of-type {
+        order: 2 !important; /* Relégué tout en bas de la page */
+        width: 100% !important;
+        padding: 15px !important;
+        box-sizing: border-box !important;
+    }
+}
+</style>
 </head>
 <body>
 
@@ -247,56 +292,57 @@
     {% if "impression" in request.path or prestation %}
         
         <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
-        <nav class="navbar navbar-impression">
-            <div class="container">
+        <nav class="navbar navbar-impression" style="position: relative;">
+            <div class="container" style="position: relative;">
                 <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Impression</a>
                 
-                <button class="burger-menu" onclick="basculerMenuMobile(this)">
+                <!-- 🟢 Bouton burger autonome avec déclencheur direct infaillible -->
+                <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');" style="cursor: pointer;">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
 
-                <!-- 🟢 CONTENEUR DES ACTIONS DE L'IMPRESSION (CORRIGÉ SANS ERREURS) -->
+                <!-- 🟢 CONTENEUR DES ACTIONS DE L'IMPRESSION (CORRIGÉ ET BALISES REFERMÉES) -->
                 <div class="nav-actions">
                     <a href="{% url 'page_prestations' %}" class="btn-nav btn-prestations">Nos Prestations</a>
                     <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
                         💬 Parler à un conseiller
                     </a>
 
-                   <div class="supports-mobile-only">
-    <span class="menu-section-title">📁 Nos supports :</span>
-    
-    {% if prestations %}
-        {% for p in prestations %}
-            <!-- 🟢 Lien dynamique configuré selon votre ligne 49 des URLs -->
-            <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
-                📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
-            </a>
-        {% endfor %}
-    {% elif listes_prestations %}
-        {% for p in listes_prestations %}
-            <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
-                📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
-            </a>
-        {% endfor %}
-    {% else %}
-        <!-- Bouton de secours si la variable dynamique n'est pas accessible sur cette vue -->
-        <a href="{% url 'page_prestations' %}" class="btn-support-item" style="color: #38bdf8 !important;">
-            ✨ Voir tous nos supports d'impression
-        </a>
-    {% endif %}
-</div>
+                    <div class="supports-mobile-only">
+                        <span class="menu-section-title" style="color: white; font-weight: bold; display: block; margin: 10px 0 5px 0;">📁 Nos supports :</span>
+                        
+                        {% if prestations %}
+                            {% for p in prestations %}
+                                <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
+                                    📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
+                                </a>
+                            {% endfor %}
+                        {% elif listes_prestations %}
+                            {% for p in listes_prestations %}
+                                <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
+                                    📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <a href="{% url 'page_prestations' %}" class="btn-support-item" style="color: #38bdf8 !important;">
+                                ✨ Voir tous nos supports d'impression
+                            </a>
+                        {% endif %}
+                    </div> <!-- 🆕 Fermeture de .supports-mobile-only -->
+                </div> <!-- 🆕 Fermeture de .nav-actions -->
+            </div> <!-- 🆕 Fermeture de .container -->
         </nav>
 
     {% else %}
         
         <!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
         <nav class="navbar">
-            <div class="container">
+            <div class="container" style="position: relative;">
                 <a href="{% url 'accueil' %}" class="nav-logo">🔮 YaTout Ci</a>
                 
-                <button class="burger-menu" onclick="basculerMenuMobile(this)">
+                <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');" style="cursor: pointer;">
                     <span></span>
                     <span></span>
                     <span></span>
