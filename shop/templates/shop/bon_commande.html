@@ -3,7 +3,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bon de Commande {{ commande.numero_bon }}</title>
+    <!-- 🟢 FIX 1 : Utilisation de la nouvelle méthode de numérotation pour la balise Title -->
+    <title>Bon de Commande {{ commande.numero_bon_commande }}</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; }
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
@@ -60,7 +61,8 @@
                 Client : {{ commande.nom_client }}<br>
                 Téléphone : {{ commande.telephone }}<br>
                 Date : {{ commande.date_commande|date:"d/m/Y H:i" }}<br>
-                <strong>Référence : {{ commande.numero_bon }}</strong>
+                <!-- 🟢 FIX 2 : Utilisation de la méthode numero_bon_commande pour la facture -->
+                <strong>Référence : {{ commande.numero_bon_commande }}</strong>
             </td>
         </tr>
     </table>
@@ -91,11 +93,10 @@
             </thead>
             <tbody>
                 {% for item in articles_liste %}
-                <!-- Ajout de classes et attributs de données pour l'analyse JavaScript -->
                 <tr class="js-ligne-article" data-prix="{{ item.prix_entier }}" data-qte="{{ item.qte_entier }}">
                     <td>{{ item.titre }}</td>
                     <td style="text-align: center;">{{ item.qte_entier }}</td>
-                    <td style="text-align: right;">{{ item.prix_entier }} FCFA</td>
+                    <td style="text-align: right;">{{ item.prix_entier|stringformat:"d" }} FCFA</td>
                     
                     <td style="text-align: center;">
                         <span class="admin-box">
@@ -112,7 +113,7 @@
                         </span>
                     </td>
                     
-                    <td style="text-align: right; font-weight: bold;" class="js-montant-net-ligne">{{ item.total_net_entier }} FCFA</td>
+                    <td style="text-align: right; font-weight: bold;" class="js-montant-net-ligne">{{ item.total_net_entier|stringformat:"d" }} FCFA</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -127,11 +128,11 @@
 
     <!-- SECTION DE RÉCAPITULATION DES TOTAUX -->
     <div class="total-box">
-        <p>Sous-total Brut : <span id="js-total-brut-global">{{ commande.total_brut_entier }}</span> FCFA</p>
+        <p>Sous-total Brut : <span id="js-total-brut-global">{{ commande.total_brut_entier|stringformat:"d" }}</span> FCFA</p>
         <p class="text-danger" id="js-box-remise-globale" style="display: {% if commande.montant_remise_global > 0 %}block{% else %}none{% endif %};">
-            Remise globale de la marchandise : -<span id="js-montant-remise-globale">{{ commande.montant_remise_global_entier }}</span> FCFA
+            Remise globale de la marchandise : -<span id="js-montant-remise-globale">{{ commande.montant_remise_global_entier|stringformat:"d" }}</span> FCFA
         </p>
-        <p class="text-success">Net à payer : <span id="js-net-a-payer-global">{{ commande.total_final_entier }}</span> FCFA</p>
+        <p class="text-success">Net à payer : <span id="js-net-a-payer-global">{{ commande.total_final_entier|stringformat:"d" }}</span> FCFA</p>
     </div>
 
     <!-- BLOC ADMINISTRATION -->
@@ -154,84 +155,23 @@
             </form>
         </div>
 
-        <!-- 3. Formulaire de validation en BL (Fermeture propre de vos balises coupées) -->
-        <div style="background-color: #f8fafc; border: 1px dashed #166534; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
+        <!-- 🟢 FIX 3 : Réécriture et fermeture propre du formulaire de validation en Bon de Livraison (BL) -->
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
             <form method="POST">
                 {% csrf_token %}
-                <label style="font-weight: bold; font-size: 13px; color: #166534; display: block; margin-bottom: 5px;">
-                    📈 Évolution du document :
+                <label style="font-weight: bold; font-size: 13px; color: #166534; display: block; margin-bottom: 8px;">
+                    🚚 Validation & Expédition :
                 </label>
-                <button type="submit" name="generer_bl" style="background-color: #166534; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; width: 100%;">
-                    ⚙️ Transformer en Bon de Livraison (BL)
+                <p style="font-size: 12px; color: #475569; margin: 0 0 12px 0; line-height: 1.4;">
+                    En cliquant ci-dessous, la commande passera en statut "Validé" et un mail de fabrication sera envoyé automatiquement au destinataire.
+                </p>
+                <button type="submit" name="generer_bl" style="background-color: #16a34a; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; width: 100%;">
+                    🚀 Confirmer et Générer le Bon de Livraison
                 </button>
             </form>
         </div>
+
     </div>
 
-    <!-- JAVASCRIPT : Calcule la réplication instantanée en direct de la remise -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputGlobale = document.getElementById('js-remise-globale-input');
-            const lignesArticles = document.querySelectorAll('.js-ligne-article');
-            
-            const txtBrutGlobal = document.getElementById('js-total-brut-global');
-            const boxRemiseGlobale = document.getElementById('js-box-remise-globale');
-            const txtMontantRemiseGlobale = document.getElementById('js-montant-remise-globale');
-            const txtNetAPayerGlobal = document.getElementById('js-net-a-payer-global');
-
-            if (inputGlobale) {
-                // Écoute la saisie en direct sur le champ de remise globale en pourcentage
-                inputGlobale.addEventListener('input', function() {
-                    const taux = parseFloat(inputGlobale.value) || 0;
-                    
-                    let cumulBrut = 0;
-                    let cumulRemise = 0;
-
-                    lignesArticles.forEach(function(ligne) {
-                        const prix = parseFloat(ligne.getAttribute('data-prix')) || 0;
-                        const qte = parseInt(ligne.getAttribute('data-qte')) || 0;
-                        const brutLigne = prix * qte;
-                        cumulBrut += brutLigne;
-
-                        // 1. Écrit la même valeur dans l'input de la ligne
-                        const inputLigne = ligne.querySelector('.js-input-remise-ligne');
-                        if (inputLigne) {
-                            inputLigne.value = taux;
-                        }
-
-                        // 2. Écrit le texte mis à jour pour la version d'impression PDF
-                        const textPrintLigne = ligne.querySelector('.js-print-remise-text');
-                        if (textPrintLigne) {
-                            textPrintLigne.textContent = taux + " %";
-                        }
-
-                        // 3. Calcule la remise et le montant net de la ligne
-                        const reductionLigne = Math.round(brutLigne * (taux / 100));
-                        cumulRemise += reductionLigne;
-                        const netLigne = Math.max(0, brutLigne - reductionLigne);
-
-                        // 4. Met à jour l'affichage de la colonne "Montant net"
-                        const txtNetLigne = ligne.querySelector('.js-montant-net-ligne');
-                        if (txtNetLigne) {
-                            txtNetLigne.textContent = netLigne + " FCFA";
-                        }
-                    });
-
-                    // 5. Met à jour le bloc récapitulatif financier en direct
-                    if (txtBrutGlobal) {
-                        txtBrutGlobal.textContent = cumulBrut;
-                    }
-                    
-                    if (cumulRemise > 0) {
-                        if (boxRemiseGlobale) boxRemiseGlobale.style.display = 'block';
-                        if (txtMontantRemiseGlobale) txtMontantRemiseGlobale.textContent = cumulRemise;
-                    } else {
-                        if (boxRemiseGlobale) boxRemiseGlobale.style.display = 'none';
-                    }
-
-                    if (txtNetAPayerGlobal) {
-                        txtNetAPayerGlobal.textContent = (cumulBrut - cumulRemise);
-                    }
-                });
-            }
-        });
+</body>
+</html>

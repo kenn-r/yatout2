@@ -133,6 +133,114 @@
     .burger-menu.open span:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg) !important;
     }
+    /* ===================================================================== */
+/* 📱 DESIGN UNIVERSEL DES CARTES DE PRESTATIONS (S'APPLIQUE PARTOUT)    */
+/* ===================================================================== */
+
+/* Grille flexible pour ordonner les blocs (lots, m², unités) */
+.lots-grid-unified, 
+.visual-grid, 
+.surface-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 16px;
+    width: 100%;
+    margin-bottom: 30px;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* Style universel de chaque carte d'option (Flyer, Bâche, Tasse...) */
+.card-lot-modern, 
+.col-custom-visual,
+.card-option-visual {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    flex: 1;
+    min-width: 240px;
+    max-width: 320px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* Zone d'image universelle */
+.lot-card-visual-wrapper, 
+.visual-container {
+    background-color: #f8fafc;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px;
+    box-sizing: border-box;
+}
+.lot-card-visual-wrapper img, 
+.visual-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.lot-card-visual-wrapper span, 
+.visual-container span {
+    font-size: 42px;
+}
+
+/* Zone de contenu textuel sous l'image */
+.lot-card-body, 
+.visual-footer {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+    box-sizing: border-box;
+    background: #ffffff;
+}
+
+/* ÉTAT ACTIF UNIQUE (BORDURE VIOLETTE QUAND ON CLIQUE) */
+.active-lot, 
+.active-option {
+    border-color: #7c3aed !important;
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.12) !important;
+}
+
+/* ===================================================================== */
+/* 📲 RUPTURE MOBILE : TOUTES LES CONFIGURATIONS ÉPOUSENT LE SMARTPHONE   */
+/* ===================================================================== */
+@media (max-width: 576px) {
+    .card-lot-modern, 
+    .col-custom-visual,
+    .card-option-visual {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        flex-direction: row !important; /* Image à gauche, texte à droite sur n'importe quel mobile */
+        height: 110px !important;
+    }
+    
+    .lot-card-visual-wrapper, 
+    .visual-container {
+        width: 110px !important;
+        height: 100% !important;
+        border-bottom: none !important;
+        border-right: 1px solid #e2e8f0 !important;
+    }
+    
+    .lot-card-body, 
+    .visual-footer {
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 10px 15px !important;
+        gap: 2px !important;
+    }
+}
 </style>
 </head>
 <body>

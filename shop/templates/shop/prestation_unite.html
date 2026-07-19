@@ -1,504 +1,113 @@
 {% extends 'shop/base.html' %}
 {% load static %}
 
-{% block title %}{{ prestation.titre }} - YaTout Impression{% endblock %}
-
 {% block content %}
-<!-- STYLE ULTRA-AGRANDI POUR LES VISUELS DU PRODUIT -->
-<style>
-    .grid-container-custom {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 24px;
-        align-items: stretch;
-        margin-top: 20px;
-        margin-bottom: 40px;
-    }
+<!-- Conteneur principal limité en largeur et centré -->
+<div style="max-width: 1100px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
     
-    .card-unite-grid {
-        background: #ffffff;
-        border: 2px solid #e2e8f0;
-        border-radius: 20px;
-        width: 280px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        cursor: pointer;
-        padding: 20px;
-        transition: all 0.2s ease-in-out;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-    }
-    
-    .card-unite-grid:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
-    }
-
-    .card-unite-grid.active-article {
-        border-color: #7c3aed !important;
-        background-color: rgba(124, 58, 237, 0.01);
-        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.1);
-    }
-
-    .image-block-paliers {
-        width: 100%;
-        height: 210px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f8fafc;
-        border-radius: 14px;
-        overflow: hidden;
-        padding: 12px;
-        margin-bottom: 16px;
-        border: 1px solid #f1f5f9;
-    }
-
-    .image-block-paliers img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-    }
-
-    .badge-prix-green {
-        background-color: #16a34a;
-        color: white;
-        font-weight: 700;
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        display: inline-block;
-    }
-
-    .btn-commander-violet {
-        background-color: #7c3aed;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 10px;
-        font-size: 0.9rem;
-        font-weight: 700;
-        width: 100%;
-        margin-top: 16px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        transition: background 0.2s;
-    }
-    .btn-commander-violet:hover {
-        background-color: #6d28d9;
-        color: white;
-    }
-<!-- =========================================================================
-     GALERIE DE RÉALISATIONS AVEC DÉFILEMENT AUTOMATIQUE CONTINU (CSS MARQUEE)
-     ========================================================================= -->
-{% if realisations %}
-
-    /* Zone conteneur qui masque ce qui dépasse de l'écran */
-    .marquee-container {
-        width: 100%;
-        overflow: hidden;
-        position: relative;
-        padding-bottom: 12px;
-        margin-bottom: 3rem;
-    }
-
-    /* Le ruban qui va bouger de droite à gauche */
-    .marquee-track {
-        display: flex;
-        width: max-content;
-        gap: 16px;
-        animation: defilementContinu 25s linear infinite;
-    }
-
-    /* Arrête le défilement si l'utilisateur met sa souris sur une image */
-    .marquee-container:hover .marquee-track {
-        animation-play-state: paused;
-    }
-
-    /* Définition du mouvement de translation */
-    @keyframes defilementContinu {
-        0% {
-            transform: translateX(0);
-        }
-        100% {
-            /* Se déplace exactement de la moitié (la longueur du premier groupe) */
-            transform: translateX(-50%);
-        }
-    }
-
-    /* Style individuel des cartes d'images */
-    .marquee-item {
-        flex: 0 0 auto;
-        width: 180px;
-        text-align: center;
-    }
-
-    .marquee-image-box {
-        width: 180px;
-        height: 130px;
-        background-color: #f8fafc;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .marquee-image-box img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: cover;
-        transition: transform 0.2s;
-    }
-    .marquee-image-box img:hover {
-        transform: scale(1.05);
-    }
-</style>
-
-<div class="marquee-container">
-    <p class="text-dark font-weight-bold small mb-2" style="color: #334155; font-weight: bold; font-size: 0.875rem; margin-bottom: 0.5rem;">
-        📸 Galerie de nos réalisations réelles (survolez pour mettre en pause) :
-    </p>
-    
-    <div class="marquee-track">
+    <!-- Structure Flexible : Force le côte-à-côte sur ordinateur -->
+    <div style="display: flex; flex-wrap: wrap; gap: 30px; align-items: start;">
         
-        <!-- GROUPE 1 : Premier affichage de vos images -->
-        {% for realisation in realisations %}
-            <div class="marquee-item">
-                <div class="marquee-image-box">
-                    <a href="{{ realisation.image.url }}" target="_blank" title="Voir en grand">
-                        <img src="{{ realisation.image.url }}" alt="{{ realisation.titre }}">
-                    </a>
-                </div>
-                {% if realisation.titre %}
-                    <span style="display: block; color: #64748b; margin-top: 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
-                        {{ realisation.titre }}
-                    </span>
-                {% endif %}
-            </div>
-        {% endfor %}
-
-        <!-- GROUPE 2 : Copie conforme indispensable pour créer l'illusion de boucle infinie sans coupure -->
-        {% for realisation in realisations %}
-            <div class="marquee-item" aria-hidden="true">
-                <div class="marquee-image-box">
-                    <a href="{{ realisation.image.url }}" target="_blank" title="Voir en grand">
-                        <img src="{{ realisation.image.url }}" alt="{{ realisation.titre }}">
-                    </a>
-                </div>
-                {% if realisation.titre %}
-                    <span style="display: block; color: #64748b; margin-top: 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
-                        {{ realisation.titre }}
-                    </span>
-                {% endif %}
-            </div>
-        {% endfor %}
-
-    </div>
-</div>
-{% endif %}
-
-    
-    <!-- Retour au catalogue -->
-    <a href="javascript:history.back()" class="text-secondary small d-inline-block mb-3" style="text-decoration: none; font-weight: 600; color: #64748b!important;">
-        ← Retour au catalogue
-    </a>
-
-    <!-- Titre de la prestation -->
-    <h1 class="h4 font-weight-bold mb-1" style="color: #0f172a; font-weight: 700;">
-        {{ prestation.titre }} <span class="text-muted font-weight-normal" style="font-size: 0.95rem;">(Formats Unité)</span>
-    </h1>
-    
-    <div class="alert alert-light p-2 text-muted small my-3 border-0" style="background-color: #f1f5f9; border-radius: 8px;">
-        ✨ MODÈLES DE RÉALISATIONS : Sélection de vos paliers personnalisés
-    </div>
-
-    <p class="text-dark font-weight-bold small mt-4 mb-2" style="color: #334155;">📐 Sélectionnez votre format standard :</p>
-
-    <!-- FORMULAIRE PRINCIPAL AVEC INTEGRATION ENCTYPE MEDIAS -->
-    <!-- L'action doit renvoyer vers la vue de détail pour exécuter les calculs de session -->
-<form method="POST" id="form-produit" action="{% url 'detail_prestation' prestation.id %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="prestation_id" value="{{ prestation.id }}">
-        <input type="hidden" id="type_quantite" name="type_quantite" value="unite_palier">
-
-        <!-- CONTENEUR DES GRANDES CARTES EN GRILLE -->
-        <div class="grid-container-custom">
-            
-            {% for palier in prestation.paliers_unite.all %}
-            <div class="card-unite-grid card-option-article" 
-                 onclick="submitOption('{{ palier.id }}', this, event)"
-                 data-min-qte="{{ palier.quantite_minimale }}"
-                 data-prix-u="{{ palier.prix_unitaire }}">
-                
-                <!-- CORRECTION LIGNE 130 : Suppression des doubles guillemets internes conflictuels -->
-                <input type="radio" name="quantite_unite_radio" value="{{ palier.quantite_minimale }}" style="display: none !important;">
-                
-                <!-- ZONE IMAGE CORRIGÉE ET SYNCHRONISÉE AVEC PALIER.IMAGE -->
-<div class="image-block-paliers">
-    {% if palier.image %}
-        <!-- 1. Si le palier (l'option) possède sa propre image dans l'admin -->
-        <img src="{{ palier.image.url }}" alt="Option {{ forloop.counter }}">
-        <input type="hidden" class="palier-img-url" value="{{ palier.image.url }}">
-    {% else %}
-        <!-- 2. Premier Secours : Image globale de la Prestation (on remplace image_principale par image) -->
-        {% if prestation.image %}
-            <img src="{{ prestation.image.url }}" alt="{{ prestation.titre }}" style="opacity: 0.8;">
-            <input type="hidden" class="palier-img-url" value="{{ prestation.image.url }}">
-        {% else %}
-            <!-- 3. Second Secours : Si aucune image n'est configurée, affichage de l'émoji dynamique de la vue -->
-            <div class="text-muted text-center" style="font-size: 3rem; opacity: 0.7;">
-                {{ define_emoji }}
-            </div>
-            <input type="hidden" class="palier-img-url" value="">
-        {% endif %}
-    {% endif %}
-</div>
-
-                <div>
-                    <strong class="d-block text-dark mb-1" style="font-size: 1rem; font-weight: 700; color: #0f172a;">Option N° {{ forloop.counter }}</strong>
-                    <span class="text-muted small d-block mb-3" style="color: #64748b; font-size: 0.85rem;">Quantité : <strong>Dès {{ palier.quantite_minimale }} exemplaires</strong></span>
-                    
-                    <div class="mt-2">
-                        <span class="badge-prix-green">
-                            {{ palier.prix_unitaire }} F / u
-                        </span>
-                    </div>
-
-                    <button type="button" onclick="declencherCommandeDirecte(this, event)" class="btn-commander-violet">
-                        Commander ce format
-                    </button>
-                </div>
-            </div>
-            {% empty %}
-                <div class="w-100 p-4 text-center bg-light rounded" style="border: 1px dashed #cbd5e1;">
-                    <p class="text-muted small mb-0">Aucun palier de prix configuré dans l'administration pour cet article.</p>
-                </div>
-            {% endfor %}
-
-            <!-- BLOC QUANTITÉ LIBRE -->
-            <div class="card-unite-grid card-option-article" id="custom-dimension-card" style="width: 280px; border-color: #cbd5e1;">
-                <input type="radio" name="quantite_unite_radio" value="custom" style="display: none !important;">
-                
-                <div class="text-center p-3" style="background-color: #fffbeb; border-radius: 14px; border: 1px dashed #fef08a; margin-bottom: 20px; padding: 25px 15px !important;">
-                    <strong style="color: #b45309; font-size: 1rem; display: block; margin-bottom: 4px;">Sur-mesure</strong>
-                    <span class="text-muted" style="font-size: 0.8rem;">Saisissez votre quantité exacte</span>
-                </div>
-
-                <div class="mt-auto">
-                    <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
-                        <input type="number" id="input_qte_libre_unite" name="quantite_custom_unite" value="1" min="1" class="form-control text-center font-weight-bold" style="border-radius: 10px; max-width: 140px; font-size: 1.1rem; border: 1.5px solid #cbd5e1; padding: 10px;" onclick="event.stopPropagation();">
-                        <strong class="text-secondary" style="font-size: 0.95rem;">ex.</strong>
-                    </div>
-                    
-                    <button type="button" onclick="submitCustomOption(event)" class="btn btn-light w-100 font-weight-bold py-2" style="border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.85rem; background: #f8fafc; color: #475569;">
-                        📐 Saisir mon format
-                    </button>
-                </div>
-            </div>
-
+        <!-- 📸 BLOC GAUCHE : L'Image de la Prestation (Largeur contrôlée) -->
+        <div style="flex: 1; min-width: 320px; max-width: 500px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 16px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+            {% if prestation.image %}
+                <!-- 🟢 FIX 1 : Ajout de l'id="image-prestation" lu par le script JavaScript -->
+                <img src="{{ prestation.image.url }}" id="image-prestation" style="border-radius: 16px; width: 100%; height: auto; display: block; object-fit: contain;" alt="{{ prestation.titre }}">
+            {% else %}
+                <div style="background: #f8fafc; height: 350px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 5rem;">{{ define_emoji }}</div>
+            {% endif %}
         </div>
 
-        <!-- RECAPITULATIF ET PRIX BAS DE PAGE -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center p-4 mt-5" style="border-top: 1px solid #e2e8f0; background-color: #ffffff; border-radius: 16px; gap: 20px;">
-            <div class="d-flex align-items-center">
-                <span class="text-secondary" style="font-size: 1.1rem; font-weight: 600; color: #475569;">Prix total estimé :</span>
-                <strong id="prix-total-final" style="font-size: 2.2rem; color: #7c3aed; font-weight: 800; margin-left: 16px; letter-spacing: -0.5px;">0 F</strong>
-            </div>
+        <!-- 📝 BLOC DROIT : Le Formulaire Commercial Stylisé -->
+        <div style="flex: 1.2; min-width: 320px; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 24px; padding: 32px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
             
-            <button type="submit" class="btn text-white font-weight-bold px-5 py-3" style="background-color: #7c3aed; border: none; border-radius: 14px; font-size: 1.05rem; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3); height: 56px; display: inline-flex; align-items: center; justify-content: center; min-width: 280px;">
-                🚀 Confirmer et Ajouter au panier
-            </button>
+            <h1 style="color: #1e1b4b; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 6px;">
+                {{ define_emoji }} {{ prestation.titre }}
+            </h1>
+            <p style="color: #64748b; font-size: 0.875rem; line-height: 1.5; margin-bottom: 24px;">
+                {{ prestation.description }}
+            </p>
+
+            <form method="POST" action="">
+                {% csrf_token %}
+
+                <!-- Sélections par boutons radio stylisés -->
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 12px;">
+                        Sélectionnez la quantité souhaitée :
+                    </label>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- 🟢 FIX 2 : Injection de data-img sur chaque bouton radio pour lier l'image du palier -->
+                        <label style="display: flex; align-items: center; padding: 14px 16px; border: 1.5px solid #cbd5e1; border-radius: 12px; cursor: pointer; background: #ffffff; font-size: 0.95rem; font-weight: 500; color: #0f172a;">
+                            <input type="radio" name="quantite_unite_radio" value="1" data-img="{{ prestation.image.url }}" checked style="margin-right: 12px; transform: scale(1.2); accent-color: #7c3aed;"> 1 unité simple
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; padding: 14px 16px; border: 1.5px solid #cbd5e1; border-radius: 12px; cursor: pointer; background: #ffffff; font-size: 0.95rem; font-weight: 500; color: #0f172a;">
+                            <input type="radio" name="quantite_unite_radio" value="10" data-img="{% for p in paliers_unite %}{% if p.quantite_minimale == 10 and p.image %}{{ p.image.url }}{% endif %}{% endfor %}" style="margin-right: 12px; transform: scale(1.2); accent-color: #7c3aed;"> Pack de 10 unités
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; padding: 14px 16px; border: 1.5px solid #cbd5e1; border-radius: 12px; cursor: pointer; background: #ffffff; font-size: 0.95rem; font-weight: 500; color: #0f172a;">
+                            <input type="radio" name="quantite_unite_radio" value="50" data-img="{% for p in paliers_unite %}{% if p.quantite_minimale == 50 and p.image %}{{ p.image.url }}{% endif %}{% endfor %}" style="margin-right: 12px; transform: scale(1.2); accent-color: #7c3aed;"> Pack de 50 unités
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; padding: 14px 16px; border: 1.5px solid #cbd5e1; border-radius: 12px; cursor: pointer; background: #ffffff; font-size: 0.95rem; font-weight: 500; color: #0f172a;">
+                            <input type="radio" name="quantite_unite_radio" value="custom" id="qte-unite-custom-radio" data-img="{{ prestation.image.url }}" style="margin-right: 12px; transform: scale(1.2); accent-color: #7c3aed;"> Autre volume spécifique (Saisir)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Case de saisie numérique masquée pour quantité libre -->
+                <div id="wrapper-custom-unite" style="display: none; margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 8px;">
+                        Indiquez la quantité exacte :
+                    </label>
+                    <input type="number" min="1" name="quantite_custom_unite" value="1" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+                </div>
+
+                <!-- Grille descriptive informative des tarifs dégressifs configurés en Admin -->
+                <div style="margin-bottom: 24px; background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px 16px; font-size: 0.825rem; color: #64748b; line-height: 1.5;">
+                    <span style="font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">📊 Grille des tarifs dégressifs :</span>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        {% for palier in paliers_unite %}
+                            <li>Dès {{ palier.quantite_minimale }} ex. : <span style="font-weight: bold; color: #1e1b4b;">{{ palier.prix_unitaire }} FCFA</span> / l'unité</li>
+                        {% empty %}
+                            <li>Tarif unitaire de base : {{ define_prix_u }} FCFA</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Gros Bouton d'action violet -->
+                <button type="submit" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background-color: #7c3aed; color: #ffffff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);">
+                    🛒 Valider et voir le prix final
+                </button>
+            </form>
+
         </div>
-    </form>
+    </div>
 </div>
-
-
 
 <script>
-   // 1. Calcul dynamique du prix total affiché en bas de page pour l'unité
-// 1. Calcul dynamique du prix total affiché en bas de page pour l'unité
-function recalculerPrixUnite() {
-    const inputQteLibre = document.getElementById('input_qte_libre_unite');
-    const prixTotalAffichage = document.getElementById('prix-total-final');
-    
-    let quantiteFinale = 1;
-    let prixUnitaireSelectionne = 0;
-    let radioCoche = document.querySelector('input[name="quantite_unite_radio"]:checked');
-
-    if (!radioCoche) {
-        if (prixTotalAffichage) prixTotalAffichage.textContent = "0 F";
-        return;
-    }
-
-    if (radioCoche.value === 'custom' && inputQteLibre) {
-        quantiteFinale = parseInt(inputQteLibre.value) || 1;
-        if (quantiteFinale < 1) quantiteFinale = 1;
-
-        let meilleurPrix = 0;
-        let maxQteSeuil = -1;
-
-        document.querySelectorAll('.card-option-article[data-min-qte]').forEach(card => {
-            let seuil = parseInt(card.getAttribute('data-min-qte'));
-            let prixPalier = parseInt(card.getAttribute('data-prix-u'));
-
-            if (quantiteFinale >= seuil && seuil > maxQteSeuil) {
-                maxQteSeuil = seuil;
-                meilleurPrix = prixPalier;
-            }
-        });
-        prixUnitaireSelectionne = meilleurPrix;
-    } else {
-        quantiteFinale = parseInt(radioCoche.value);
-        let parentCard = radioCoche.closest('.card-option-article');
-        if (parentCard) {
-            prixUnitaireSelectionne = parseInt(parentCard.getAttribute('data-prix-u'));
-        }
-    }
-
-    let total = quantiteFinale * prixUnitaireSelectionne;
-    if (prixTotalAffichage) {
-        prixTotalAffichage.textContent = total.toLocaleString('fr-FR') + " F";
-    }
-}
-
-// 2. Gestion du clic visuel et CHANGEMENT D'IMAGE (Même logique que Surface)
-window.submitOption = function(valeur, element, event) {
-    if (event && (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON')) return;
-    
-    document.querySelectorAll('.card-option-article').forEach(c => {
-        c.style.borderColor = '#e2e8f0';
-        c.classList.remove('active-article'); 
-    });
-    
-    if (element) {
-        element.style.borderColor = '#7c3aed';
-        element.classList.add('active-article'); 
+// 🟢 FIX 3 : Écouteur d'événement mis à jour pour basculer les images ET afficher/masquer le champ libre
+document.querySelectorAll('input[name="quantite_unite_radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const customField = document.getElementById('wrapper-custom-unite');
+        const grandeImage = document.getElementById('image-prestation');
+        const urlImagePalier = this.getAttribute('data-img');
         
-        const radio = element.querySelector('input[name="quantite_unite_radio"]');
-        if (radio) {
-            radio.checked = true;
+        // Changement dynamique de l'image de gauche
+        if (urlImagePalier && grandeImage) {
+            grandeImage.src = urlImagePalier;
+        } else if (grandeImage) {
+            grandeImage.src = "{{ prestation.image.url }}";
         }
 
-        // CORRECTIF NOUVEAU : Met à jour la grande vue produit de gauche avec l'image du palier
-        const mainImg = document.getElementById('main-product-view');
-        const palierImg = element.querySelector('.palier-img-url');
-        if (palierImg && mainImg) {
-            mainImg.src = palierImg.value;
-        }
-    }
-    
-    recalculerPrixUnite();
-};
-
-// 3. Soumission immédiate du formulaire au clic sur le bouton "Commander"
-window.declencherCommandeDirecte = function(boutonElement, event) {
-    if (event) event.stopPropagation();
-    
-    const carteParente = boutonElement ? boutonElement.closest('.card-option-article') : null;
-    if (carteParente) {
-        document.querySelectorAll('.card-option-article').forEach(c => {
-            c.style.borderColor = '#e2e8f0';
-            c.classList.remove('active-article');
-        });
-        carteParente.style.borderColor = '#7c3aed';
-        carteParente.classList.add('active-article');
-        
-        const radio = carteParente.querySelector('input[name="quantite_unite_radio"]');
-        if (radio) {
-            radio.checked = true;
-        }
-
-        // Met à jour la grande vue produit avant soumission
-        const mainImg = document.getElementById('main-product-view');
-        const palierImg = carteParente.querySelector('.palier-img-url');
-        if (palierImg && mainImg) {
-            mainImg.src = palierImg.value;
-        }
-    }
-    
-    const formulaire = document.getElementById('form-produit');
-    if (formulaire) {
-        formulaire.submit();
-    }
-};
-
-// 4. Validation et soumission pour la quantité exacte sur-mesure
-window.submitCustomOption = function(event) {
-    if (event) event.stopPropagation();
-    
-    const inputQteLibre = document.getElementById('input_qte_libre_unite');
-    if (!inputQteLibre) return;
-
-    const qte = parseInt(inputQteLibre.value);
-    if (isNaN(qte) || qte <= 0) {
-        alert("Veuillez remplir correctement la quantité (supérieure à 0) avant de valider.");
-        return;
-    }
-    
-    const card = document.getElementById('custom-dimension-card');
-    if (card) {
-        document.querySelectorAll('.card-option-article').forEach(c => {
-            c.style.borderColor = '#e2e8f0';
-            c.classList.remove('active-article');
-        });
-        card.style.borderColor = '#7c3aed';
-        card.classList.add('active-article');
-        const radioCustom = card.querySelector('input[name="quantite_unite_radio"]');
-        if (radioCustom) radioCustom.checked = true;
-    }
-
-    const formulaire = document.getElementById('form-produit');
-    if (formulaire) {
-        formulaire.submit();
-    }
-};
-
-// REMPLACEZ UNIQUEMENT LE BLOC "DOMContentLoaded" PAR CELUI-CI :
-document.addEventListener("DOMContentLoaded", function() {
-    const formulaire = document.getElementById('form-produit');
-    
-    // On retire le reset agressif qui efface les sélections
-    // if (formulaire) { formulaire.reset(); } 
-
-    // On force la première carte à s'allumer en violet de manière stable
-    const toutesLesCartes = document.querySelectorAll('.card-option-article');
-    toutesLesCartes.forEach((c, index) => {
-        if (index === 0) {
-            c.style.borderColor = '#7c3aed';
-            c.classList.add('active-article');
-            const r = c.querySelector('input[name="quantite_unite_radio"]');
-            if (r) r.checked = true;
-        } else if (c.id !== 'custom-dimension-card') {
-            c.style.borderColor = '#e2e8f0';
-            c.classList.remove('active-article');
-            const r = c.querySelector('input[name="quantite_unite_radio"]');
-            if (r) r.checked = false;
+        // Affichage ou masquage de l'input numérique
+        if (this.value === 'custom') {
+            customField.style.display = 'block';
+        } else {
+            customField.style.display = 'none';
         }
     });
-
-    const inputQteLibre = document.getElementById('input_qte_libre_unite');
-    if (inputQteLibre) {
-        inputQteLibre.addEventListener('focus', function() {
-            document.querySelectorAll('.card-option-article').forEach(c => {
-                c.style.borderColor = '#e2e8f0';
-                c.classList.remove('active-article');
-            });
-            const card = document.getElementById('custom-dimension-card');
-            if (card) {
-                card.style.borderColor = '#7c3aed';
-                card.classList.add('active-article');
-                const radioCustom = card.querySelector('input[name="quantite_unite_radio"]');
-                if (radioCustom) radioCustom.checked = true;
-            }
-            recalculerPrixUnite();
-        });
-        inputQteLibre.addEventListener('input', recalculerPrixUnite);
-    }
-    
-    // Lance le calcul pour afficher le prix initial de l'option 1 au lieu de 0 F
-    recalculerPrixUnite();
 });
 </script>
 {% endblock %}

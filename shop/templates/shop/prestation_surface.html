@@ -2,309 +2,104 @@
 {% load static %}
 
 {% block content %}
-<div class="container my-4 px-3">
-    <div class="card shadow-sm border-0 p-4" style="border-radius: 16px; background: #fff; min-height: 600px;">
+<!-- Conteneur principal limité en largeur et centré -->
+<div style="max-width: 1100px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    
+    <!-- Structure Flexible : Force le côte-à-côte sur ordinateur -->
+    <div style="display: flex; flex-wrap: wrap; gap: 30px; align-items: start;">
         
-        <!-- LIEN RETOUR -->
-        <a href="{% url 'page_prestations' %}" style="color: #7c3aed; font-weight: bold; text-decoration: none; display: block; margin-bottom: 20px;">← Retour au catalogue</a>
-        
-        <!-- TITRE DU PRODUIT -->
-        <h2 class="h4 font-weight-bold mb-1" style="color: #2e0854;">{{ prestation.titre }} (Formats Surface)</h2>
-        <div class="my-3" style="width: 50px; height: 3px; background-color: #7c3aed;"></div>
-
-        <!-- =========================================================================
-             GALERIE DE RÉALISATIONS AUTOMATIQUE INFINIE (MARQUEE)
-             ========================================================================= -->
-        <style>
-            .marquee-container-surface {
-                width: 100%;
-                overflow: hidden;
-                position: relative;
-                padding-bottom: 12px;
-                margin-bottom: 2rem;
-                margin-top: 1rem;
-            }
-            .marquee-track-surface {
-                display: flex;
-                width: max-content;
-                gap: 16px;
-                animation: defilementContinuSurface 25s linear infinite;
-            }
-            .marquee-container-surface:hover .marquee-track-surface {
-                animation-play-state: paused;
-            }
-            @keyframes defilementContinuSurface {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(-50%); }
-            }
-            .marquee-item-surface {
-                flex: 0 0 auto;
-                width: 180px;
-                text-align: center;
-            }
-            .marquee-image-box-surface {
-                width: 180px;
-                height: 130px;
-                background-color: #f8fafc;
-                border-radius: 12px;
-                overflow: hidden;
-                border: 1px solid #e2e8f0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .marquee-image-box-surface img {
-                max-width: 100%;
-                max-height: 100%;
-                object-fit: cover;
-                transition: transform 0.2s;
-            }
-            .marquee-image-box-surface img:hover {
-                transform: scale(1.05);
-            }
-        </style>
-
-        {% if realisations %}
-        <div class="marquee-container-surface">
-            <h6 class="text-muted font-weight-bold mb-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">📸 Exemples de nos réalisations réelles :</h6>
-            
-            <div class="marquee-track-surface">
-                <!-- Groupe 1 -->
-                {% for realisation in realisations %}
-                    <div class="marquee-item-surface">
-                        <div class="marquee-image-box-surface">
-                            <a href="{{ realisation.image.url }}" target="_blank" title="Voir en grand">
-                                <img src="{{ realisation.image.url }}" alt="{{ realisation.titre }}">
-                            </a>
-                        </div>
-                        {% if realisation.titre %}
-                            <span style="display: block; color: #64748b; margin-top: 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ realisation.titre }}</span>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-
-                <!-- Groupe 2 (Duplication pour l'effet infini fluide) -->
-                {% for realisation in realisations %}
-                    <div class="marquee-item-surface" aria-hidden="true">
-                        <div class="marquee-image-box-surface">
-                            <a href="{{ realisation.image.url }}" target="_blank" title="Voir en grand">
-                                <img src="{{ realisation.image.url }}" alt="{{ realisation.titre }}">
-                            </a>
-                        </div>
-                        {% if realisation.titre %}
-                            <span style="display: block; color: #64748b; margin-top: 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ realisation.titre }}</span>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% else %}
-        <!-- Si aucune image n'est liée à la prestation dans le panel admin -->
-        <div class="main-preview-box" style="border-radius: 12px; margin-bottom: 25px; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 20px; border: 1px solid #f1f5f9; height: 120px;">
+        <!-- 📸 BLOC GAUCHE : L'Image de la Prestation (Largeur contrôlée) -->
+        <div style="flex: 1; min-width: 320px; max-width: 500px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 16px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
             {% if prestation.image %}
-                <img id="main-product-view" src="{{ prestation.image.url }}" alt="Aperçu Principal" style="max-height: 100px; width: auto; object-fit: contain;">
+                <!-- 🟢 Conservé : id="image-prestation" pour permettre le ciblage visuel -->
+                <img src="{{ prestation.image.url }}" id="image-prestation" style="border-radius: 16px; width: 100%; height: auto; display: block; object-fit: contain;" alt="{{ prestation.titre }}">
             {% else %}
-                <span class="text-muted small">✨ Modèles de réalisations bientôt disponibles pour cet article.</span>
+                <div style="background: #f8fafc; height: 350px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 5rem;">{{ define_emoji }}</div>
             {% endif %}
         </div>
-        {% endif %}
-        </div>
 
-        <!-- ========================================================================= -->
-        <!-- FORMULAIRE DE COMMANDE UNIQUE SURFACE -->
-        <!-- ========================================================================= -->
-        <!-- On remplace form-produit par form-prestation-impression -->
-<!-- On remplace form-produit par form-prestation-impression -->
-<form method="POST" id="form-prestation-impression" action="{% url 'detail_prestation' prestation.id %}">
-            {% csrf_token %}
+        <!-- 📝 BLOC DROIT : Le Formulaire Commercial -->
+        <div style="flex: 1.2; min-width: 320px; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 24px; padding: 32px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
             
-            <input type="hidden" id="type_quantite" name="type_quantite" value="surface_grille">
-            <h5 class="font-weight-bold mb-3" style="color: #1e293b;">📐 Sélectionnez votre format standard :</h5>
+            <h1 style="color: #1e1b4b; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                <span>{{ define_emoji }}</span> {{ prestation.titre }}
+            </h1>
+            <p style="color: #64748b; font-size: 0.875rem; line-height: 1.5; margin-bottom: 24px;">
+                {{ prestation.description }}
+            </p>
 
-            <!-- GRILLE DES FORMATS DYNAMIQUES MODIFIÉE POUR DE PLUS GRANDES IMAGES -->
-            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; margin-bottom: 25px;">
+            <form method="POST" action="">
+                {% csrf_token %}
                 
-                {% for grille in grilles_surface %}
-                <div class="card-option-article {% if forloop.first %}active-article{% endif %}" 
-                     data-prix="{{ grille.prix_total }}" 
-                     onclick="submitOption('{{ grille.dimensions }}', this, event)"
-                     style="flex: 1; min-width: 220px; max-width: 280px; background: #ffffff; border: 2px solid {% if forloop.first %}#7c3aed{% else %}#e2e8f0{% endif %}; border-radius: 14px; cursor: pointer; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    
-                    <input type="radio" name="dimensions_m2" value="{{ grille.dimensions }}" {% if forloop.first %}checked{% endif %} style="display: none !important;">
-                    
-                    <!-- ✅ AGRANDISSEMENT DE LA ZONE IMAGE (Passage de 100px à 160px) -->
-                    <div class="article-image-box" style="height: 160px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; width: 100%;">
-                        <img src="{% if grille.image %}{{ grille.image.url }}{% elif prestation.image %}{{ prestation.image.url }}{% else %}{% static 'shop/images/default_format.jpg' %}{% endif %}" 
-                             alt="Format {{ grille.dimensions }}" 
-                             style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px;">
-                    </div>
-                    
-                   <div class="text-center" style="margin-bottom: 12px; width: 100%;">
-    <!-- ✅ On habille le chiffre pour en faire un vrai choix de format clair -->
-    <strong style="font-size: 1.1rem; color: #1e293b; display: block; margin-bottom: 4px;">Option N° {{ grille.dimensions }}</strong>
-    
-    <!-- Ajout de la surface récupérée en direct de l'admin (ex: 2.0 m²) -->
-    <small class="text-muted d-block mb-2">Surface : <strong>{{ grille.surface_m2 }} m²</strong></small>
-    
-    <span class="badge" style="font-size: 0.9rem; padding: 6px 12px; font-weight: bold; background-color: #10b981; color: white; border-radius: 8px;">{{ grille.prix_total }} F</span>
-</div>
-                    <button type="button" onclick="declencherCommandeDirecte(this, event)" 
-                            style="width: 100%; background: #7c3aed; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 3px 6px rgba(124, 58, 237, 0.25);">
-                        🛒 Commander ce format
-                    </button>
+                <!-- Sélection des Dimensions -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+                        Dimensions disponibles :
+                    </label>
+                    <!-- 🟢 Unifié et nettoyé : Embarque correctement l'attribut data-img pour chaque option -->
+                    <select name="dimensions_m2" id="dimensions_m2" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;" required>
+                        <option value="" disabled selected>-- Choisir une dimension --</option>
+                        {% for grille in grilles_surface %}
+                            <option value="{{ grille.id }}" data-img="{% if grille.image %}{{ grille.image.url }}{% endif %}">
+                                {{ grille.dimensions }} ({{ grille.prix_total }} FCFA)
+                            </option>
+                        {% endfor %}
+                        <option value="custom">📐 Dimensions sur-mesure (Calcul libre)</option>
+                    </select>
                 </div>
-                {% endfor %}
 
-                <!-- OPTION : FORMAT SUR-MESURE -->
-                <div class="card-option-article" id="custom-dimension-card" onclick="submitOption('custom', this, event)" 
-                     style="flex: 1; min-width: 220px; max-width: 280px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 14px; cursor: pointer; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
-                    <input type="radio" name="dimensions_m2" value="custom" style="display: none !important;">
-                    
-                    <!-- ✅ Ajustement de la zone icône sur-mesure -->
-                    <div style="height: 160px; display: flex; align-items: center; justify-content: center; font-size: 50px; background-color: #fffbeb; width: 100%; border-radius: 6px; margin-bottom: 10px;">
-                        ✨
+                <!-- BLOC LONGUEUR / LARGEUR : Masqué proprement, passe en flex au besoin -->
+                <div id="champs-custom" style="display: none; gap: 15px; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: 600; font-size: 0.80rem; color: #475569; margin-bottom: 6px;">Largeur (mètres) :</label>
+                        <input type="number" step="0.1" min="0.1" name="largeur_custom" value="1.0" style="width: 100%; border-radius: 10px; padding: 12px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
                     </div>
-                    
-                    <div class="text-center" style="width: 100%; margin-bottom: 12px;">
-                        <strong style="font-size: 1.1rem; color: #d97706; display: block; margin-bottom: 8px;">Sur-mesure</strong>
-                        <div style="display: flex; gap: 6px; align-items: center; justify-content: center;">
-                            <input type="number" id="width_input" name="largeur_custom" placeholder="L (m)" min="0.1" step="0.1" style="width: 70px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; font-size: 0.85rem;" onclick="event.stopPropagation();">
-                            <span style="font-weight: bold; color: #64748b; font-size: 0.85rem;">x</span>
-                            <input type="number" id="height_input" name="hauteur_custom" placeholder="H (m)" min="0.1" step="0.1" style="width: 70px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; font-size: 0.85rem;" onclick="event.stopPropagation();">
-                        </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: 600; font-size: 0.80rem; color: #475569; margin-bottom: 6px;">Hauteur (mètres) :</label>
+                        <input type="number" step="0.1" min="0.1" name="hauteur_custom" value="1.0" style="width: 100%; border-radius: 10px; padding: 12px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
                     </div>
-
-                    <button type="button" onclick="submitCustomOption(event)" style="width: 100%; background: #fff7ed; color: #d97706; border: 1px solid #fed7aa; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">
-                        📐 Saisir mon format
-                    </button>
                 </div>
-            </div>
-            <!-- BLOC TOTALISATEUR DE BAS DE PAGE -->
-            <div style="background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; padding: 15px; text-align: right; margin-top: 30px;">
-                <span style="font-size: 1.05rem; color: #64748b; font-weight: 500;">Prix total estimé :</span>
-                <strong id="prix-total-final" style="font-size: 1.8rem; color: #7c3aed; margin-left: 10px;">0 F</strong>
-            </div>
-        </form>
 
+                <!-- Saisie de la Quantité -->
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+                        Quantité souhaitée :
+                    </label>
+                    <input type="number" min="1" name="quantite_lot" value="1" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; box-sizing: border-box;" required>
+                </div>
+
+                <!-- Gros Bouton d'action violet -->
+                <button type="submit" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background-color: #7c3aed; color: #ffffff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);">
+                    🛒 Valider et calculer mon prix
+                </button>
+            </form>
+
+        </div>
     </div>
 </div>
 
-<!-- ========================================================================= -->
 <script>
-    function changeMainImage(imgUrl, element) {
-        const mainImg = document.getElementById('main-product-view');
-        if (mainImg) {
-            mainImg.src = imgUrl;
-        }
-        document.querySelectorAll('.scroll-item-img').forEach(el => el.style.border = '2px solid #e2e8f0');
-        if (element) element.style.border = '2px solid #7c3aed';
+// 🟢 Unique écouteur d'événement fusionné et propre (Image + Saisie Libre)
+document.getElementById('dimensions_m2').addEventListener('change', function() {
+    const customDiv = document.getElementById('champs-custom');
+    
+    // 1. Changement de l'image en direct
+    const optionSelectionnee = this.options[this.selectedIndex];
+    const urlImageSurface = optionSelectionnee.getAttribute('data-img');
+    const grandeImage = document.getElementById('image-prestation');
+    
+    if (urlImageSurface && grandeImage) {
+        grandeImage.src = urlImageSurface;
+    } else if (grandeImage) {
+        grandeImage.src = "{{ prestation.image.url }}";
     }
 
-    // 1. Gestion du clic visuel sur une carte format standard
-    function submitOption(valeur, element, event) {
-        if (event && (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON')) return;
-        
-        // Nettoyer le design de toutes les cartes
-        document.querySelectorAll('.card-option-article').forEach(c => {
-            c.style.borderColor = '#e2e8f0';
-            c.classList.remove('active-article'); 
-        });
-        
-        // Activer la carte cliquée
-        if (element) {
-            element.style.borderColor = '#7c3aed';
-            element.classList.add('active-article'); 
-            
-            // Cocher le bouton radio invisible pour Django
-            const radio = element.querySelector('input[name="dimensions_m2"]');
-            if (radio) {
-                radio.checked = true;
-            }
-        }
-        
-        // Mettre à jour le prix
-        if (typeof recalculerPrixTotal === "function") recalculerPrixTotal();
+    // 2. Gestion de l'affichage des inputs largeur/hauteur
+    if (this.value === 'custom') {
+        customDiv.style.display = 'flex'; // Affiche côte à côte
+    } else {
+        customDiv.style.display = 'none'; // Masque le bloc
     }
-
-    // 2. Soumission immédiate du formulaire au clic sur le bouton "Commander" (Options Standards)
-    function declencherCommandeDirecte(boutonElement, event) {
-        if (event) event.stopPropagation();
-        
-        const carteParente = boutonElement ? boutonElement.closest('.card-option-article') : null;
-        if (carteParente) {
-            document.querySelectorAll('.card-option-article').forEach(c => c.style.borderColor = '#e2e8f0');
-            carteParente.style.borderColor = '#7c3aed';
-            const radio = carteParente.querySelector('input[name="dimensions_m2"]');
-            if (radio) {
-                radio.checked = true;
-            }
-        }
-        
-       // Remplacer l'ancienne recherche par ID en allant chercher le formulaire le plus proche
-    const formulaire = document.getElementById('form-prestation-impression');
-    if (formulaire) {
-        formulaire.submit(); // Soumet UNIQUEMENT le formulaire d'impression en cours
-    }
-    }
-
-    // 3. Validation et soumission isolée pour le format Sur-mesure
-    function submitCustomOption(event) {
-        if (event) event.stopPropagation();
-        
-        const wInput = document.getElementById('width_input');
-        const hInput = document.getElementById('height_input');
-        
-        if (!wInput || !hInput) return;
-
-        const w = parseFloat(wInput.value);
-        const h = parseFloat(hInput.value);
-        
-        // Validation numérique stricte
-        if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
-            alert("Veuillez remplir correctement les dimensions en mètres (supérieures à 0) avant de valider.");
-            return;
-        }
-        
-        // FORÇAGE : On s'assure que la case radio "custom" est cochée avant d'envoyer
-        const card = document.getElementById('custom-dimension-card');
-        if (card) {
-            document.querySelectorAll('.card-option-article').forEach(c => c.style.borderColor = '#e2e8f0');
-            card.style.borderColor = '#7c3aed';
-            const radioCustom = card.querySelector('input[name="dimensions_m2"]');
-            if (radioCustom) radioCustom.checked = true;
-        }
-
-        const formulaire = document.getElementById('form-produit');
-        if (formulaire) {
-            formulaire.submit();
-        }
-    }
-
-    // 4. Écouteurs d'événements mis à jour au chargement du DOM
-    document.addEventListener("DOMContentLoaded", function() {
-        // Déclenche l'activation visuelle immédiate dès que l'utilisateur clique dans un champ numérique
-        document.querySelectorAll('#width_input, #height_input').forEach(input => {
-            input.addEventListener('focus', function() {
-                // Éteint les bordures violettes des autres cartes
-                document.querySelectorAll('.card-option-article').forEach(c => c.style.borderColor = '#e2e8f0');
-                
-                // Allume la carte sur-mesure
-                const card = document.getElementById('custom-dimension-card');
-                if (card) {
-                    card.style.borderColor = '#7c3aed';
-                    const radioCustom = card.querySelector('input[name="dimensions_m2"]');
-                    if (radioCustom) radioCustom.checked = true;
-                }
-                if (typeof recalculerPrixTotal === "function") recalculerPrixTotal();
-            });
-
-            // Met à jour le prix au fur et à mesure de la saisie
-            input.addEventListener('input', function() {
-                if (typeof recalculerPrixTotal === "function") recalculerPrixTotal();
-            });
-        });
-        
-        if (typeof recalculerPrixTotal === "function") recalculerPrixTotal();
-    });
+});
 </script>
 {% endblock %}

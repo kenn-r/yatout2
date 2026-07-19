@@ -1,201 +1,132 @@
 {% extends 'shop/base.html' %}
 {% load static %}
 
-{% block title %}{{ prestation.titre }} - YaTout Impression{% endblock %}
-
 {% block content %}
-<div class="container my-4 px-3" style="font-family: system-ui, -apple-system, sans-serif; max-width: 1300px;">
-    <div class="card shadow-sm border-0 p-4" style="border-radius: 16px; background: #fff; min-height: 600px;">
+<!-- Conteneur principal limité en largeur et centré -->
+<div style="max-width: 1100px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    
+    <!-- Structure Flexible : Force le côte-à-côte sur ordinateur -->
+    <div style="display: flex; flex-wrap: wrap; gap: 30px; align-items: start;">
         
-        <!-- LIEN RETOUR -->
-        <a href="javascript:history.back()" style="color: #7c3aed; font-weight: bold; text-decoration: none; display: block; margin-bottom: 20px;">← Retour au catalogue</a>
-        
-        <!-- TITRE DU PRODUIT -->
-        <h2 class="h4 font-weight-bold mb-1" style="color: #2e0854;">{{ prestation.titre }} <span class="text-muted font-weight-normal" style="font-size: 0.95rem;">(Tarifs par Lots d'Impression)</span></h2>
-        <div class="my-3" style="width: 50px; height: 3px; background-color: #7c3aed;"></div>
-
-        <!-- =========================================================================
-             GALERIE DE RÉALISATIONS AVEC DÉFILEMENT AUTOMATIQUE CONTINU (CSS MARQUEE)
-             ========================================================================= -->
-        <style>
-            .marquee-container-flyer { width: 100%; overflow: hidden; position: relative; padding-bottom: 12px; margin-bottom: 2rem; margin-top: 1rem; }
-            .marquee-track-flyer { display: flex; width: max-content; gap: 16px; animation: defilementContinuFlyer 25s linear infinite; }
-            .marquee-container-flyer:hover .marquee-track-flyer { animation-play-state: paused; }
-            @keyframes defilementContinuFlyer { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-            .marquee-item-flyer { flex: 0 0 auto; width: 180px; text-align: center; }
-            .marquee-image-box-flyer { width: 180px; height: 130px; background-color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; }
-            .marquee-image-box-flyer img { max-width: 100%; max-height: 100%; object-fit: cover; transition: transform 0.2s; }
-            .marquee-image-box-flyer img:hover { transform: scale(1.05); }
-        </style>
-
-        {% if realisations %}
-        <div class="marquee-container-flyer">
-            <h6 class="text-muted font-weight-bold mb-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">📸 Exemples de réalisations réelles (survolez pour figer) :</h6>
-            <div class="marquee-track-flyer">
-                {% for realisation in realisations %}
-                    <div class="marquee-item-flyer">
-                        <div class="marquee-image-box-flyer"><a href="{{ realisation.image.url }}" target="_blank"><img src="{{ realisation.image.url }}" alt="{{ realisation.titre }}"></a></div>
-                        {% if realisation.titre %}<span style="display: block; color: #64748b; margin-top: 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ realisation.titre }}</span>{% endif %}
-                    </div>
-                {% endfor %}
-                {% for realisation in realisations %}
-                    <div class="marquee-item-flyer" aria-hidden="true">
-                        <div class="marquee-image-box-flyer"><a href="{{ realisation.image.url }}" target="_blank"><img src="{{ realisation.image.url }}" alt="{{ realisation.titre }}"></a></div>
-                        {% if realisation.titre %}<span style="display: block; color: #64748b; margin-top: 4px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">{{ realisation.titre }}</span>{% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- ========================================================================= -->
-        <!-- FORMULAIRE DE COMMANDE PAR LOTS -->
-        <!-- ========================================================================= -->
-        <form method="POST" id="form-produit" action="{% url 'detail_prestation' prestation.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="prestation_id" value="{{ prestation.id }}">
-            <input type="hidden" id="type_quantite" name="type_quantite" value="flyer_lots">
-
-            <!-- ÉTAPE 1 : CHOIX DU FORMAT TECHNIQUE / VARIATION (S'affiche UNIQUEMENT s'il y a des formats en BDD) -->
-            {% if formats_flyer %}
-            <h5 class="font-weight-bold mb-3" style="color: #1e293b;">📐 1. Sélectionnez votre format ou option :</h5>
-            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
-                {% for fmt in formats_flyer %}
-                <label style="flex: 1; min-width: 200px; max-width: 250px; background: #f8fafc; border: 2px solid {% if forloop.first %}#7c3aed{% else %}#e2e8f0{% endif %}; border-radius: 12px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: all 0.2s;" class="format-label">
-                    <input type="radio" name="format_choisi" value="{{ fmt.id }}" data-prix-u="{{ fmt.prix_unitaire }}" {% if forloop.first %}checked{% endif %} onchange="calculerPrixTotal()">
-                    <strong style="color: #1e293b;">{{ fmt.nom_format }}</strong>
-                    <span class="text-muted small">Prix unitaire de base : {{ fmt.prix_unitaire }} F</span>
-                </label>
-                {% endfor %}
-            </div>
+        <!-- 📸 BLOC GAUCHE : L'Image des Flyers (Largeur contrôlée) -->
+        <div style="flex: 1; min-width: 320px; max-width: 500px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 16px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+            {% if prestation.image %}
+                <img src="{{ prestation.image.url }}" id="image-prestation" style="border-radius: 16px; width: 100%; height: auto; display: block; object-fit: contain;" alt="{{ prestation.titre }}">
             {% else %}
-                <!-- Input caché invisible pour que le script JS et la vue continuent de fonctionner en arrière-plan sans bloquer -->
-                <input type="radio" name="format_choisi" value="default" data-prix-u="{{ define_prix_u }}" checked style="display: none !important;">
+                <div style="background: #f8fafc; height: 350px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 5rem;">📦</div>
             {% endif %}
+        </div>
 
-            <!-- ÉTAPE 2 : CHOIX DE LA QUANTITÉ (LIT L'ADMINISTRATION) -->
-        <h5 class="font-weight-bold mb-3" style="color: #1e293b;">📦 2. Sélectionnez la quantité d'impression :</h5>
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 35px;">
+        <!-- 📝 BLOC DROIT : Le Formulaire Commercial Stylisé -->
+        <div style="flex: 1.2; min-width: 320px; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 24px; padding: 32px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
             
-            {% for option in options_quantite %}
-            <div class="card-lot {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerLot('{{ option.quantite }}', this)">
-                <label class="m-0 text-center cursor-pointer" style="pointer-events: none;">
-                    <input type="radio" name="quantite_lot" value="{{ option.quantite }}" data-remise="{{ option.remise_pourcentage }}" {% if forloop.first %}checked{% endif %}>
-                    <span class="d-block font-weight-bold mt-1" style="font-size: 1.1rem; color: #1e293b;">Lot {{ option.quantite }} ex.</span>
-                </label>
-                
-                {% if option.remise_pourcentage > 0 %}
-                    <span class="badge" style="background-color: #fef3c7; color: #d97706; font-weight: bold; border-radius: 6px; padding: 4px 10px;">Remise -{{ option.remise_pourcentage }}%</span>
-                {% else %}
-                    <span class="text-muted small">Tarif Catalogue</span>
-                {% endif %}
-                
-                <button type="submit" style="width: 100%; background: #7c3aed; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: auto;">
-                    🛒 Commander
-                </button>
-            </div>
-            {% empty %}
-            <!-- Message d'alerte si l'administration est vide pour ce produit -->
-            <div style="width: 100%; padding: 20px; text-align: center; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 12px;">
-                ⚙️ Aucun lot pré-configuré. Utilisez l'option sur-mesure ci-dessous ou ajoutez des lots dans l'admin Django.
-            </div>
-            {% endfor %}
+            <h1 style="color: #1e1b4b; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 6px;">
+                🚀 {{ prestation.titre }}
+            </h1>
+            <p style="color: #64748b; font-size: 0.875rem; line-height: 1.5; margin-bottom: 24px;">
+                {{ prestation.description }}
+            </p>
 
-            <!-- OPTION QUANTITÉ PERSONNALISÉE (SUR-MESURE) -->
-            <div class="card-lot" id="custom-lot-card" onclick="selectionnerLot('custom', this)" style="flex: 1; min-width: 220px; max-width: 280px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 12px; min-height: 160px;">
-                <label class="m-0 text-center" style="pointer-events: none;">
-                    <input type="radio" name="quantite_lot" value="custom" id="radio-custom-lot">
-                    <span class="d-block font-weight-bold mt-1" style="color: #d97706;">Saisir une quantité</span>
-                </label>
-                
-                <div style="display: flex; gap: 6px; align-items: center; justify-content: center; width: 100%;" onclick="event.stopPropagation();">
-                    <input type="number" id="input_quantite_custom" name="quantite_custom" value="600" min="1" style="width: 110px; text-align: center; border: 2px solid #cbd5e1; border-radius: 8px; padding: 6px; font-weight: bold; font-size: 1rem;" oninput="calculerPrixTotal()">
-                    <strong class="text-secondary" style="font-size: 0.9rem;">ex.</strong>
+            <form method="POST" action="">
+                {% csrf_token %}
+
+                <!-- Sélection du Format -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+                        Format du flyer :
+                    </label>
+                    <select name="format_choisi" id="format_choisi" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;" required>
+    <option value="" disabled selected>-- Choisir un format --</option>
+    {% for format in formats_flyer %}
+        <!-- 🟢 AJOUT : data-img transmet l'adresse de l'image du format à JavaScript -->
+        <option value="{{ format.id }}" data-img="{% if format.image %}{{ format.image.url }}{% endif %}">
+            {{ format.nom_format }}
+        </option>
+    {% endfor %}
+</select>
+</div>
+
+                <!-- Sélection du volume (Alimenté dynamiquement selon le format choisi) -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+                        Quantité :
+                    </label>
+                    <select name="quantite_lot" id="quantite_lot" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #f8fafc; box-sizing: border-box;" disabled required>
+                        <option value="">Sélectionnez d'abord un format</option>
+                    </select>
                 </div>
 
-                <span id="badge-remise-custom" class="badge" style="background-color: #fef3c7; color: #d97706; font-weight: bold; border-radius: 6px; padding: 4px 10px;">Remise -10%</span>
-                
-                <button type="submit" style="width: 100%; background: #d97706; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                    ✨ Valider ma quantité
+                <!-- Case de saisie numérique masquée pour quantité libre -->
+                <div id="wrapper-custom-flyer" style="display: none; margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 8px;">
+                        Saisissez la quantité libre souhaitée :
+                    </label>
+                    <input type="number" min="1" name="quantite_custom" id="quantite_custom" value="600" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+                </div>
+
+                <!-- Gros Bouton d'action violet -->
+                <button type="submit" id="btn-submit" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background-color: #7c3aed; color: #ffffff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);" disabled>
+                    🛒 Valider et voir le prix final
                 </button>
-            </div>
-        </div>
+            </form>
 
-        <!-- ZONE D'AFFICHAGE DU PRIX TOTAL -->
-        <div class="text-right p-3 bg-light rounded d-flex justify-content-between align-items-center" style="background-color: #f8fafc; border-top: 2px solid #e2e8f0; margin-top: 20px;">
-            <span class="text-muted font-weight-bold" id="info-calcul-remise" style="font-size: 0.95rem;">Calcul du panier en cours...</span>
-            <h4 class="font-weight-bold m-0" style="color: #1e293b;">Prix total estimé : <span id="prix-total-affiche" style="color: #7c3aed;">0</span> F CFA</h4>
         </div>
-
-    </form>
+    </div>
 </div>
-<!-- ✅ TOUT LE JAVASCRIPT EST SÉCURISÉ ICI -->
+
 <script>
-    // Écouteur pour styliser visuellement le choix du format
-    document.querySelectorAll('.format-label input').forEach(input => {
-        input.addEventListener('change', function() {
-            document.querySelectorAll('.format-label').forEach(lbl => lbl.style.borderColor = '#e2e8f0');
-            if(this.checked) this.parentElement.style.borderColor = '#7c3aed';
-        });
-    });
-
-    // Sélection graphique des cartes de lots au clic
-    function selectionnerLot(valeur, element) {
-        document.querySelectorAll('.card-lot').forEach(card => card.classList.remove('active-lot'));
-        element.classList.add('active-lot');
-        
-        let inputRadio = element.querySelector('input[type="radio"]');
-        if (inputRadio) inputRadio.checked = true;
-        
-        calculerPrixTotal();
-    }
-
-    function calculerPrixTotal() {
-    // 1. Récupérons le format choisi (ex: Standard) et son prix unitaire configuré en admin
-    let formatSelectionne = document.querySelector('input[name="format_choisi"]:checked');
-    let prixUnitaireAdmin = formatSelectionne ? parseInt(formatSelectionne.getAttribute('data-prix-u')) : 100;
+// Gestion complète du changement de format (Image + Quantités associées)
+document.getElementById('format_choisi').addEventListener('change', function() {
+    const formatId = this.value;
+    const qteSelect = document.getElementById('quantite_lot');
     
-    // 2. Récupérons le lot sélectionné
-    let lotSelectionne = document.querySelector('input[name="quantite_lot"]:checked');
-    let qte = 0;
-    let remisePct = 0;
-    let prixBrut = 0;
-
-    if (lotSelectionne && lotSelectionne.value !== "custom") {
-        qte = parseInt(lotSelectionne.value);
-        remisePct = parseInt(lotSelectionne.getAttribute('data-remise')) || 0;
-        
-        // LOGIQUE UNIVERSELLE : Le prix brut est égal à (Quantité x Prix Unitaire de l'admin)
-        prixBrut = qte * prixUnitaireAdmin; 
-    } else {
-        // Saisie sur-mesure / libre
-        let inputCustom = document.getElementById('input_quantite_custom');
-        qte = parseInt(inputCustom.value) || 0;
-        
-        // Règle automatique demandée
-        if (qte > 500) {
-            remisePct = 10;
-            document.getElementById('badge-remise-custom').innerText = "Remise -10% (Grand tirage)";
-            document.getElementById('badge-remise-custom').style.backgroundColor = "#dcfce7";
-            document.getElementById('badge-remise-custom').style.color = "#15803d";
-        } else {
-            remisePct = 5;
-            document.getElementById('badge-remise-custom').innerText = "Remise -5%";
-            document.getElementById('badge-remise-custom').style.backgroundColor = "#fef3c7";
-            document.getElementById('badge-remise-custom').style.color = "#d97706";
-        }
-        
-        prixBrut = qte * prixUnitaireAdmin;
+    // 🟢 1. MISE À JOUR DYNAMIQUE DE L'IMAGE À GAUCHE
+    const optionSelectionnee = this.options[this.selectedIndex];
+    const urlImageFormat = optionSelectionnee.getAttribute('data-img');
+    const grandeImage = document.getElementById('image-prestation');
+    
+    if (urlImageFormat && grandeImage) {
+        grandeImage.src = urlImageFormat;
+    } else if (grandeImage) {
+        // Si le format n'a pas d'image, on remet l'image par défaut de la prestation
+        grandeImage.src = "{{ prestation.image.url }}";
     }
+    
+    // 🟢 2. RECONSTRUCTION DES OPTIONS DE QUANTITÉS LIÉES
+    qteSelect.innerHTML = '<option value="" disabled selected>-- Choisir la quantité --</option>';
+    
+    // Injection dynamique des lots liés au format via Django
+    {% for format in formats_flyer %}
+        if (formatId == "{{ format.id }}") {
+            {% for option in format.options_quantite.all %}
+                qteSelect.innerHTML += '<option value="{{ option.quantite }}">{{ option.quantite }} exemplaires</option>';
+            {% endfor %}
+        }
+    {% endfor %}
+    
+    // Option sur-mesure permanente
+    qteSelect.innerHTML += '<option value="custom">Saisir une quantité libre (Sur-mesure)</option>';
+    
+    // Déblocage visuel du champ quantité
+    qteSelect.disabled = false;
+    qteSelect.style.backgroundColor = '#ffffff';
+});
 
-    // 3. Calculs finaux avec remise
-    let montantRemise = Math.floor(prixBrut * (remisePct / 100));
-    let totalFinal = prixBrut - montantRemise;
-
-    // 4. Affichage
-    document.getElementById('prix-total-affiche').innerText = totalFinal.toLocaleString('fr-FR');
-    document.getElementById('info-calcul-remise').innerText = `Détails : ${qte} ex. × ${prixUnitaireAdmin} F/u (Remise : ${remisePct}%, soit -${montantRemise} F)`;
-}
+// Affiche ou masque la case numérique si choix "Saisir une quantité libre"
+document.getElementById('quantite_lot').addEventListener('change', function() {
+    const customField = document.getElementById('wrapper-custom-flyer');
+    const btnSubmit = document.getElementById('btn-submit');
+    
+    if (this.value === 'custom') {
+        customField.style.style.display = 'block';
+    } else {
+        customField.style.style.display = 'none';
+    }
+    
+    // Débloque le gros bouton violet dès qu'une quantité est fixée
+    if (this.value) {
+        btnSubmit.disabled = false;
+    }
+});
 </script>
-
 {% endblock %}

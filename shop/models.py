@@ -111,9 +111,6 @@ class MessageAssistant(models.Model):
         return f"{expediteur} : {self.message[:30]}"
     
 
-import datetime
-from django.db import models
-
 class Prestation(models.Model):
     CHOIX_UNITE = [
         ('SURFACE', 'Au mètre carré (Bâche, Vinyle, Affiche)'),
@@ -126,6 +123,7 @@ class Prestation(models.Model):
     description = models.TextField(blank=True, verbose_name="Description")
     type_unite = models.CharField(max_length=10, choices=CHOIX_UNITE, default='UNITE', verbose_name="Type de calcul")
     image = models.ImageField(upload_to='prestations/', blank=True, null=True, verbose_name="Image du produit")
+    remise_custom = models.IntegerField(default=0, verbose_name="Remise sur-mesure (%)")
 
     class Meta:
         db_table = 'shop_prestation'
@@ -133,57 +131,147 @@ class Prestation(models.Model):
     def __str__(self):
         return self.titre
 
-# 1. POUR LES PRODUITS 'SURFACE' (Bâche, Vinyle, Affiche)
+    # 🟢 AJOUTEZ CETTE MÉTHODE ICI, BIEN ALIGNÉE :
+    def calculer_prix(self, quantite=1, format_id=None, surface_id=None, nb_pages=None):
+        """
+        Calcule le prix brut, la remise et le prix final selon le type de prestation.
+        """
+        prix_brut = 0
+        remise_pourcentage = 0
+
+        try:
+            # 1. LOGIQUE SURFACE
+            if self.type_unite == 'SURFACE' or self.type_unite == 'M2':
+                if surface_id and surface_id != 'custom':
+                    grille = self.grilles_surface.get(id=surface_id)
+                    prix_brut = grille.prix_total * quantite
+                    remise_pourcentage = grille.remise_pourcentage
+                else:
+                    # Fallback au cas où
+                    prix_brut = 0
+
+            # 2. LOGIQUE FLYER
+            elif self.type_unite == 'FLYER':
+                from .models import OptionQuantiteFlyer
+                option = OptionQuantiteFlyer.objects.get(
+                    format_flyer_id=format_id, 
+                    quantite=quantite
+                )
+                prix_brut = option.prix_total
+                remise_pourcentage = option.remise_pourcentage
+
+            # 3. LOGIQUE UNITÉ SIMPLE (Dégressif par palier)
+            elif self.type_unite == 'UNITE':
+                palier = self.paliers_unite.filter(quantite_minimale__lte=quantite).order_by('-quantite_minimale').first()
+                if palier:
+                    prix_brut = palier.prix_unitaire * quantite
+                else:
+                    prix_brut = 0 
+                remise_pourcentage = self.remise_custom
+
+            # 4. LOGIQUE MULTIPAGE (Catalogue)
+            elif self.type_unite == 'PAGES':
+                grille_page = self.paliers_pages.get(nombre_pages=nb_pages, quantite=quantite)
+                prix_brut = grille_page.prix_total
+                remise_pourcentage = self.remise_custom
+
+        except Exception:
+            return {
+                "prix_brut": 0,
+                "remise_appliquee_pourcent": 0,
+                "montant_remise": 0,
+                "prix_final": 0,
+                "erreur": "Tarif non trouvé."
+            }
+
+        montant_remise = int(prix_brut * (remise_pourcentage / 100.0))
+        prix_final = prix_brut - montant_remise
+
+        return {
+            "prix_brut": prix_brut,
+            "remise_appliquee_pourcent": remise_pourcentage,
+            "montant_remise": montant_remise,
+            "prix_final": prix_final
+        }
+
+
+# 1. SURFACE (Invariable)
 class GrilleTarifaireSurface(models.Model):
     prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='grilles_surface')
     dimensions = models.CharField(max_length=50, help_text="Ex: 1x1m, 2x3m, A0")
     surface_m2 = models.FloatField(verbose_name="Surface en m²")
-    prix_total = models.IntegerField(verbose_name="Prix total pour cette dimension (FCFA)")
-    # NOUVEAU : Image spécifique à cette dimension
-    image = models.ImageField(upload_to='surfaces/', blank=True, null=True, verbose_name="Image de démonstration")
+    prix_total = models.IntegerField(verbose_name="Prix total (FCFA)")
+    remise_pourcentage = models.IntegerField(default=0, verbose_name="Remise catalogue (%)")
+    image = models.ImageField(upload_to='surfaces/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.prestation.titre} - {self.dimensions} ({self.prix_total} FCFA)"
 
 
-# 2. POUR LES FLYERS / DÉPLIANTS
+# 2. FLYERS & DÉPLIANTS (Correction : Liaison Quantité -> Format)
 class FormatFlyer(models.Model):
     prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='formats_flyer')
-    nom_format = models.CharField(max_length=50, help_text="Ex: Format A5, Format A6, Standard (Carte)")
-    prix_unitaire = models.IntegerField(verbose_name="Prix unitaire de base (FCFA)")
-    # NOUVEAU : Image spécifique à ce format
-    image = models.ImageField(upload_to='flyers/', blank=True, null=True, verbose_name="Image du format")
+    nom_format = models.CharField(max_length=50, help_text="Ex: Format A5, Format A6")
+    image = models.ImageField(upload_to='flyers/', blank=True, null=True)
 
     def __str__(self):
-        return f"{self.prestation.titre} - {self.nom_format} ({self.prix_unitaire} FCFA/unité)"
-    
+        return f"{self.prestation.titre} - {self.nom_format}"
 
-# 3. NOUVEAU - POUR LES QUANTITÉS ET LOTS (100 ex, 200 ex...)
-class OptionQuantite(models.Model):
-    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='options_quantite')
-    quantite = models.IntegerField(verbose_name="Quantité (exemples)", help_text="Ex: 100, 200, 500")
+class OptionQuantiteFlyer(models.Model):
+    # Lié au format directement pour des tarifs précis par taille
+    format_flyer = models.ForeignKey(FormatFlyer, on_delete=models.CASCADE, related_name='options_quantite')
+    quantite = models.IntegerField(verbose_name="Quantité (ex: 100, 500)")
+    prix_total = models.IntegerField(verbose_name="Prix total pour ce lot (FCFA)", help_text="Plus simple pour intégrer directement la dégressivité sans calcul complexe")
     remise_pourcentage = models.IntegerField(default=0, verbose_name="Remise en %")
 
     def __str__(self):
-        return f"{self.prestation.titre} - Lot {self.quantite} ex. (-{self.remise_pourcentage}%)"
+        return f"{self.format_flyer} - Lot {self.quantite} ex. ({self.prix_total} FCFA)"
 
 
-# 4. POUR LES PRODUITS À L'UNITÉ (T-shirts, Objets) AVEC TARIFS DÉGRESSIFS
+# 3. À L'UNITÉ (Dégressif global)
 class PalierPrixUnitaire(models.Model):
     prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='paliers_unite')
-    quantite_minimale = models.IntegerField(verbose_name="Quantité minimale", help_text="Ex: 1, 10, 50, 100")
-    prix_unitaire = models.IntegerField(verbose_name="Prix unitaire pour ce palier (FCFA)")
+    quantite_minimale = models.IntegerField(verbose_name="Quantité minimale")
+    prix_unitaire = models.IntegerField(verbose_name="Prix unitaire (FCFA)")
     image = models.ImageField(upload_to='paliers/', blank=True, null=True, verbose_name="Image du palier")
 
     class Meta:
-        ordering = ['quantite_minimale']  # Trie automatiquement du plus petit au plus grand lot
+        ordering = ['quantite_minimale']
 
     def __str__(self):
         return f"{self.prestation.titre} - Dès {self.quantite_minimale} ex. ({self.prix_unitaire} FCFA/u)"
-    
 
-    
-# 3. STRUCTURE DE COMMANDE UNIVERSELLE
+
+# 4. NOUVEAU : MULTIPAGE (Brochure, Catalogue)
+class GrilleCataloguePages(models.Model):
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='paliers_pages')
+    nombre_pages = models.IntegerField(verbose_name="Nombre de pages (Ex: 8, 12, 16)")
+    quantite = models.IntegerField(verbose_name="Quantité d'exemplaires")
+    prix_total = models.IntegerField(verbose_name="Prix total (FCFA)")
+
+    class Meta:
+        ordering = ['nombre_pages', 'quantite']
+
+    def __str__(self):
+        return f"{self.prestation.titre} - {self.nombre_pages} p. - X{self.quantite} ({self.prix_total} FCFA)"
+
+
+# 4. NOUVEAU : MULTIPAGE (Brochure, Catalogue)
+class GrilleCataloguePages(models.Model):
+    prestation = models.ForeignKey(Prestation, on_delete=models.CASCADE, related_name='paliers_pages')
+    nombre_pages = models.IntegerField(verbose_name="Nombre de pages (Ex: 8, 12, 16)")
+    quantite = models.IntegerField(verbose_name="Quantité d'exemplaires")
+    prix_total = models.IntegerField(verbose_name="Prix total (FCFA)")
+
+    class Meta:
+        ordering = ['nombre_pages', 'quantite']
+
+    def __str__(self):
+        return f"{self.prestation.titre} - {self.nombre_pages} p. - X{self.quantite} ({self.prix_total} FCFA)"
+
+import datetime
+from django.db import models
+
 class CommandeImpression(models.Model):
     STATUT_CHOICES = [
         ('EN_ATTENTE', 'En attente'),
@@ -207,14 +295,25 @@ class CommandeImpression(models.Model):
     validee_par_client = models.BooleanField(default=False, verbose_name="Validé par le client")
     bl_genere = models.BooleanField(default=False, verbose_name="Transféré en Bon de Livraison")
 
-    def numero_bon(self):
-        annee = self.date_commande.year if self.date_commande else datetime.datetime.now().year
-        return f"BON-{annee}-{self.id:03d}" if self.id else f"BON-{annee}-000"
+    def numero_bon_commande(self):
+        """Génère le numéro sous la forme BC/26-07-0001 basé sur la date réelle"""
+        date_ref = self.date_commande if self.date_commande else datetime.datetime.now()
+        annee = date_ref.strftime('%y')
+        mois = date_ref.strftime('%m')
+        sequence = f"{self.id:04d}" if self.id else "0000"
+        return f"BC/{annee}-{mois}-{sequence}"
+
+    def numero_bon_livraison(self):
+        """Génère le numéro sous la forme BL/26-07-0001 basé sur la date réelle"""
+        date_ref = self.date_commande if self.date_commande else datetime.datetime.now()
+        annee = date_ref.strftime('%y')
+        mois = date_ref.strftime('%m')
+        sequence = f"{self.id:04d}" if self.id else "0000"
+        return f"BL/{annee}-{mois}-{sequence}"
 
     def __str__(self):
-        return f"Commande #{self.numero_bon()} - {self.nom_client}"
-
-
+        # Utilise par défaut le numéro de commande pour l'affichage de l'administration
+        return f"Commande #{self.numero_bon_commande()} - {self.nom_client}"
 
 
 class Realisation(models.Model):

@@ -52,4 +52,5 @@ urlpatterns = [
     path('impressions/commande/<int:commande_id>/public/', views.voir_bon_commande_public, name='voir_bon_commande_public'),
     path('impressions/admin/check-code/', views.verifier_code_admin, name='verifier_code_admin'),
     path('commande/confirmer/', views.confirmer_commande_client, name='confirmer_commande_client'),
+    path('impression/prestations/<int:prestation_id>/calcul/', views.calculer_tarif_ajax, name='calculer_tarif_ajax'),
 ]

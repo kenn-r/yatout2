@@ -1,0 +1,94 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Conteneur principal limité en largeur et centré -->
+<div style="max-width: 1100px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    
+    <!-- Structure Flexible : Force le côte-à-côte sur ordinateur -->
+    <div style="display: flex; flex-wrap: wrap; gap: 30px; align-items: start;">
+        
+        <!-- 📸 BLOC GAUCHE : L'Image des Documents (Largeur contrôlée) -->
+        <div style="flex: 1; min-width: 320px; max-width: 500px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 16px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+            {% if prestation.image %}
+                <!-- 🟢 FIX 1 : Correction du chevron ouvrant manquant < et ajout de l'id -->
+                <img src="{{ prestation.image.url }}" id="image-prestation" style="border-radius: 16px; width: 100%; height: auto; display: block; object-fit: contain;" alt="{{ prestation.titre }}">
+            {% else %}
+                <div style="background: #f8fafc; height: 350px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 5rem;">📚</div>
+            {% endif %}
+        </div>
+
+        <!-- 📝 BLOC DROIT : Le Formulaire Commercial Stylisé -->
+        <div style="flex: 1.2; min-width: 320px; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 24px; padding: 32px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+            
+            <h1 style="color: #1e1b4b; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 6px;">
+                📚 {{ prestation.titre }}
+            </h1>
+            <p style="color: #64748b; font-size: 0.875rem; line-height: 1.5; margin-bottom: 24px;">
+                {{ prestation.description }}
+            </p>
+
+            <form method="POST" action="">
+                {% csrf_token %}
+
+                <!-- Sélection de la pagination -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+                        Nombre de pages du document :
+                    </label>
+                    <select name="nb_pages" id="nb_pages" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;" required>
+                        <option value="" disabled selected>-- Sélectionner la pagination --</option>
+                        {% regroup paliers_pages by nombre_pages as pages_list %}
+                        {% for page in pages_list %}
+                            <option value="{{ page.grouper }}">{{ page.grouper }} pages</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Sélection du volume de catalogues (Alimenté dynamiquement) -->
+                <div style="margin-bottom: 28px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+                        Quantité d'exemplaires :
+                    </label>
+                    <select name="quantite_lot" id="quantite_lot" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #f8fafc; box-sizing: border-box;" disabled required>
+                        <option value="">Sélectionnez d'abord les pages</option>
+                    </select>
+                </div>
+
+                <!-- Gros Bouton d'action violet -->
+                <button type="submit" id="btn-submit" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background-color: #7c3aed; color: #ffffff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);" disabled>
+                    🛒 Valider et voir le prix final
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Filtrage des lots de quantité selon le nombre de pages choisi
+document.getElementById('nb_pages').addEventListener('change', function() {
+    const pageSelectionnee = this.value;
+    const qteSelect = document.getElementById('quantite_lot');
+    
+    qteSelect.innerHTML = '<option value="" disabled selected>-- Quantité d\'exemplaires --</option>';
+    
+    {% for palier in paliers_pages %}
+        if (pageSelectionnee == "{{ palier.nombre_pages }}") {
+            qteSelect.innerHTML += '<option value="{{ palier.quantite }}">{{ palier.quantite }} exemplaires</option>';
+        }
+    {% endfor %}
+    
+    qteSelect.disabled = false;
+    qteSelect.style.backgroundColor = '#ffffff';
+});
+
+// Activation du bouton dès qu'une quantité définitive est arrêtée
+document.getElementById('quantite_lot').addEventListener('change', function() {
+    const btnSubmit = document.getElementById('btn-submit');
+    if (this.value) {
+        btnSubmit.disabled = false;
+    }
+});
+</script>
+{% endblock %}

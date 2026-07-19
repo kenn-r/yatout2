@@ -4,389 +4,226 @@
 {% block title %}{{ prestation.titre }} - Configuration - YaTout{% endblock %}
 
 {% block content %}
-<style>
-    /* 📱 COUPE ET RESPONSIVE DE LA PAGE PRODUIT CENTRALE */
-    .product-page-container {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 0 15px;
-        font-family: system-ui, -apple-system, sans-serif;
-    }
-
-    /* 📸 DIAPORAMA CENTRALISÉ (SANS DOUBLONS) */
-    .gallery-section {
-        width: 100%;
-        max-width: 700px;
-        margin: 0 auto 30px auto;
-        text-align: center;
-    }
-    .carousel-container {
-        position: relative;
-        width: 100%;
-        height: 380px;
-        background-color: #f8fafc;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        border: 1px solid #e2e8f0;
-    }
-    .carousel-slides {
-        width: 100%;
-        height: 100%;
-        position: relative;
-    }
-    .slide {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transition: opacity 0.4s ease-in-out;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    .slide.active {
-        opacity: 1;
-        z-index: 5;
-    }
-    .slide img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        background-color: #f8fafc;
-    }
-    .slide-caption {
-        position: absolute;
-        bottom: 15px;
-        background: rgba(30, 41, 59, 0.85);
-        color: white;
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-    }
-    .carousel-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid #e2e8f0;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        font-size: 1.2rem;
-        cursor: pointer;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    .prev-btn { left: 15px; }
-    .next-btn { right: 15px; }
-
-    /* 🛒 FICHE DE CONFIGURATION DE COMMANDE */
-    .order-section {
-        width: 100%;
-        max-width: 650px;
-        margin: 0 auto;
-    }
-    .order-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
-    .product-title {
-        font-size: 1.5rem;
-        color: #2e0854;
-        font-weight: 700;
-        margin-bottom: 5px;
-        text-align: center;
-    }
-    .title-line {
-        width: 50px;
-        height: 3px;
-        background-color: #dc3545;
-        border-radius: 2px;
-        margin: 0 auto 25px auto;
-    }
-
-    /* GRILLE POUR LES CARTES D'OPTIONS (SURFACE / M²) */
-    .visual-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        width: 100%;
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-    .col-custom-visual { 
-        width: calc(33.33% - 8px); 
-        max-width: 33.33%;
-    }
-    .card-option-visual {
-        background: #ffffff; 
-        border: 2px solid #e2e8f0; 
-        border-radius: 12px; 
-        display: block; 
-        width: 100%; 
-        overflow: hidden; 
-        cursor: pointer; 
-        padding: 0;
-        transition: all 0.2s ease;
-    }
-    .visual-container {
-        background-color: #f8fafc;
-        height: 90px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .visual-container span { font-size: 32px; }
-    .visual-footer { padding: 10px 5px; font-size: 0.9rem; text-align: center; }
-    
-    /* Carte Active */
-    .active-option {
-        border-color: #7c3aed !important;
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15) !important;
-    }
-
-    /* Saisie Dimensions Libres */
-    .input-grid {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    .form-input {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        outline: none;
-    }
-    .form-input:focus { border-color: #7c3aed; }
-
-    /* BOUTON VERT VALIDER COMMANDE */
-    .btn-submit-order {
-        width: 100%;
-        background-color: #22c55e;
-        color: white;
-        border: none;
-        padding: 15px;
-        border-radius: 10px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 14px rgba(34,197,94,0.3);
-        margin-top: 15px;
-    }
-
-    @media (max-width: 576px) {
-        .col-custom-visual { 
-            width: calc(50% - 6px); 
-            max-width: 50%;
-        }
-        .carousel-container { height: 260px; }
-        .order-card { padding: 20px; }
-    }
-</style>
 
 <div class="product-page-container">
     
+    <!-- Lien retour -->
     <a href="{% url 'page_prestations' %}" style="text-decoration: none; color: #7c3aed; font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 20px; text-align: left;">
         ← Retour au catalogue
     </a>
 
-    <!-- 📸 1. DIAPORAMA DES IMAGES (FUSION DES SOURCES SANS DOUBLONS) -->
-    <div class="gallery-section">
-        <div class="carousel-container">
-            <button class="carousel-btn prev-btn" onclick="changerImage(-1)">❮</button>
-            <div class="carousel-slides">
-                
-                {% if prestation.image %}
-                    <div class="slide active">
-                        <img src="{{ prestation.image.url }}" alt="{{ prestation.titre }}">
-                        <span class="slide-caption">Modèle Standard</span>
-                    </div>
-                {% endif %}
-
-                {% for inline in prestation.realisationinline.all %}
-                    <div class="slide {% if not prestation.image and forloop.first %}active{% endif %}">
-                        <img src="{{ inline.image.url }}" alt="Exemple Réel {{ forloop.counter }}">
-                        <span class="slide-caption">Réalisation {{ forloop.counter }}</span>
-                    </div>
-                {% endfor %}
-
-            </div>
-            <button class="carousel-btn next-btn" onclick="changerImage(1)">❯</button>
-        </div>
-    </div>
-
-    <!-- 🛒 2. DESIGN DU FORMULAIRE UNIQUE ET ADAPTATIF -->
+    <!-- 🛒 CONFIGURATEUR DE COMMANDE UNIQUE ET UNIVERSEL -->
     <div class="order-section">
         <div class="order-card">
-            <h1 class="product-title">{{ prestation.titre }}</h1>
-            <div class="title-line"></div>
+            <h1 class="product-title" style="color: #2e0854; font-weight: 700; text-align: center; font-size: 1.5rem;">{{ prestation.titre }}</h1>
+            <div style="width: 50px; height: 3px; background-color: #dc3545; border-radius: 2px; margin: 10px auto 25px auto;"></div>
 
-            <form method="POST" action="{% url 'confirmer_commande_client' %}" id="form-prestation">
+            <form method="POST" action="{% url 'confirmer_commande_client' %}" id="form-prestation" style="width: 100%; box-sizing: border-box;">
                 {% csrf_token %}
-                <!-- Le script mettra à jour cette valeur automatiquement pour correspondre à votre views.py -->
-                <input type="hidden" id="type_quantite" name="type_quantite" value="lot">
+                <input type="hidden" name="prestation_id" value="{{ prestation.id }}">
+                <input type="hidden" id="type_quantite" name="type_quantite" value="surface">
 
-                <!-- Champs cachés pour transmettre la largeur/hauteur calculée à Python -->
+                <!-- Champs cachés pour le calcul des surfaces -->
                 <input type="hidden" id="hidden_largeur" name="largeur" value="1">
                 <input type="hidden" id="hidden_hauteur" name="hauteur" value="1">
 
                 <!-- ========================================================================= -->
-                <!-- CONFIGURATION CONDITIONNELLE SUIVANT VOTRE BDD                            -->
+                <!-- 1️⃣ CAS A : PRESTATIONS AU MÈTRE CARRÉ (Ex: Bâche, Vinyle, Autocollant)     -->
                 <!-- ========================================================================= -->
-                
-                {# CAS A : PRODUIT FORMAT SURFACE (Ex: Bâche publicitaire) #}
-                {% if prestation.type_unite == 'SURFACE' %}
-                    <div class="visual-grid">
-                        <!-- Format 1m x 1m -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual active-option">
-                                <input type="radio" name="dimensions_m2" value="1x1" data-w="1" data-h="1" checked style="display: none;">
-                                <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer" style="background-color: #f5f3ff;"><strong>1m x 1m</strong></div>
-                            </label>
+                {% if interstate_surface or prestation.type_unite == 'SURFACE' %}
+                    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">📐 Sélectionnez votre format de surface :</h5>
+                    
+                    <div class="lots-grid-unified">
+                        {% for grille in prestation.grilles_surface.all %}
+                        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('surface', '{{ grille.dimensions }}', this)" data-w="{{ grille.surface_m2 }}" data-h="1">
+                            <div class="lot-card-visual-wrapper">
+                                {% if grille.image %}
+                                    <img src="{{ grille.image.url }}" alt="{{ grille.dimensions }}">
+                                {% else %}
+                                    <span>📐</span>
+                                {% endif %}
+                            </div>
+                            <div class="lot-card-body">
+                                <strong class="lot-title-text">{{ grille.dimensions }}</strong>
+                                <span class="badge bg-success text-white" style="font-size: 0.8rem; padding: 4px 8px; border-radius: 4px;">{{ grille.prix_total }} F</span>
+                            </div>
                         </div>
-                        <!-- Format 1m x 2m -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual">
-                                <input type="radio" name="dimensions_m2" value="1x2" data-w="1" data-h="2" style="display: none;">
-                                <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer"><strong>1m x 2m</strong></div>
-                            </label>
+                        {% endfor %}
+
+                        <!-- Option Sur-mesure pour la surface -->
+                        <div class="card-lot-modern" id="custom-option-card" onclick="selectionnerOptionUniverselle('custom-surface', 'custom', this)" style="min-width: 100%;">
+                            <div class="lot-card-visual-wrapper" style="height: 90px; border-bottom: none;">
+                                <span>✏️</span>
+                            </div>
+                            <div class="lot-card-body" style="padding-top: 0;">
+                                <strong class="d-block mb-2" style="color: #1e293b;">Dimensions personnalisées (mètres)</strong>
+                                <div class="input-grid" style="display: flex; gap: 10px; width: 100%; box-sizing: border-box;">
+                                    <input type="number" step="0.01" id="custom_w" placeholder="Largeur (m)" class="form-input" style="flex: 1;">
+                                    <input type="number" step="0.01" id="custom_h" placeholder="Hauteur (m)" class="form-input" style="flex: 1;">
+                                </div>
+                            </div>
                         </div>
-                        <!-- Format 2m x 2m -->
-                        <div class="col-custom-visual">
-                            <label class="card-option-visual">
-                                <input type="radio" name="dimensions_m2" value="2x2" data-w="2" data-h="2" style="display: none;">
-                                <div class="visual-container"><span>📐</span></div>
-                                <div class="visual-footer"><strong>2m x 2m</strong></div>
-                            </label>
+                    </div>
+
+                <!-- ========================================================================= -->
+                <!-- 2️⃣ CAS B : PRESTATIONS PAR LOTS (Ex: Flyers, Dépliants, Cartes)           -->
+                <!-- ========================================================================= -->
+                {% elif examen_lot or prestation.type_unite == 'LOT' %}
+                    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">📦 Sélectionnez votre volume de lot :</h5>
+                    
+                    <div class="lots-grid-unified">
+                        {% for option in prestation.options_quantite.all %}
+                        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('lot', '{{ option.quantite }}', this)">
+                            <div class="lot-card-visual-wrapper">
+                                {% if option.image %}
+                                    <img src="{{ option.image.url }}" alt="Lot {{ option.quantite }}">
+                                {% else %}
+                                    <span>📇</span>
+                                {% endif %}
+                            </div>
+                            <div class="lot-card-body">
+                                <input type="radio" name="quantite_lot" value="{{ option.quantite }}" {% if forloop.first %}checked{% endif %} style="display: none;">
+                                <strong class="lot-title-text">Lot {{ option.quantite }} ex.</strong>
+                                {% if option.remise_pourcentage > 0 %}
+                                    <span class="lot-discount-badge badge-style-discount">Remise -{{ option.remise_pourcentage }}%</span>
+                                {% else %}
+                                    <span class="lot-discount-badge badge-style-catalogue">Tarif Catalogue</span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <!-- Saisie sur-mesure libre -->
-                        <div class="col-custom-visual" style="min-width: 100%;">
-                            <label class="card-option-visual" id="btn-dimension-libre" style="padding: 15px;">
-                                <input type="radio" name="dimensions_m2" value="custom" style="display: none;">
-                                <strong>✏️ Entrer des dimensions personnalisées</strong>
-                                <input type="hidden" name="type_quantite" value="unite_palier">
-                    <div class="form-group">
-                        <label for="quantite_custom_unite">🔢 Saisissez la quantité exacte souhaitée (Unité) :</label>
-                        <input type="number" id="quantite_custom_unite" name="quantite_custom_unite" min="1" value="1" class="form-input" required>
+                        {% endfor %}
+
+                        <!-- Option Sur-mesure pour les lots -->
+                        <div class="card-lot-modern" id="custom-option-card" onclick="selectionnerOptionUniverselle('custom-lot', 'custom', this)">
+                            <div class="lot-card-visual-wrapper">
+                                <span>✏️</span>
+                            </div>
+                            <div class="lot-card-body">
+                                <strong class="d-block mb-1" style="color: #1e293b;">Quantité libre</strong>
+                                <input type="number" id="input_custom_qty" placeholder="Ex: 1500" class="form-input text-center" style="padding: 6px; width: 90%;">
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- ========================================================================= -->
+                <!-- 3️⃣ CAS C : PRESTATIONS À L'UNITÉ (Ex: T-shirts, Tasses, Casquettes)        -->
+                <!-- ========================================================================= -->
+                {% else %}
+                    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">🔢 Sélectionnez votre palier de quantité :</h5>
+                    
+                    <div class="lots-grid-unified">
+                        {% for palier in prestation.paliers_unite.all %}
+                        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('unite', '{{ palier.quantite_minimale }}', this)">
+                            <div class="lot-card-visual-wrapper">
+                                {% if palier.image %}
+                                    <img src="{{ palier.image.url }}" alt="Dès {{ palier.quantite_minimale }} ex.">
+                                {% else %}
+                                    <span>☕</span>
+                                {% endif %}
+                            </div>
+                            <div class="lot-card-body">
+                                <strong class="lot-title-text">Dès {{ palier.quantite_minimale }} ex.</strong>
+                                <span class="badge bg-primary text-white" style="font-size: 0.85rem; padding: 4px 8px; border-radius: 4px;">{{ palier.prix_unitaire }} F / u</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Zone de saisie du nombre exact pour l'unité -->
+                        <div class="form-group" style="width: 100%; margin-top: 15px;">
+                            <label for="quantite_custom_unite" style="font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Indiquez la quantité exacte à commander :</label>
+                            <input type="number" id="quantite_custom_unite" name="quantite_custom_unite" min="1" value="1" class="form-input" style="max-width: 200px;" required>
+                        </div>
                     </div>
                 {% endif %}
 
-                <!-- Bouton de validation final -->
-                <button type="submit" class="btn-submit-order">
-                    🛒 Valider et passer à la commande
-                </button>
+                <!-- BOUTON DE SOUMISSION UNIQUE EN BAS DU FORMULAIRE -->
+                <div style="text-align: center; margin-top: 30px; width: 100%;">
+                    <button type="submit" class="btn-submit-order" style="max-width: 400px; margin: 0 auto; display: block;">
+                        🛒 Confirmer et ajouter au panier
+                    </button>
+                </div>
+
             </form>
         </div>
-    </div>
-</div>
-
-<!-- ===================================================================== -->
-<!-- SCRIPT DE LOGIQUE APPLICATIVE ET INTERACTION (BURGER / SESSIONS / CARROUSEL) -->
+        <!-- ===================================================================== -->
+<!-- JAVASCRIPT DE CONFIGURATION UNIVERSELLE (BURGER / SESSIONS / ACTIONS) -->
 <!-- ===================================================================== -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const cards = document.querySelectorAll('.card-option-visual');
-        const hiddenType = document.getElementById('type_quantite');
-        const hiddenW = document.getElementById('hidden_largeur');
-        const hiddenH = document.getElementById('hidden_hauteur');
+    // 🟢 1. FONCTION DE RÉACTIVATION DU MENU BURGER MOBILE
+    function basculerMenuMobile(bouton) {
+        // Cherche le conteneur .nav-actions situé dans la navbar courante
+        const navActions = bouton.parentElement.querySelector('.nav-actions');
+        if (navActions) {
+            navActions.classList.toggle('open');
+            bouton.classList.toggle('open');
+        }
+    }
 
-        // 1. Initialisation automatique du type pour correspondre aux attentes de views.py
+    // 🟢 2. SÉCURISATION ET INITIALISATION INITIALE DES MODULES PYTHON
+    document.addEventListener("DOMContentLoaded", function () {
+        const hiddenType = document.getElementById('type_quantite');
+        
+        // Configuration initiale automatique du type de formulaire pour views.py
         if (hiddenType) {
-            if (document.getElementById('quantite_lot')) {
-                hiddenType.value = 'lot';
-            } else if (document.getElementById('quantite_custom_unite')) {
+            if (document.getElementById('quantite_custom_unite')) {
                 hiddenType.value = 'unite_palier';
+            } else if (document.querySelector('input[name="quantite_lot"]')) {
+                hiddenType.value = 'lot';
             } else {
                 hiddenType.value = 'surface';
             }
         }
 
-        // 2. Gestion adaptative des clics sur vos cartes d'options
-        cards.forEach(card => {
-            card.addEventListener('click', function (e) {
-                if (e.target.tagName === 'INPUT') return;
-
-                const radio = this.querySelector('input[type="radio"]');
-                
-                // Nettoie l'état actif de toutes les autres cartes
-                document.querySelectorAll('.card-option-visual').forEach(c => {
-                    c.classList.remove('active-option');
-                    const ft = c.querySelector('.visual-footer');
-                    if (ft) ft.style.backgroundColor = 'transparent';
-                });
-
-                // Applique le style sur la carte sélectionnée
-                this.classList.add('active-option');
-                
-                if (radio) {
-                    radio.checked = true;
-                    
-                    if (radio.value === 'custom') {
-                        if (hiddenType) hiddenType.value = 'surface';
-                        if (hiddenW) hiddenW.value = document.getElementById('custom_w').value || 1;
-                        if (hiddenH) hiddenH.value = document.getElementById('custom_h').value || 1;
-                    } else {
-                        if (hiddenType) hiddenType.value = 'surface';
-                        if (hiddenW) hiddenW.value = radio.getAttribute('data-w') || 1;
-                        if (hiddenH) hiddenH.value = radio.getAttribute('data-h') || 1;
-                        
-                        const ft = this.querySelector('.visual-footer');
-                        if (ft) ft.style.backgroundColor = '#f5f3ff';
-                    }
-                }
-            });
-        });
-
-        // 3. Écoute de la saisie sur-mesure (Largeur x Hauteur)
+        // Synchronisation en direct pour le sur-mesure de la surface (Largeur x Hauteur)
         const customW = document.getElementById('custom_w');
         const customH = document.getElementById('custom_h');
-        const btnLibre = document.getElementById('btn-dimension-libre');
-        
-        if (customW && customH && btnLibre) {
-            const syncCustom = () => {
-                if (btnLibre.classList.contains('active-option')) {
+        if (customW && customH) {
+            const syncInputs = () => {
+                const cardCustom = document.getElementById('custom-option-card');
+                if (cardCustom && cardCustom.classList.contains('active-lot')) {
+                    const hiddenW = document.getElementById('hidden_largeur');
+                    const hiddenH = document.getElementById('hidden_hauteur');
                     if (hiddenW) hiddenW.value = customW.value || 1;
                     if (hiddenH) hiddenH.value = customH.value || 1;
                 }
             };
-            customW.addEventListener('input', syncCustom);
-            customH.addEventListener('input', syncCustom);
+            customW.addEventListener('input', syncInputs);
+            customH.addEventListener('input', syncInputs);
         }
     });
 
-    // 📸 4. ROULEMENT DU CARROUSEL CENTRAL (SANS DOUBLONS)
-    let slideIndex = 0;
-    
-    function changerImage(direction) {
-        const slides = document.querySelectorAll('.slide');
-        if (slides.length <= 1) return;
+    // 🟢 3. FONCTION DE SÉLECTION INTERACTIVE DES CARTES (SURFACE, LOTS, UNITÉS)
+    function selectionnerOptionUniverselle(categorie, valeur, element) {
+        // Désactive l'état sélectionné sur les autres éléments de la grille
+        document.querySelectorAll('.card-lot-modern').forEach(card => card.classList.remove('active-lot'));
+        
+        // Active graphiquement la carte cliquée
+        element.classList.add('active-lot');
+        
+        const hiddenType = document.getElementById('type_quantite');
+        const hiddenW = document.getElementById('hidden_largeur');
+        const hiddenH = document.getElementById('hidden_hauteur');
 
-        slides[slideIndex].classList.remove('active');
-        slideIndex += direction;
-
-        if (slideIndex >= slides.length) {
-            slideIndex = 0;
-        } else if (slideIndex < 0) {
-            slideIndex = slides.length - 1;
+        // ROUTAGE DYNAMIQUE VERS LES SESSIONS PYTHON DE VIEWS.PY
+        if (categorie === 'lot') {
+            if (hiddenType) hiddenType.value = 'lot';
+            const radio = element.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        } 
+        else if (categorie === 'custom-lot') {
+            if (hiddenType) hiddenType.value = 'libre';
+        } 
+        else if (categorie === 'surface') {
+            if (hiddenType) hiddenType.value = 'surface';
+            if (hiddenW) hiddenW.value = element.getAttribute('data-w') || 1;
+            if (hiddenH) hiddenH.value = 1;
+        } 
+        else if (categorie === 'custom-surface') {
+            if (hiddenType) hiddenType.value = 'surface';
+            if (hiddenW) hiddenW.value = document.getElementById('custom_w').value || 1;
+            if (hiddenH) hiddenH.value = document.getElementById('custom_h').value || 1;
         }
-
-        slides[slideIndex].classList.add('active');
     }
 </script>
+
 {% endblock %}

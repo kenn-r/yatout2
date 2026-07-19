@@ -3,7 +3,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bon de Livraison {{ commande.numero_bon }}</title>
+    <!-- 🟢 FIX 1 : Utilisation de la nouvelle méthode de numérotation de livraison pour l'onglet -->
+    <title>Bon de Livraison {{ commande.numero_bon_livraison }}</title>
     <style>
         /* Configuration générale */
         body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; padding-bottom: 80px; }
@@ -97,7 +98,8 @@
             <td>
                 <img src="{% static 'shop/js/images/logo.png' %}" alt="Logo YaTout" class="logo">
             </td>
-            <td class="title">Bon de Livraison</td>
+            <!-- 🟢 FIX 2 : Affichage du bon de livraison sous sa forme officielle BL/... -->
+            <td class="title">Bon de Livraison {{ commande.numero_bon_livraison }}</td>
         </tr>
     </table>
 
@@ -115,7 +117,8 @@
                 <strong>DESTINATAIRE DE LA LIVRAISON :</strong><br>
                 Client : {{ commande.nom_client }}<br>
                 Téléphone : {{ commande.telephone }}<br>
-                Liaison Commande : <strong>{{ commande.numero_bon }}</strong>
+                <!-- 🟢 FIX 3 : Liaison vers la référence de commande d'origine BC/... -->
+                Liaison Commande : <strong>{{ commande.numero_bon_commande }}</strong>
             </td>
         </tr>
     </table>
@@ -137,13 +140,13 @@
             <tr>
                 <td>{{ item.titre }}</td>
                 <td style="text-align: center; font-weight: bold;">{{ item.qte_entier }}</td>
-                <td style="text-align: right;">{{ item.prix_entier }} FCFA</td>
+                <td style="text-align: right;">{{ item.prix_entier|stringformat:"d" }} FCFA</td>
                 
                 <td style="text-align: center;" class="remise-texte">
                     {{ item.remise_pourcent_entier }}
                 </td>
                 
-                <td style="text-align: right; font-weight: bold;">{{ item.total_net_entier }} FCFA</td>
+                <td style="text-align: right; font-weight: bold;">{{ item.total_net_entier|stringformat:"d" }} FCFA</td>
                 <td style="text-align: center; color: #16a34a; font-weight: bold;">✓ Conforme</td>
             </tr>
             {% empty %}
@@ -155,50 +158,49 @@
             <!-- LIGNES DE RÈGLEMENT FINANCIER -->
             <tr class="total-summary-row">
                 <td colspan="4" style="text-align: right; font-weight: bold;">Montant Brut total :</td>
-                <td style="text-align: right; font-weight: bold;">{{ commande.total_brut_entier }} FCFA</td>
+                <td style="text-align: right; font-weight: bold;">{{ commande.total_brut_entier|stringformat:"d" }} FCFA</td>
                 <td></td>
             </tr>
             {% if commande.montant_remise_global > 0 %}
             <tr class="total-summary-row">
                 <td colspan="4" style="text-align: right; font-weight: bold; color: #ef4444;">Remise globale de la marchandise :</td>
-                <td style="text-align: right; font-weight: bold; color: #ef4444;">-{{ commande.montant_remise_global_entier }} FCFA</td>
+                <td style="text-align: right; font-weight: bold; color: #ef4444;">-{{ commande.montant_remise_global_entier|stringformat:"d" }} FCFA</td>
                 <td></td>
             </tr>
             {% endif %}
             <tr class="total-summary-row" style="border-top: 2px solid #1e293b;">
                 <td colspan="4" style="text-align: right; font-weight: 800; font-size: 15px; color: #166534;">Net à Payer :</td>
-                <td style="text-align: right; font-weight: 800; font-size: 15px; color: #166534;">{{ commande.total_final_entier }} FCFA</td>
+                <td style="text-align: right; font-weight: 800; font-size: 15px; color: #166534;">{{ commande.total_final_entier|stringformat:"d" }} FCFA</td>
                 <td></td>
             </tr>
         </tbody>
     </table>
 
-    <!-- ZONE DE SIGNATURES COMPLÈTE ET CORRIGÉE -->
+    <!-- ZONE DE SIGNATURES COMPLÈTE ET REFERMÉE -->
     <table class="signature-section">
         <tr>
             <!-- Bloc Expéditeur avec le cachet bleu intégré -->
             <td class="signature-td">
                 <div class="signature-box">
                     <div class="signature-title">Cachet et Signature Expéditeur :</div>
-                    
-                    <!-- Le cachet officiel bleu YaTout -->
+                    <!-- Le fameux cachet rond bleu -->
                     <div class="cachet-rond">
-                        <div class="cachet-top">YATOUT</div>
-                        <div class="cachet-center">IMPRESSION</div>
+                        <div class="cachet-top">YATOUT PRINT</div>
+                        <div class="cachet-center">VALIDÉ</div>
                         <div class="cachet-name">ABIDJAN</div>
                     </div>
                 </div>
             </td>
             
-            <!-- Espace de séparation horizontal -->
+            <!-- Espace séparateur -->
             <td style="width: 10%;"></td>
             
-            <!-- Bloc Réceptionnaire Client -->
+            <!-- Bloc Destinataire -->
             <td class="signature-td">
                 <div class="signature-box">
                     <div class="signature-title">Nom, Date et Signature Réceptionnaire :</div>
-                    <div style="font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 10px;">
-                        (Précéder de la mention "Reçu conforme")
+                    <div style="font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 20px;">
+                        (Mention manuscrite "Bon pour réception conforme")
                     </div>
                 </div>
             </td>
@@ -207,7 +209,7 @@
 
     <!-- BAS DE PAGE FIXE -->
     <div class="footer-remerciement">
-        Merci pour votre confiance ! — YaTout Impression Premium
+        ✨ Merci pour votre confiance ! L'équipe YaTout Impression vous remercie pour votre fidélité. ✨
     </div>
 
 </body>

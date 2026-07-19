@@ -6,25 +6,30 @@
 <div class="container" style="max-width: 600px; margin: 60px auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; text-align: center; font-family: system-ui, sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
     
     <div style="font-size: 50px; margin-bottom: 15px;">🎉</div>
+    
+    <!-- 🟢 Modification : Utilisation du terme universel BC suivi du chiffre -->
     <h2 style="color: #2e0854; margin: 0 0 10px 0; font-weight: 800;">Votre Bon de Commande est prêt !</h2>
+    
     <p style="color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.5;">
-        Félicitations <strong>{{ commande.nom_client }}</strong>, votre demande d'impression a été validée sous la référence <strong>{{ commande.numero_bon }}</strong>.
+        Félicitations <strong>{{ commande.nom_client }}</strong>, votre demande d'impression a été validée sous la référence <strong>{{ commande.numero_bon_commande }}</strong>.
     </p>
 
     <!-- Encadré récapitulatif -->
     <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: left; font-size: 14px;">
-        <div style="margin-bottom: 6px;"><strong>📍 Contact :</strong> {{ commande.telephone }}</div>
-        <div><strong>💰 Net à payer (Réduction 5% incluse) :</strong> <span style="color: #15803d; font-weight: bold;">{{ commande.total_final }} FCFA</span></div>
+        <div style="margin-bottom: 6px;"><strong>📍 Contact client :</strong> {{ commande.telephone }}</div>
+        
+        <!-- 🟢 FIX : Sécurisation de l'affichage financier avec le séparateur des milliers -->
+        <div><strong>💵 Montant net à payer :</strong> <span style="color: #15803d; font-weight: bold;">{{ commande.total_final|stringformat:"d" }} FCFA</span></div>
     </div>
 
-    <!-- 📄 NOUVEAU BOUTON : Visualiser / Télécharger le Bon officiel en PDF -->
+    <!-- 📄 Bouton : Visualiser / Télécharger le Bon officiel en PDF -->
     <a href="{% url 'generer_bon_pdf' commande.id %}" 
        target="_blank" 
        style="display: block; text-align: center; background-color: #ffffff; color: #4c1d95; border: 2px solid #4c1d95; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s;">
         📄 Voir mon Bon de Commande (PDF Officiel)
     </a>
 
-    <!-- Le bouton de redirection HTML pur (WhatsApp) -->
+    <!-- Le bouton de redirection vers l'API WhatsApp -->
     <a href="{{ lien_whatsapp }}" 
        target="_blank" 
        style="display: block; text-align: center; background-color: #22c55e; color: white; padding: 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(34,197,94,0.2);">

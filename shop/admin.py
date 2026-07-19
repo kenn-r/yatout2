@@ -2,16 +2,32 @@ from django.contrib import admin
 from django.shortcuts import render
 from django.utils.html import format_html
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import admin
+from django.contrib import admin
+from django.shortcuts import render
+from django.utils.html import format_html
+from django.contrib.admin.views.decorators import staff_member_required
 from .models import (
-    Vendeur, Produit, Commande, LigneCommande, 
-    Prestation, CommandeImpression, Realisation
+    # --- BOUTIQUE E-COMMERCE ---
+    Vendeur,
+    Produit,
+    LigneCommande,
+    Commande,
+    
+    # --- IMPRIMERIE / PRESTATIONS ---
+    Prestation, 
+    GrilleTarifaireSurface, 
+    FormatFlyer, 
+    OptionQuantiteFlyer, 
+    PalierPrixUnitaire, 
+    GrilleCataloguePages, 
+    Realisation,
+    CommandeImpression  # 🟢 AJOUTÉ ICI POUR CORRIGER LE CRASH
 )
 from django.utils.html import format_html
 
 # ✅ VÉRIFIEZ BIEN CETTE LIGNE : ajoutez les modèles manquants à la fin
-from .models import Prestation, GrilleTarifaireSurface, FormatFlyer, Realisation, OptionQuantite, PalierPrixUnitaire
-from .models import Prestation, Realisation  # Cet import donne accès aux modèles de votre application
-# =========================================================================
+
 # 1. GESTION DES BOUTIQUES & PRODUITS
 # =========================================================================
 @admin.register(Vendeur)
@@ -54,50 +70,11 @@ class CommandeAdmin(admin.ModelAdmin):
         return "Non spécifié"
 
 
-from django.contrib import admin
-from django.utils.html import format_html
-from .models import Prestation, GrilleTarifaireSurface, FormatFlyer
-from django.contrib import admin
-from django.utils.html import format_html
-# Importation de tous vos modèles nécessaires
-from .models import Prestation, GrilleTarifaireSurface, FormatFlyer, Realisation, OptionQuantite, PalierPrixUnitaire
 
-# =========================================================================
-# 1. DÉCLARATION DES INLINES (FORMULAIRES IMBRIQUÉS)
-# =========================================================================
-
-# Permet d'ajouter les prix au m² (Bâches, Vinyles) + Image
-class GrilleTarifaireSurfaceInline(admin.TabularInline):
-    model = GrilleTarifaireSurface
-    extra = 1
-    fields = ('dimensions', 'surface_m2', 'prix_total', 'image')
-
-# Permet d'ajouter les prix par formats (A5, A6...) + Image
-class FormatFlyerInline(admin.TabularInline):
-    model = FormatFlyer
-    extra = 1
-    fields = ('nom_format', 'prix_unitaire', 'image')
-
-# ✅ CONFIGURATION MANQUANTE : Gestion des lots de quantités (100 ex, 200 ex...)
-class OptionQuantiteInline(admin.TabularInline):
-    model = OptionQuantite
-    extra = 3
-
-# ✅ CONFIGURATION MANQUANTE : Tarifs dégressifs pour les produits vendus à l'unité
-# ✅ CONFIGURATION MANUELLE DES CHAMPS VISIBLES DANS L'ADMIN
-class PalierPrixUnitaireInline(admin.TabularInline):
-    model = PalierPrixUnitaire
-    extra = 3
-    # LIGNE CRITIQUE À RAJOUTER POUR SÉCURISER L'AFFICHAGE DE L'IMAGE
-    fields = ['quantite_minimale', 'prix_unitaire', 'image']
-
-
-# admin.py
-
+# 1. Gestion des réalisations (Conservé et sécurisé)
 class RealisationInline(admin.TabularInline):
     model = Realisation
     extra = 3
-    # On ajoute un aperçu de l'image directement dans la ligne pour l'admin
     fields = ('titre', 'commentaire', 'image', 'aperçu_miniature')
     readonly_fields = ('aperçu_miniature',)
 
@@ -107,32 +84,86 @@ class RealisationInline(admin.TabularInline):
         return "Pas d'image"
     aperçu_miniature.short_description = "Aperçu"
 
+
+# 2. SURFACE : Prix au m² (Bâches, Vinyles) + Remise Catalogue
+class GrilleTarifaireSurfaceInline(admin.TabularInline):
+    model = GrilleTarifaireSurface
+    extra = 1
+    fields = ('dimensions', 'surface_m2', 'prix_total', 'remise_pourcentage', 'image')
+
+
+# 3. UNITÉ : Tarifs dégressifs à l'unité
+class PalierPrixUnitaireInline(admin.TabularInline):
+    model = PalierPrixUnitaire
+    extra = 3
+    fields = ('quantite_minimale', 'prix_unitaire', 'image')
+
+
+# 4. PAGES : Documents multipages (Brochures, Catalogues)
+class GrilleCataloguePagesInline(admin.TabularInline):
+    model = GrilleCataloguePages
+    extra = 3
+    fields = ('nombre_pages', 'quantite', 'prix_total')
+
+
+# 5. FLYERS : Gestion imbriquée (Les lots de quantité vont ICI désormais)
+class OptionQuantiteFlyerInline(admin.TabularInline):
+    model = OptionQuantiteFlyer
+    extra = 3
+    fields = ('quantite', 'prix_total', 'remise_pourcentage')
+
+@admin.register(FormatFlyer)
+class FormatFlyerAdmin(admin.ModelAdmin):
+    """
+    🔥 SUPER ASTUCE SÉCURITÉ : Comme OptionQuantiteFlyer est lié à FormatFlyer,
+    on gère les lots de quantité directement depuis la fiche de chaque format !
+    """
+    list_display = ('prestation', 'nom_format')
+    list_filter = ('prestation',)
+    fields = ('prestation', 'nom_format', 'image')
+    inlines = [OptionQuantiteFlyerInline]
+
+
 # =========================================================================
-# 2. CONFIGURATION DE L'ADMINISTRATION PRINCIPALE
+# 6. ADMINISTRATION PRINCIPALE : PRESTATION (VERSION FUSIONNÉE & PROPRE)
 # =========================================================================
 
 @admin.register(Prestation)
 class PrestationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'titre', 'type_unite', 'aperçu_image')
-    search_fields = ('titre',)
+    # 🟢 Fusion : On affiche l'ID, le titre, le type, la remise et la miniature !
+    list_display = ('id', 'titre', 'type_unite', 'remise_custom', 'aperçu_image')
+    
+    # 🟢 Modification rapide depuis la liste pour la remise et le type de calcul
+    list_editable = ('remise_custom', 'type_unite')
+    
     list_filter = ('type_unite',)
-    list_editable = ('type_unite',)
-
-    # Tous vos formulaires imbriqués apparaissent ensemble sur la même page, dans le bon ordre !
+    search_fields = ('titre',)
+    
+    # Organisation visuelle propre du formulaire de modification
+    fieldsets = (
+        (None, {
+            'fields': ('titre', 'description', 'image', 'type_unite')
+        }),
+        ('Configuration Commerciale', {
+            'fields': ('remise_custom',),
+            'description': 'Cette remise pilote le pourcentage appliqué sur les calculs sur-mesure ou libres.'
+        }),
+    )
+    
+    # Tous vos formulaires imbriqués apparaissent ensemble sur la même page, dans le bon ordre
     inlines = [
-        GrilleTarifaireSurfaceInline, 
-        FormatFlyerInline, 
-        OptionQuantiteInline, 
-        PalierPrixUnitaireInline, 
-        RealisationInline
+        RealisationInline,
+        GrilleTarifaireSurfaceInline,
+        PalierPrixUnitaireInline,
+        GrilleCataloguePagesInline
     ]
 
+    # 🟢 Conservé : La méthode pour afficher la miniature dans le tableau de liste
     @admin.display(description='Miniature')
     def aperçu_image(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="width: 50px; height: auto; border-radius: 4px;" />', obj.image.url)
         return "Pas d'image"
-
 
 # =========================================================================
 # 3. HISTORIQUE DES RÉALISATIONS (PORTFOLIO CLIENTS)

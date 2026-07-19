@@ -3,7 +3,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Votre Bon de Commande {{ commande.numero_bon }}</title>
+    <!-- 🟢 FIX 1 : Utilisation du nouveau format de numéro chronologique dans l'onglet -->
+    <title>Votre Bon de Commande {{ commande.numero_bon_commande }}</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; padding-bottom: 40px; }
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
@@ -70,7 +71,8 @@
                 Client : {{ commande.nom_client }}<br>
                 Téléphone : {{ commande.telephone }}<br>
                 Date : {{ commande.date_commande|date:"d/m/Y H:i" }}<br>
-                <strong>Numéro de commande : {{ commande.numero_bon }}</strong>
+                <!-- 🟢 FIX 2 : Affichage du nouveau format de numéro BC/... sur la facture client -->
+                <strong>Numéro de commande : {{ commande.numero_bon_commande }}</strong>
             </td>
         </tr>
     </table>
@@ -91,21 +93,21 @@
             <tr>
                 <td>{{ item.titre }}</td>
                 <td style="text-align: center;">
-                    <div style="font-weight: bold;">x{{ item.qte_formatee }}</div>
+                    <div style="font-weight: bold;">x{{ item.qte_formatee|default:item.qte_entier }}</div>
                     
-                    <!-- 🟢 AJUSTEMENT : On vérifie les clés longueur_val et largeur_val générées par Python -->
+                    <!-- Ajustement des dimensions sur-mesure si présentes -->
                     {% if item.longueur_val and item.largeur_val %}
                         <div class="surface-badge">
                             📏 {{ item.longueur_val }}m × {{ item.largeur_val }}m
                         </div>
                     {% endif %}
                 </td>
-                <td style="text-align: right;">{{ item.prix_formate }} FCFA</td>
+                <td style="text-align: right;">{{ item.prix_formate|default:item.prix_entier|stringformat:"d" }} FCFA</td>
                 <td style="text-align: center; color: #ef4444; font-weight: bold;">
-                    {{ item.remise_formatee }}
+                    {{ item.remise_formatee|default:item.remise_pourcent_entier }}
                 </td>
                 <td style="text-align: right; font-weight: bold;">
-                    {{ item.total_formate }} FCFA
+                    {{ item.total_formate|default:item.total_net_entier|stringformat:"d" }} FCFA
                 </td>
             </tr>
             {% empty %}
@@ -118,13 +120,14 @@
 
     <!-- TOTALISATION BAS DE PAGE -->
     <div class="total-box">
-        <p>Total Brut : {{ commande.total_brut_formate }} FCFA</p>
+        <!-- 🟢 FIX 3 : Sécurisation du formatage financier global sans centimes pour le FCFA -->
+        <p>Total Brut : {{ commande.total_brut|stringformat:"d" }} FCFA</p>
         
         {% if commande.montant_remise > 0 %}
-            <p class="text-danger">Remise globale : -{{ commande.montant_remise_formate }} FCFA</p>
+            <p class="text-danger">Remise globale : -{{ commande.montant_remise|stringformat:"d" }} FCFA</p>
         {% endif %}
         
-        <p class="text-success">NET A PAYER : {{ commande.total_final_formate }} FCFA</p>
+        <p class="text-success">NET A PAYER : {{ commande.total_final|stringformat:"d" }} FCFA</p>
     </div>
 
     <!-- REMERCIEMENT FOOTER -->

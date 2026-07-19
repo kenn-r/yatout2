@@ -76,6 +76,13 @@
         font-weight: 700;
         margin-top: 4px;
     }
+    .summary-row-financial {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        font-size: 0.875rem;
+    }
     .summary-divider {
         display: flex;
         justify-content: space-between;
@@ -171,7 +178,7 @@
         
         <!-- Retour -->
         <a href="javascript:history.back()" class="back-link">
-            ← Modifier mon choix de lot
+            ← Modifier mes options
         </a>
 
         <!-- Formulaire de paiement -->
@@ -185,8 +192,25 @@
                 <span class="summary-tag">Votre sélection</span>
                 <strong class="summary-product">{{ commande_session.prestation_titre }}</strong>
                 
+                <div class="summary-row-financial" style="margin-top: 12px;">
+                    <span class="text-muted">Spécification :</span>
+                    <span class="font-weight-bold text-dark">{{ commande_session.unite_texte }}</span>
+                </div>
+
+                <!-- 🟢 FIX 1 & 2 : Application du formatage d'affichage propre sur les montants bruts -->
+                {% if commande_session.montant_remise > 0 %}
+                <div class="summary-row-financial">
+                    <span class="text-muted">Tarif catalogue :</span>
+                    <span class="text-muted" style="text-decoration: line-through;">{{ commande_session.total_brut|stringformat:"d" }} F</span>
+                </div>
+                <div class="summary-row-financial">
+                    <span class="text-muted">Remise déduite :</span>
+                    <span class="text-danger font-weight-bold">-{{ commande_session.montant_remise|stringformat:"d" }} F ({{ commande_session.remise_texte_whatsapp }})</span>
+                </div>
+                {% endif %}
+                
                 <div class="summary-divider">
-                    <span class="summary-spec">Spécification : <strong>{{ commande_session.unite_texte }}</strong></span>
+                    <span class="summary-spec" style="font-weight: 700; color: #0f172a;">Net à payer :</span>
                     <span class="summary-price">{{ commande_session.total_final_formate }} FCFA</span>
                 </div>
             </div>
