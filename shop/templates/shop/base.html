@@ -8,8 +8,9 @@
     <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
     
   <!-- 🟢 STYLES DU MENU BURGER ET COMPORTEMENT MOBILE CORRIGÉS -->
+    <!-- 🟢 CONFIGURATION STRICTE POUR UN RENDU CENTRÉ ET PROPRE -->
     <style>
-    /* 🔴 BLOCAGE STRICT DU SCROLL HORIZONTAL GENERAL & RETOUR A LA LIGNE DES TEXTES */
+    /* 🔴 VERROUILLAGE GLOBAL DE L'ÉCRAN MOBILE */
     html, body {
         max-width: 100% !important;
         overflow-x: hidden !important;
@@ -18,12 +19,12 @@
         width: 100% !important;
     }
 
-    /* Force tous les éléments enfants à respecter les tailles d'écran */
+    /* Évite que les paddings et bordures n'élargissent les éléments */
     *, *:before, *:after {
         box-sizing: border-box !important;
     }
 
-    /* Force les titres longs à revenir à la ligne plutôt que de pousser l'écran */
+    /* Force tous les textes à rester dans l'écran */
     h1, h2, h3, h4, p, span, div, .titre-principal {
         max-width: 100% !important;
         word-wrap: break-word !important;
@@ -43,7 +44,7 @@
         background-color: #1e293b !important; 
     }
 
-    /* ALIGNEMENT INTERNE : LOGO À GAUCHE, BURGER À DROITE (LARGEUR TOTALE 100%) */
+    /* ALIGNEMENT NAVBAR : LOGO À GAUCHE, BURGER À DROITE */
     .navbar .container, 
     .navbar-impression .container {
         display: flex !important;
@@ -63,7 +64,7 @@
         flex-shrink: 0 !important;
     }
 
-    /* BOUTON BURGER (STRICTEMENT AIMANTÉ À DROITE) */
+    /* BOUTON BURGER IMPECCABLEMENT À DROITE */
     .burger-menu {
         display: flex !important;
         flex-direction: column;
@@ -73,7 +74,7 @@
         cursor: pointer;
         padding: 10px !important;
         z-index: 100002 !important;
-        margin-left: auto !important; /* Pousse de force le burger à droite */
+        margin-left: auto !important; 
     }
     .burger-menu span {
         width: 25px;
@@ -88,7 +89,7 @@
         display: none !important; 
         flex-direction: column !important;
         justify-content: flex-start !important;
-        align-items: flex-end !important; /* Aligne le menu déroulant à droite */
+        align-items: flex-end !important; 
         position: absolute !important;
         top: 100% !important; 
         left: 0 !important;
@@ -100,7 +101,6 @@
         z-index: 100001 !important;
     }
 
-    /* APPLICATION DU FOND SELON LE CONTEXTE */
     .navbar .nav-actions {
         background-color: #7c3aed !important;
     }
@@ -108,33 +108,30 @@
         background-color: #1e293b !important;
     }
 
-    /* OUVERTURE ACTIVE */
     .nav-actions.open {
         display: flex !important;
     }
 
-    /* ALIGNEMENT ET ENCADREMENT DU TEXTE À DROITE SUR MOBILE */
+    /* MENU MOBILE ALIGNÉ À DROITE */
     .nav-actions a, 
     .nav-actions form, 
     .nav-actions button,
     .nav-actions span {
         width: 100% !important;
         max-width: 320px !important; 
-        text-align: right !important; /* Liens alignés à droite */
+        text-align: right !important; 
         box-sizing: border-box !important;
         display: block !important;
         text-decoration: none !important;
-        margin: 0 0 0 auto !important; /* Force le bloc à s'aligner à droite */
+        margin: 0 0 0 auto !important; 
     }
 
-    /* TYPOGRAPHIES DU MENU */
     .nav-actions a, .nav-actions button {
         color: white !important;
         font-size: 1.1rem !important;
         padding: 10px 0 !important;
     }
     
-    /* BOUTON STYLE BOUTIQUE */
     .nav-actions .btn-nav-white {
         background-color: white !important;
         color: #7c3aed !important;
@@ -149,7 +146,6 @@
         padding-bottom: 5px !important;
     }
 
-    /* ANIMATION CROIX (X) SUR LE MENU OUVERT */
     .burger-menu.open span:nth-child(1) {
         transform: translateY(8px) rotate(45deg) !important;
     }
@@ -161,11 +157,11 @@
     }
 
     /* ===================================================================== */
-    /* 💻 DESIGN ET GRILLE ORDINATEUR (S'ALIGNE HORIZONTALEMENT DIRECTEMENT)  */
+    /* 💻 STYLE DE LA GRILLE ORDINATEUR                                      */
     /* ===================================================================== */
     .lots-grid-unified, .visual-grid, .surface-grid {
         display: flex !important;
-        flex-direction: row !important; /* 👈 Évite le saut vertical au démarrage */
+        flex-direction: row !important;
         flex-wrap: wrap !important;
         gap: 16px;
         width: 100%;
@@ -200,12 +196,6 @@
         box-sizing: border-box;
     }
 
-    .lot-card-visual-wrapper img, .visual-container img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-    }
-
     .lot-card-body, .visual-footer {
         padding: 16px;
         display: flex;
@@ -217,49 +207,67 @@
         background: #ffffff;
     }
 
-    .active-lot, .active-option {
-        border-color: #7c3aed !important;
-        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.12) !important;
-    }
-
     /* ===================================================================== */
-    /* 📲 RESPONSIVE : ADAPTATION SMARTPHONE ET ECRANS REDUITS               */
+    /* 📲 RENDU MOBILE : DEUX OPTIONS PROPRES ET NETTES                      */
     /* ===================================================================== */
     @media (max-width: 992px) {
-        /* Force la grille à passer proprement en colonne dès que l'écran rétrécit */
+        
+        /* 1. Aligne toutes les cartes verticalement et les centre comme la page d'accueil */
         .lots-grid-unified, 
         .visual-grid, 
         .surface-grid {
             flex-direction: column !important;
-            align-items: center !important;
+            align-items: center !important; 
+            width: 100% !important;
+            padding: 0 20px !important;
+            box-sizing: border-box !important;
         }
 
+        /* 2. Taille de la carte pour qu'elle ressemble exactement au bloc blanc de bienvenue */
         .card-lot-modern, .col-custom-visual, .card-option-visual {
             width: 100% !important;
-            max-width: 500px !important; /* Largeur idéale de lecture */
-            min-width: 100% !important;
-            flex-direction: row !important; /* Met l'image à gauche, texte à droite */
-            min-height: 110px !important;   
+            max-width: 340px !important; /* Limite la largeur sur mobile */
+            min-width: 0 !important;
             height: auto !important;
+            flex-direction: column !important; /* Garde l'image en haut et le texte en bas */
+            margin: 0 auto 20px auto !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+            overflow: hidden !important;
         }
         
+        /* 3. Zone de l'image : REDIMENSIONNEMENT OBLIGATOIRE POUR ÉVITER LE BUG */
         .lot-card-visual-wrapper, .visual-container {
-            width: 110px !important;
-            height: auto !important;
-            min-height: 110px !important;
-            border-bottom: none !important;
-            border-right: 1px solid #e2e8f0 !important;
-            flex-shrink: 0 !important; 
+            width: 100% !important;
+            height: 180px !important; /* Fixe une hauteur maximale raisonnable pour l'image */
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background-color: #f8fafc !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            border-right: none !important;
         }
         
+        /* Force l'image du flyer à rester sagement dans son cadre sans déborder */
+        .lot-card-visual-wrapper img, .visual-container img {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain !important; /* Empêche la déformation du flyer */
+            display: block !important;
+        }
+        
+        /* 4. Le texte sous le flyer */
         .lot-card-body, .visual-footer {
-            align-items: flex-start !important;
-            justify-content: center !important;
-            padding: 10px 15px !important;
-            gap: 2px !important;
-            flex-grow: 1 !important;
+            align-items: center !important;
+            text-align: center !important;
+            padding: 15px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
 
+        /* Fenêtre de chat Gemini */
         #fenetre-chat-ia {
             width: calc(100% - 40px) !important;
             right: 20px !important;
