@@ -61,7 +61,7 @@
         <tr>
             <td class="info-box">
                 <strong>PRESTATAIRE :</strong><br>
-                <strong>YaTout Impression</strong><br>
+                <strong>YaTout Imprim</strong><br>
                 Abidjan, Côte d'Ivoire<br>
                 Téléphone : +225 05 74 70 20 92
             </td>
@@ -79,44 +79,70 @@
 
     <!-- TABLEAU COMPTABLE CLIENT INTERFACE SYNCHRONISÉE -->
     <table class="items-table">
-        <thead>
-            <tr>
-                <th>Désignation de la prestation</th>
-                <th style="text-align: center; width: 160px;">Qté / Mètres carrés</th>
-                <th style="text-align: right; width: 140px;">Prix unitaire</th>
-                <th style="text-align: center; width: 120px;">Remise / Art.</th>
-                <th style="text-align: right; width: 140px;">Montant net</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in articles_liste %}
-            <tr>
-                <td>{{ item.titre }}</td>
-                <td style="text-align: center;">
-                    <div style="font-weight: bold;">x{{ item.qte_formatee|default:item.qte_entier }}</div>
-                    
-                    <!-- Ajustement des dimensions sur-mesure si présentes -->
-                    {% if item.longueur_val and item.largeur_val %}
-                        <div class="surface-badge">
-                            📏 {{ item.longueur_val }}m × {{ item.largeur_val }}m
-                        </div>
-                    {% endif %}
-                </td>
-                <td style="text-align: right;">{{ item.prix_formate|default:item.prix_entier|stringformat:"d" }} FCFA</td>
-                <td style="text-align: center; color: #ef4444; font-weight: bold;">
-                    {{ item.remise_formatee|default:item.remise_pourcent_entier }}
-                </td>
-                <td style="text-align: right; font-weight: bold;">
-                    {{ item.total_formate|default:item.total_net_entier|stringformat:"d" }} FCFA
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">Aucun article disponible.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <thead>
+        <tr>
+            <th>Désignation de la prestation</th>
+            <th style="text-align: center; width: 160px;">Qté / Mètres carrés</th>
+            <th style="text-align: right; width: 140px;">Prix unitaire</th>
+            <th style="text-align: center; width: 120px;">Remise %</th>
+            <th style="text-align: right; width: 140px;">Montant net</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in articles_liste %}
+        <tr>
+            <!-- 1. Désignation -->
+            <td>{{ item.titre }}</td>
+            
+            <!-- 2. Quantité et Dimensions -->
+            <td style="text-align: center;">
+                <div style="font-weight: bold;">
+                    x{{ item.qte_formatee|default:item.qte_entier|default:item.qte }}
+                </div>
+                
+                {% if item.longueur_val and item.largeur_val %}
+                    <div class="surface-badge">
+                        📏 {{ item.longueur_val }}m × {{ item.largeur_val }}m
+                    </div>
+                {% elif item.largeur and item.longueur %}
+                    <div class="surface-badge">
+                        📏 {{ item.largeur }}m × {{ item.longueur }}m
+                    </div>
+                {% endif %}
+            </td>
+            
+            <!-- 3. Prix Unitaire -->
+            <td style="text-align: right;">
+                {{ item.prix_formate|default:item.prix_entier|default:item.prix }} FCFA
+            </td>
+            
+            <!-- 4. Remise / Art. (Affiche les 500 FCFA de la commande) -->
+            <td style="text-align: center; color: #ef4444; font-weight: bold;">
+                {% if item.remise_pourcent_entier %}
+                    {{ item.remise_pourcent_entier }}
+                {% elif item.remise_pourcent and item.remise_pourcent > 0 %}
+                    {{ item.remise_pourcent }} %
+                {% elif commande.montant_remise > 0 %}
+                    {{ commande.montant_remise_formate }} FCFA
+                {% else %}
+                    0 FCFA
+                {% endif %}
+            </td>
+            
+            <!-- 5. Montant Net -->
+            <td style="text-align: right; font-weight: bold;">
+                {{ item.total_formate|default:item.total_net_entier|default:item.total }} FCFA
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">
+                Aucun article disponible.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
     <!-- TOTALISATION BAS DE PAGE -->
     <div class="total-box">

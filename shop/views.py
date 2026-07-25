@@ -748,7 +748,7 @@ def generer_bon_pdf(request, commande_id):
 
     response = HttpResponse(content_type='application/pdf')
     # Modification optionnelle : 'inline' au lieu de 'attachment' permet de voir le PDF sur Safari/Chrome avant d'imprimer
-    response['Content-Disposition'] = f'inline; filename="{commande.numero_bon()}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="{commande.numero_bon_commande()}.pdf"'
 
     # Marges définies à 40 points
     marge_gauche = 40
@@ -796,7 +796,7 @@ def generer_bon_pdf(request, commande_id):
     bloc_gauche.append(Paragraph("<font size=9 color='#7b6f93'>YaTout Print — Atelier d'Impression</font>", normal_style))
     
     bloc_gauche.append(Spacer(1, 10))
-    bloc_gauche.append(Paragraph(f"<b>Numéro :</b> {commande.numero_bon()}", normal_style))
+    bloc_gauche.append(Paragraph(f"<b>Numéro :</b> {commande.numero_bon_commande()}", normal_style))
     bloc_gauche.append(Paragraph(f"<b>Date :</b> {commande.date_commande.strftime('%d/%m/%Y à %H:%M')}", normal_style))
 
     # --- 2. CONFIGURATION DU BLOC DROITE (COORDONNÉES CLIENT) ---
@@ -1076,12 +1076,27 @@ def page_impressions(request):
     if sim.get('prestation_id'):
         try:
             item_selectionne = Prestation.objects.get(id=sim['prestation_id'])
-            total_brut = item_selectionne.prix_unitaire * int(quantite_actuelle)
+            
+            # Extraction sécurisée des options pour vos grilles dégressives
+            format_id = request.POST.get('format_flyer_id') or request.GET.get('format_flyer_id')
+            surface_id = request.POST.get('surface_id') or request.GET.get('surface_id')
+            nb_pages = request.POST.get('nombre_pages') or request.GET.get('nombre_pages')
+
+            # 🟢 DÉCLENCHEMENT DE VOTRE MÉTHODE DE CALCUL SUR-MESURE
+            calcul_tarif = item_selectionne.calculer_prix(
+                quantite=int(quantite_actuelle),
+                format_id=format_id,
+                surface_id=surface_id,
+                nb_pages=nb_pages
+            )
+            
+            # Affectation des vraies valeurs pour votre template
+            total_brut = calcul_tarif['prix_brut']
+            remise_panier = calcul_tarif['montant_remise']
+            total_final = calcul_tarif['prix_final']
+
         except Prestation.DoesNotExist:
             sim['prestation_id'] = None
-            request.session['simulation_print'] = sim
-            request.session.modified = True
-
     remise_panier = int(total_brut * 0.05)
     total_final = total_brut - remise_panier
 
@@ -1395,7 +1410,6 @@ def calculer_tarif_ajax(request, prestation_id):
     return JsonResponse(resultat)
 
 
-
 import json
 import re
 import urllib.parse
@@ -1437,7 +1451,8 @@ def confirmer_commande_client(request):
                 statut='EN_ATTENTE'
             )
             
-            numero_bon = commande.numero_bon()
+            # 🟢 CORRECTION INDISPENSABLE : Appel de la vraie méthode de votre modèle
+            numero_bon = commande.numero_bon_commande()
             
             # Extraction directe du texte de remise sauvegardé à l'étape 1
             texte_remise = commande_session.get('remise_texte_whatsapp', 'Aucune')
@@ -1459,18 +1474,25 @@ def confirmer_commande_client(request):
             numero_entreprise = "2250574702092"
             lien_whatsapp_final = f"https://api.whatsapp.com/send?phone={numero_entreprise}&text={texte_url}"
             
+            # Préparation des variables formatées pour l'affichage immédiat du template
+            commande.total_brut_formate = f"{int(commande.total_brut):,}".replace(',', '.')
+            commande.montant_remise_formate = f"{int(commande.montant_remise):,}".replace(',', '.')
+            commande.total_final_formate = f"{int(commande.total_final):,}".replace(',', '.')
+
             # Nettoyage de la session de commande temporaire après succès
             if 'commande_temporaire' in request.session:
                 del request.session['commande_temporaire']
             
-            # Affichage de l'écran de succès final avec le bouton WhatsApp vert
+            # 🟢 RENDU : Affichage direct de l'écran avec le bouton WhatsApp vert opérationnel
             return render(request, 'shop/bon_impression_pret.html', {
                 'commande': commande,
+                'articles_liste': structure_tableau_json,  # Requis pour boucler sur les produits dans le HTML
                 'lien_whatsapp': lien_whatsapp_final,
                 'prestation': prestation
             })
             
         except Exception as e:
+            # Affiche l'erreur réelle dans votre console système en cas d'autre problème de BDD
             print(f"Erreur création commande : {e}")
             return redirect('page_prestations')
 
@@ -1646,66 +1668,81 @@ def voir_bon_livraison(request, commande_id):
     })
 
 
-
 def voir_bon_commande_public(request, commande_id):
-    """ Permet au client de visualiser son bon sans aucune décimale avec séparateur de milliers par un point """
+    """ 
+    Permet au client de visualiser son bon public en permanence.
+    Génère le lien WhatsApp dynamiquement depuis la BDD (zéro crash).
+    """
     commande = get_object_or_404(CommandeImpression, id=commande_id)
     articles_liste = json.loads(commande.details_json)
     
+    # 1. Traitement et formatage de chaque ligne d'article
     for art in articles_liste:
-        # 1. Récupération sécurisée du type d'unité pour adapter l'affichage des quantités
         type_unite = art.get('type_unite', '')
-        
-        # 2. Récupération sécurisée de la quantité et du prix unitaire
         qte_brute = art.get('qte', art.get('quantite', 1))
         prix_unitaire = int(float(art.get('prix', 0)))
         
-        # Récupération de la longueur et de la largeur pour les produits au M²
-        longueur_val = art.get('longueur')
-        largeur_val = art.get('largeur')
-        
-        # 3. Calcul de la quantité réelle et du montant brut de la ligne
-        if type_unite == 'M2' and longueur_val and largeur_val:
-            # Pour le M2, la quantité stockée en BDD correspond à la surface (longueur * largeur)
+        if type_unite == 'M2' and art.get('longueur') and art.get('largeur'):
             qte_valeur = float(qte_brute)
             brut_ligne = int(qte_valeur * prix_unitaire)
-            # Formatage de la quantité sous forme de surface (ex: 1.0)
             art['qte_formatee'] = f"{qte_valeur:.1f}" if qte_valeur.is_integer() else f"{qte_valeur:.2f}"
-            
-            # Injection des dimensions pour forcer l'affichage de la case mètre carré dans le HTML
-            art['longueur_val'] = longueur_val
-            art['largeur_val'] = largeur_val
         else:
             qte_valeur = int(float(qte_brute))
             brut_ligne = qte_valeur * prix_unitaire
             art['qte_formatee'] = qte_valeur
 
-        # 4. Récupération et traitement sécurisé du pourcentage de remise (ex: 5)
         taux_remise = int(float(art.get('remise_pourcent', 0)))
-        
-        # Si 'remise_pourcent' n'existe pas mais qu'un montant en FCFA est stocké dans 'remise'
         if taux_remise == 0 and int(art.get('remise', 0)) > 0:
             taux_remise = int(round((int(art.get('remise', 0)) / brut_ligne) * 100))
             
-        # 5. Calculs des montants nets de la ligne
         montant_remise_ligne = round(brut_ligne * (taux_remise / 100.0))
         total_net_ligne = max(0, brut_ligne - montant_remise_ligne)
         
-        # 6. Formatage avec des points pour les milliers (Ex: 45.000)
-        # Ces clés seront lues directement dans votre fichier HTML "bon_commande_public.html"
         art['prix_formate'] = f"{prix_unitaire:,}".replace(',', '.')
         art['remise_formatee'] = f"{taux_remise} %" if taux_remise > 0 else "0 %"
         art['total_formate'] = f"{total_net_ligne:,}".replace(',', '.')
 
-    # Formatage des totaux généraux de la commande pour l'affichage public
+    # 2. Injection du formatage par points pour les totaux globaux
     commande.total_brut_formate = f"{int(commande.total_brut):,}".replace(',', '.')
     commande.montant_remise_formate = f"{int(commande.montant_remise):,}".replace(',', '.')
     commande.total_final_formate = f"{int(commande.total_final):,}".replace(',', '.')
 
-    return render(request, 'shop/bon_commande_public.html', {
+    # 🚀 3. RECONSTRUCTION DYNAMIQUE DU TEXTE WHATSAPP (Règle le bug "NameMerror / session")
+    message_brut = (
+        f"🛍️ *MON BON DE COMMANDE - YATOUT*\n\n"
+        f"📦 *Bon N° :* #{commande.numero_bon_commande()}\n"
+        f"👤 *Client :* {commande.nom_client}\n"
+        f"📞 *Contact :* {commande.telephone}\n"
+        f"-----------------------------------\n"
+    )
+    
+    for art in articles_liste:
+        message_brut += f"▪️ {art.get('titre', 'Impression')} (x{art.get('qte_formatee')}) : {art.get('total_formate')} FCFA\n"
+        
+    message_brut += (
+        f"-----------------------------------\n"
+        f"💵 *Net à payer :* *{commande.total_final_formate} FCFA*\n\n"
+        f"Bonjour YaTout, je viens de vérifier mon récapitulatif public et je confirme ma commande !"
+    )
+
+    # Encodage sécurisé de l'URL WhatsApp
+    texte_url = urllib.parse.quote(message_brut)
+    numero_entreprise = "2250574702092"
+    lien_whatsapp = f"https://whatsapp.com{numero_entreprise}&text={texte_url}"
+
+    # 4. Traitement optionnel si le client valide un bouton sur la page
+    if request.method == 'POST' and 'confirmer_client' in request.POST:
+        commande.validee_par_client = True
+        commande.save()
+        return redirect(lien_whatsapp)
+
+    # 🟢 5. RENDU : Chargement de votre gabarit jaune et vert officiel
+    return render(request, 'shop/bon_impression_pret.html', {
         'commande': commande,
         'articles_liste': articles_liste,
+        'lien_whatsapp': lien_whatsapp,
     })
+
 
 def verifier_code_admin(request):
     """ Vérifie le code d'accès administrateur à 6 chiffres (191953) et renvoie les commandes en AJAX """
