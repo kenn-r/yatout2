@@ -3,40 +3,184 @@
 {% block title %}Tableau de bord — {{ vendeur.nom_boutique }}{% endblock %}
 
 {% block content %}
-<!-- Style de secours intégré directement pour le tableau de bord vendeur -->
+<!-- Importation de la police moderne 'Inter' -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-    .dash-wrapper { max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: Arial, sans-serif; }
-    .dash-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
-    .dash-stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-    .dash-stat-label { color: #64748b; font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
-    .dash-stat-number { color: #2e0854; font-size: 2rem; font-weight: 800; }
-    .dash-table-container { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; padding: 25px; margin-bottom: 40px; overflow-x: auto; }
-    .dash-table-title { color: #2e0854; font-size: 1.4rem; margin-top: 0; margin-bottom: 20px; font-weight: 700; }
-    .dash-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .dash-table th { background-color: #f8fafc; padding: 12px 16px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; font-size: 0.9rem; }
-    .dash-table td { padding: 16px; border-bottom: 1px solid #edf2f7; vertical-align: top; }
-    .badge-stock-purple { background-color: #f3e8ff; color: #6b21a8; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
-    .btn-delete-purple { color: #dc2626; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
-    .btn-delete-purple:hover { text-decoration: underline; }
-    .dash-empty-row { text-align: center; color: #7b6f93; font-style: italic; padding: 30px !important; }
+    /* --- CONFIGURATION GLOBALE INTERFACE MODERNE --- */
+    .dash-wrapper { 
+        max-width: 1200px; 
+        margin: 40px auto; 
+        padding: 0 24px; 
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important; 
+        background-color: #f8fafc;
+        color: #1e293b;
+    }
+
+    /* --- 1. GRILLE DE KPI MINI-SAAS --- */
+    .dash-stats-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+        gap: 24px; 
+        margin-bottom: 40px; 
+    }
+    .dash-stat-card { 
+        background: #ffffff; 
+        padding: 24px; 
+        border-radius: 16px; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01); 
+        border: 1px solid #e2e8f0; 
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .dash-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.04);
+    }
+    .dash-stat-label { 
+        color: #64748b; 
+        font-size: 0.8rem; 
+        font-weight: 700; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .dash-stat-number { 
+        color: #0f172a; 
+        font-size: 2rem; 
+        font-weight: 800; 
+        letter-spacing: -0.5px;
+    }
+    .dash-stat-card.revenue-card .dash-stat-number {
+        color: #10b981;
+    }
+
+    /* --- 2. CONTENEURS DE SECTION ÉPURÉS --- */
+    .dash-table-container { 
+        background: #ffffff; 
+        border-radius: 16px; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); 
+        border: 1px solid #e2e8f0; 
+        padding: 28px; 
+        margin-bottom: 40px; 
+        overflow-x: auto; 
+    }
+    .dash-table-title { 
+        color: #0f172a; 
+        font-size: 1.25rem; 
+        margin-top: 0; 
+        margin-bottom: 24px; 
+        font-weight: 700; 
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* --- 3. STRUCTURE DES TABLEAUX --- */
+    .dash-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        text-align: left; 
+    }
+    .dash-table th { 
+        background-color: #f8fafc; 
+        padding: 14px 18px; 
+        color: #475569; 
+        font-weight: 600; 
+        border-bottom: 1px solid #e2e8f0; 
+        font-size: 0.75rem; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .dash-table td { 
+        padding: 18px; 
+        border-bottom: 1px solid #f1f5f9; 
+        vertical-align: middle; 
+        font-size: 0.92rem;
+    }
+    .dash-table tbody tr:hover {
+        background-color: rgba(241, 245, 249, 0.4); 
+    }
+    .dash-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* --- 4. ÉLÉMENTS INTERNES DES COLONNES --- */
+    .dash-prod-name { font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+    .dash-prod-price { font-weight: 700; color: #4f46e5; }
+    
+    .badge-stock-purple { 
+        background-color: #f5f3ff; 
+        color: #6d28d9; 
+        padding: 6px 12px; 
+        border-radius: 9999px; 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+        display: inline-block;
+        border: 1px solid #ddd6fe;
+    }
+
+    .btn-delete-purple { 
+        color: #ef4444; 
+        text-decoration: none; 
+        font-weight: 600; 
+        font-size: 0.85rem; 
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid #fee2e2;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .btn-delete-purple:hover { 
+        background-color: #fef2f2;
+        border-color: #fca5a5;
+    }
+    
+    .dash-empty-row { text-align: center; color: #64748b; font-style: italic; padding: 40px !important; }
+
+    .dash-client-info { display: flex; flex-direction: column; gap: 3px; }
+    .dash-client-info .client-name { font-weight: 600; color: #0f172a; text-transform: capitalize; }
+    .dash-client-info .client-phone { font-size: 0.82rem; color: #475569; display: flex; align-items: center; gap: 4px; }
+    .dash-client-info .client-email { font-size: 0.8rem; color: #94a3b8; }
+
+    .dash-qty-item {
+        font-weight: 700; 
+        color: #16a34a;
+        background-color: #f0fdf4;
+        padding: 2px 8px;
+        border-radius: 6px;
+        display: inline-block;
+        font-size: 0.85rem;
+    }
+
+    /* --- 5. BOUTONS DE STATUTS --- */
     .status-actions-group { display: flex; flex-wrap: wrap; gap: 6px; }
-    .btn-status-action { padding: 6px 12px; font-size: 0.8rem; font-weight: 700; text-decoration: none; border-radius: 20px; transition: all 0.2s ease; }
-    .status-inactive { background-color: #f1f5f9; color: #64748b; }
-    .status-active-recu { background-color: #dbeafe; color: #1e40af; }
-    .status-active-prep { background-color: #fef3c7; color: #92400e; }
-    .status-active-exp { background-color: #e0f2fe; color: #0369a1; }
-    .status-active-livr { background-color: #dcfce7; color: #166534; }
-    .dash-prod-name { font-weight: 700; color: #2e0854; }
-    .dash-prod-price { font-weight: 800; color: #7b24cc; }
-    .dash-client-info .client-name { font-weight: 700; color: #50148c; }
-    .dash-client-info .client-phone { font-size: 0.85rem; color: #4b5563; font-weight: 600; margin-top: 2px; }
-    .dash-client-info .client-email { font-size: 0.8rem; color: #7b6f93; margin-top: 1px; }
+    .btn-status-action { 
+        padding: 6px 14px; 
+        font-size: 0.78rem; 
+        font-weight: 600; 
+        text-decoration: none; 
+        border-radius: 9999px; 
+        transition: all 0.15s ease; 
+        border: 1px solid #e2e8f0;
+    }
+    
+    .status-inactive { background-color: #ffffff; color: #64748b; }
+    .status-inactive:hover { background-color: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    
+    .status-active-recu { background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+    .status-active-prep { background-color: #fef3c7; color: #b45309; border-color: #fde68a; }
+    .status-active-exp { background-color: #e0e7ff; color: #4338ca; border-color: #c7d2fe; }
+    .status-active-livr { background-color: #dcfce7; color: #15803d; border-color: #bbf7d0; }
 </style>
 
 <div class="dash-wrapper">
     <!-- Grille des statistiques -->
     <div class="dash-stats-grid">
-        <div class="dash-stat-card">
+        <div class="dash-stat-card revenue-card">
             <div class="dash-stat-label">💰 Chiffre d'affaires</div>
             <div class="dash-stat-number">{{ total_revenus }} {{ vendeur.devise }}</div>
         </div>
@@ -60,8 +204,8 @@
                 <tr>
                     <th>Article</th>
                     <th>Prix unitaire</th>
-                    <th>Stock disponible</th>
-                    <th>Actions de gestion</th>
+                    <th style="text-align: center;">Stock disponible</th>
+                    <th style="text-align: center;">Actions de gestion</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,8 +213,8 @@
                 <tr>
                     <td><div class="dash-prod-name">{{ produit.nom }}</div></td>
                     <td class="dash-prod-price">{{ produit.prix }} {{ vendeur.devise }}</td>
-                    <td><span class="badge-stock-purple">{{ produit.stock }} unité(s)</span></td>
-                    <td>
+                    <td style="text-align: center;"><span class="badge-stock-purple">{{ produit.stock }} unité(s)</span></td>
+                    <td style="text-align: center;">
                         <a href="{% url 'supprimer_produit' pk=produit.pk %}" 
                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement l\'article : {{ produit.nom }} ?');" 
                            class="btn-delete-purple">
@@ -79,7 +223,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="dash-empty-row">Aucun produit en ligne.</td></tr>
+                <tr><td colspan="4" class="dash-empty-row">Aucun produit en ligne actuellement.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -94,17 +238,17 @@
                     <th>Article commandé</th>
                     <th>Informations Client</th>
                     <th>Adresse de livraison</th>
-                    <th>Quantité</th>
+                    <th style="text-align: center; width: 100px;">Quantité</th>
                     <th>Changer le statut du colis</th>
                 </tr>
             </thead>
             <tbody>
                 {% for vente in ventes %}
                 <tr>
-                    <td style="font-weight: 700; color: #2e0854;">
+                    <td>
                         {% for item in vente.items.all %}
                             {% if item.produit.vendeur == vendeur %}
-                                <div style="margin-bottom: 4px;">🔹 {{ item.produit.nom }}</div>
+                                <div class="dash-prod-name" style="margin-bottom: 6px;">🔹 {{ item.produit.nom }}</div>
                             {% endif %}
                         {% endfor %}
                     </td>
@@ -114,17 +258,20 @@
                         <div class="client-phone">📞 {{ vente.telephone }}</div>
                         <div class="client-email">✉️ {{ vente.email_client }}</div>
                     </td>
-                    <td style="color: #4b4556; font-size: 0.9rem;">{{ vente.adresse }}</td>
+                    <td style="color: #475569; text-transform: capitalize;">{{ vente.adresse }}</td>
                     
-                    <td style="font-weight: 800; color: #16a34a;">
+                    <td style="text-align: center;">
                         {% for item in vente.items.all %}
                             {% if item.produit.vendeur == vendeur %}
-                                <div style="margin-bottom: 4px;">x{{ item.quantite }}</div>
+                                <div style="margin-bottom: 6px;"><span class="dash-qty-item">x{{ item.quantite }}</span></div>
                             {% endif %}
                         {% endfor %}
                     </td>
                     
                     <td>
+                        <div class="status-actions-group">
+                            <a href="{% url 'modifier_statut_commande' pk=vente.pk nouveau_statut='RECU' %}"
+                            <td>
                         <div class="status-actions-group">
                             <a href="{% url 'modifier_statut_commande' pk=vente.pk nouveau_statut='RECU' %}" 
                                class="btn-status-action {% if vente.statut == 'RECU' or not vente.statut %}status-active-recu{% else %}status-inactive{% endif %}">
@@ -146,7 +293,9 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="dash-empty-row">Aucune vente enregistrée pour le moment.</td></tr>
+                <tr>
+                    <td colspan="5" class="dash-empty-row">Aucune commande reçue pour le moment.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

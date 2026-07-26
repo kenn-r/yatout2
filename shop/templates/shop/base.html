@@ -6,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}YaTout Ci{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
-    <style>
-    <!-- 🟢 CONFIGURATION RESPONSIVE ET SÉCURISÉE DU SITE -->
+   <style>
     /* ===================================================================== */
-    /* 🔴 1. VERROUILLAGE DU SCROLL HORIZONTAL GENERAL DE LA PAGE            */
+    /* 🟢 CONFIGURATION RESPONSIVE ET SÉCURISÉE DU SITE                      */
     /* ===================================================================== */
     html, body {
         max-width: 100% !important;
@@ -17,6 +16,8 @@
         margin: 0;
         padding: 0;
         width: 100% !important;
+        background-color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     }
 
     *, *:before, *:after {
@@ -30,17 +31,21 @@
     }
 
     /* ===================================================================== */
-    /* 💻 2. BASE DE LA NAVBAR POUR ORDINATEUR (ÉCRANS LARGES)               */
+    /* 💻 2. CONFIGURATION DES NAVBARS (ORDINATEUR)                          */
     /* ===================================================================== */
     .navbar, .navbar-impression {
         position: relative !important;
-        background-color: #7c3aed !important; 
-        padding: 10px 0 !important;
+        background-color: #6d28d9 !important; /* Violet premium plus profond */
+        height: 70px !important;
+        display: flex !important;
+        align-items: center !important;
         z-index: 100000 !important;
         width: 100% !important;
+        box-shadow: 0 4px 12px rgba(109, 40, 217, 0.08) !important;
     }
     .navbar-impression {
-        background-color: #1e293b !important; 
+        background-color: #0f172a !important; /* Ardoise SaaS très élégant */
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
     }
 
     .navbar .container, 
@@ -52,386 +57,340 @@
         width: 100% !important;
         max-width: 1200px !important;
         margin: 0 auto !important;
-        padding: 0 20px !important;
+        padding: 0 24px !important;
     }
 
     .nav-logo {
-        color: white !important;
+        color: #ffffff !important;
         text-decoration: none !important;
-        font-weight: bold !important;
-        font-size: 1.2rem !important;
+        font-weight: 800 !important;
+        font-size: 1.25rem !important;
+        letter-spacing: -0.5px !important;
         flex-shrink: 0 !important;
     }
 
-    /* SUR ORDINATEUR : Le bouton burger est totalement invisible */
-    .burger-menu {
-        display: none !important; 
-    }
-
-    /* SUR ORDINATEUR : Tous les éléments du menu s'alignent horizontalement */
     .nav-actions {
         display: flex !important; 
         flex-direction: row !important;
         align-items: center !important;
-        gap: 20px !important;
-        position: static !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        width: auto !important;
-        background: transparent !important;
-    }
-
-    .nav-actions a, .nav-actions button, .nav-actions span {
-        color: white !important;
-        text-decoration: none !important;
-        display: inline-block !important;
-    }
-
-    .nav-actions .btn-nav-white {
-        background-color: white !important;
-        color: #7c3aed !important;
-        border-radius: 6px !important;
-        font-weight: bold !important;
-        padding: 8px 16px !important;
-    }
-
-    /* SUR ORDINATEUR : On masque la liste spécifique au mobile */
-    .supports-mobile-only {
-        display: none !important;
-    }
-
-   /* ===================================================================== */
-/* 📱 ZONE COMMUNE MEDIA QUERIES (ÉCRANS INFÉRIEURS À 992PX)             */
-/* ===================================================================== */
-@media (max-width: 992px) {
-    
-    /* ----------------------------------------------------------------- */
-    /* 🎛️ 1. GESTION DE LA NAVBAR ET DU MENU DÉROULANT (BURGER)          */
-    /* ----------------------------------------------------------------- */
-    
-    /* Force l'affichage du bouton burger (3 barres blanches) sur mobile */
-    .navbar .burger-menu,
-    .navbar-impression .burger-menu {
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        width: 28px !important;
-        height: 18px !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        z-index: 100002 !important;
-    }
-
-    .navbar .burger-menu span,
-    .navbar-impression .burger-menu span {
-        display: block !important;
-        width: 100% !important;
-        height: 3px !important;
-        background-color: white !important;
-        border-radius: 2px !important;
-    }
-
-    /* Par défaut, cache la liste des actions horizontales PC */
-    .navbar .nav-actions,
-    .navbar-impression .nav-actions {
-        display: none !important;
-    }
-
-    /* Structure absolue du menu déroulant lorsqu'il s'ouvre (classe .active) */
-    .navbar .nav-actions.active,
-    .navbar-impression .nav-actions.active {
-        display: flex !important;
-        flex-direction: column !important;
-        position: absolute !important;
-        top: 100% !important; /* Se cale pile sous la barre de navigation */
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
-        background-color: #1e293b !important; /* Couleur de fond sombre et propre */
-        padding: 20px !important;
-        box-sizing: border-box !important;
         gap: 12px !important;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
-        z-index: 100001 !important;
     }
 
-    /* Styles des liens et boutons dans le menu déroulé mobile */
-    .navbar .nav-actions.active a,
-    .navbar-impression .nav-actions.active button {
-        color: white !important;
-        display: block !important;
-        width: 100% !important;
-        text-align: left !important;
-        padding: 12px 10px !important;
+    /* Styles de base des éléments de liens */
+    .nav-actions .link-nav, .nav-actions .btn-nav {
+        color: #ddd6fe !important;
         text-decoration: none !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-sizing: border-box !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        padding: 8px 14px !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
     }
-
-    /* Force l'apparition de la sous-section des supports dans le menu mobile */
-    .navbar-impression .nav-actions.active .supports-mobile-only {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 8px !important;
-        width: 100% !important;
-        margin-top: 10px !important;
+    .nav-actions .link-nav:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.08) !important;
     }
-
-    .navbar-impression .nav-actions.active .supports-mobile-only a {
-        padding-left: 20px !important; /* Décale les sous-liens pour la hiérarchie */
-        font-size: 0.95rem !important;
+    .navbar-impression .nav-actions .btn-nav {
         color: #cbd5e1 !important;
     }
+    .navbar-impression .nav-actions .btn-nav:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+    }
 
+    /* Style spécifique de bienvenue */
+    .nav-welcome {
+        color: #ffffff !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        padding-right: 12px !important;
+        margin-right: 4px !important;
+    }
+    .navbar .nav-welcome { border-right: 1px solid rgba(255, 255, 255, 0.2) !important; }
+    .navbar-impression .nav-welcome { border-right: 1px solid rgba(255, 255, 255, 0.1) !important; }
+    .nav-welcome strong { color: #a78bfa !important; font-weight: 700; }
 
-    /* ----------------------------------------------------------------- */
-    /* 🧱 2. ARCHITECTURE ET EMPLEMENT DES BLOCS PRINCIPAUX DE LA PAGE   */
-    /* ----------------------------------------------------------------- */
+    /* Boutons de variantes (Boutons blancs et violets) */
+    .nav-actions .btn-nav-white, .nav-actions .btn-nav-purple {
+        background-color: #ffffff !important;
+        color: #6d28d9 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    }
+    .nav-actions .btn-nav-white:hover, .nav-actions .btn-nav-purple:hover {
+        background-color: #f8fafc !important;
+        transform: translateY(-1px);
+    }
+
+    /* Bouton d'action Conseiller Vert */
+    .nav-actions .btn-conseiller-green {
+        background-color: #10b981 !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
+    }
+    .nav-actions .btn-conseiller-green:hover {
+        background-color: #059669 !important;
+        transform: translateY(-1px);
+    }
+
+    /* Bouton Déconnexion Rouge épuré */
+    .btn-logout-submit {
+        background-color: transparent !important;
+        color: #fca5a5 !important;
+        border: 1px solid rgba(252, 165, 165, 0.25) !important;
+        padding: 8px 14px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-logout-submit:hover {
+        background-color: #ef4444 !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15) !important;
+    }
+
+    /* Masquage des éléments spécifiques mobiles sur ordinateur */
+    .burger-menu, .supports-mobile-only {
+        display: none !important;
+    }
+
+    /* --- COMPOSANT MACARON PROMO PREMIUM HAUT-DROITE --- */
+
+.badge-promo-catalogue {
+    position: absolute !important;
+    top: -10px !important;      /* Aligné verticalement en haut du catalogue */
+    right: 40px !important;     /* Placé à droite selon l'espace disponible */
+    width: 110px !important;    /* Taille agrandie pour plus d'impact */
+    height: 110px !important;   /* Taille agrandie pour plus d'impact */
+    background-color: #dc2626 !important; /* Base rouge vif moderne */
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3) !important;
+    z-index: 999 !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease !important;
     
-    /* Conteneur global de la page d'impression */
-    .print-container {
-        display: flex !important;
-        flex-direction: column !important;
-        padding: 0 10px !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Boîte de titre d'accueil (Reste tout en haut en position 1) */
-    .print-title-box {
-        order: 1 !important;
-        text-align: center !important;
-        margin-bottom: 15px !important;
-    }
+    /* Animation de clignotement fluide et haut de gamme */
+    animation: pulse-clignotant-rouge 1.8s infinite ease-in-out !important;
     
-    .print-title-box h1 {
-        font-size: 1.4rem !important;
-    }
+    /* Découpe parfaite des dents du zigzag en cercle */
+    clip-path: polygon(
+        50% 0%, 55% 3%, 60% 1%, 65% 5%, 70% 4%, 75% 9%, 79% 9%, 83% 14%, 86% 15%, 89% 21%, 91% 23%, 94% 29%, 95% 32%, 98% 38%, 98% 41%, 100% 47%, 99% 51%, 100% 56%, 98% 60%, 98% 64%, 96% 69%, 94% 72%, 92% 77%, 89% 80%, 86% 84%, 83% 86%, 79% 90%, 75% 91%, 71% 95%, 66% 95%, 61% 98%, 56% 97%, 51% 100%, 46% 97%, 41% 98%, 36% 95%, 31% 95%, 27% 91%, 23% 90%, 19% 86%, 16% 84%, 13% 80%, 10% 77%, 7% 72%, 5% 69%, 3% 64%, 3% 60%, 1% 56%, 2% 51%, 1% 47%, 3% 42%, 3% 38%, 5% 32%, 6% 29%, 9% 23%, 12% 21%, 15% 15%, 18% 14%, 22% 9%, 26% 9%, 30% 4%, 35% 5%, 40% 1%, 45% 3%
+    ) !important;
+}
 
-    /* Grille principale (Prend la suite en dessous du grand titre) */
-    .print-layout {
-        display: flex !important;
-        flex-direction: column !important;
-        order: 2 !important;
-        gap: 25px !important;
-        width: 100% !important;
-    }
+.badge-promo-catalogue:hover {
+    transform: scale(1.06) !important;
+}
 
+.badge-promo-catalogue-text {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    line-height: 1.3 !important;
+}
 
-    /* ----------------------------------------------------------------- */
-    /* 📋 3. COLONNE GAUCHE : LE CATALOGUE DES SUPPORTS                  */
-    /* ----------------------------------------------------------------- */
-    
-    .products-column {
-        display: flex !important;
-        flex-direction: column !important;
-        order: 1 !important; /* S'affiche avant la galerie et le simulateur */
-        width: 100% !important;
+/* --- KEYFRAMES DE L'ANIMATION ROUGE CLIGNOTANTE --- */
+@keyframes pulse-clignotant-rouge {
+    0% {
+        background-color: #dc2626 !important;
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5) !important;
     }
-
-    /* Le titre du catalogue remonte au tout début de sa zone */
-    .catalog-header {
-        order: -1 !important;
-        text-align: center !important;
-        margin-bottom: 15px !important;
-        width: 100% !important;
+    50% {
+        background-color: #ef4444 !important; /* Teinte plus claire au milieu du cycle */
+        box-shadow: 0 0 0 15px rgba(220, 38, 38, 0) !important;
     }
-    
-    .catalog-header h2 {
-        font-size: 1.3rem !important;
-    }
-    
-    .catalog-header p {
-        color: #64748b !important;
-        font-size: 0.9rem !important;
-    }
-
-    /* Liste des boîtes de produits (Flyers, Bâches...) */
-    .catalog-list {
-        order: 2 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 15px !important;
-        width: 100% !important;
-    }
-
-
-    /* ----------------------------------------------------------------- */
-    /* 🧮 4. COLONNE DROITE : GALERIE & CALCULATEUR SIMULATEUR           */
-    /* ----------------------------------------------------------------- */
-    
-    .cart-column {
-        display: flex !important;
-        flex-direction: column !important;
-        order: 2 !important; /* Se glisse sous le catalogue de supports */
-        width: 100% !important;
-        gap: 25px !important;
-    }
-
-    /* LE BLOC DE LA GALERIE VISUELLE (Premier bloc .cart-sticky) */
-    .cart-column > .cart-sticky:first-of-type {
-        order: 1 !important; /* Positionné juste après le catalogue */
-        width: 100% !important;
-        max-width: 420px !important; /* Empêche le carousel de trop s'élargir */
-        margin: 0 auto !important;
-    }
-
-    /* LE BLOC DU SIMULATEUR DE PRIX (Deuxième bloc .cart-sticky) */
-    .cart-column > .cart-sticky:last-of-type {
-        order: 2 !important; /* Relégué tout en bas de la page */
-        width: 100% !important;
-        padding: 15px !important;
-        box-sizing: border-box !important;
+    100% {
+        background-color: #dc2626 !important;
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0) !important;
     }
 }
 
-</style>
-<!-- 🟢 CONFIGURATION CIBLÉE : S'affiche UNIQUEMENT sur l'espace impression -->
-{% if '/impression' in request.path %}
-<style>
-    .ribbon-promo-zigzag {
-        position: fixed;
-        top: 140px; 
-        right: 0;
-        z-index: 9999; 
-        background: #dc2626; 
-        color: #ffffff;
-        font-family: 'Inter', sans-serif;
-        font-weight: 800;
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 10px 20px 10px 15px;
-        box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.15);
-        border-radius: 4px 0 0 4px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        
-        /* Effet de découpe en Zigzag */
-        clip-path: polygon(
-            10px 0%, 100% 0%, 100% 100%, 10px 100%, 
-            0% 87.5%, 10px 75%, 0% 62.5%, 10px 50%, 
-            0% 37.5%, 10px 25%, 0% 12.5%
-        );
-        
-        /* Animation d'alerte et clignotement */
-        animation: promo-flash-pulse 1.8s infinite ease-in-out;
-    }
-
-    @keyframes promo-flash-pulse {
-        0%, 100% {
-            background-color: #dc2626;
-            transform: scale(1);
-            box-shadow: -4px 4px 15px rgba(220, 38, 38, 0.3);
+    /* ===================================================================== */
+    /* 📱 4. ZONE DE FLUIDITÉ MÉDIA QUERIES (ÉCRANS INFÉRIEURS À 992PX)       */
+    /* ===================================================================== */
+    @media (max-width: 992px) {
+        .navbar, .navbar-impression {
+            height: 64px !important;
         }
-        50% {
-            background-color: #b91c1c;
-            transform: scale(1.03);
-            box-shadow: -6px 6px 20px rgba(220, 38, 38, 0.5);
-        }
-    }
 
-    @media print {
-        .ribbon-promo-zigzag { display: none !important; }
-    }
+        .burger-menu {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            width: 24px !important;
+            height: 16px !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            z-index: 100002 !important;
+        }
+        .burger-menu span {
+            display: block !important;
+            width: 100% !important;
+            height: 2.5px !important;
+            background-color: #ffffff !important;
+            border-radius: 2px !important;
+        }
+
+        .nav-actions {
+            display: none !important;
+        }
+
+        /* Menu Déroulant Mobile Actif */
+        .nav-actions.active {
+            display: flex !important;
+            flex-direction: column !important;
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            background-color: #1e293b !important;
+            padding: 24px !important;
+            gap: 8px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3) !important;
+            z-index: 100001 !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .nav-actions.active .link-nav, 
+        .nav-actions.active .btn-nav,
+        .nav-actions.active .btn-logout-submit {
+            color: #ffffff !important;
+            width: 100% !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+            padding: 12px 14px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        .nav-actions.active .btn-logout-submit {
+            color: #fca5a5 !important;
+            border: none !important;
+        }
+
+        /* Liens spécifiques mobiles pour les sous-sections */
+        .supports-mobile-only {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            padding-top: 8px;
+        }
+        .menu-section-title {
+            font-size: 12px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            color: #64748b !important;
+            padding: 8px 14px 4px 14px !important;
+        }
+        .btn-support-item {
+            color: #94a3b8 !important;
+            text-decoration: none !important;
+            font-size: 14px !important;
+            padding: 10px 14px 10px 24px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+            }
+        }
 </style>
 
-<div class="ribbon-promo-zigzag">
-    🔥 RÉDUCTION -10%
-</div>
-{% endif %}
-</head>
-<body>
+<!-- Retirez complètement l'ancien bandeau à gauche de la navbar -->
+<!-- ===================================================================== -->
+<!-- 1. ARCHITECTURE UNIQUEMENT DÉDIÉE AUX EN-TÊTES (NAVBARS)             -->
+<!-- ===================================================================== -->
+{% if "impression" in request.path or prestation %}
+    
+    <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
+    <nav class="navbar navbar-impression">
+        <div class="container">
+            <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Impression</a>
+            
+            <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
-    <!-- 1. SÉPARATION DES HEADERS ET EXCLUSION UNIQUEMENT DE LA RACINE DU SITE (BIENVENUE) -->
-    {% if "impression" in request.path or prestation %}
-        
-        <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
-        <nav class="navbar navbar-impression" style="position: relative;">
-            <div class="container" style="position: relative;">
-                <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Impression</a>
-                
-                <!-- Bouton burger autonome -->
-                <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');" style="cursor: pointer;">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+            <div class="nav-actions">
+                <a href="{% url 'page_prestations' %}" class="btn-nav">Nos Prestations</a>
+                <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller-green">
+                    💬 Parler à un conseiller
+                </a>
 
-                <!-- CONTENEUR DES ACTIONS DE L'IMPRESSION -->
-                <div class="nav-actions">
-                    <a href="{% url 'page_prestations' %}" class="btn-nav btn-prestations">Nos Prestations</a>
-                    <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                        💬 Parler à un conseiller
-                    </a>
-
-                    <div class="supports-mobile-only">
-                        <span class="menu-section-title" style="color: white; font-weight: bold; display: block; margin: 10px 0 5px 0;">📁 Nos supports :</span>
-                        
-                        {% if prestations %}
-                            {% for p in prestations %}
-                                <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
-                                    📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
-                                </a>
-                            {% endfor %}
-                        {% elif listes_prestations %}
-                            {% for p in listes_prestations %}
-                                <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
-                                    📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
-                                </a>
-                            {% endfor %}
-                        {% else %}
-                            <a href="{% url 'page_prestations' %}" class="btn-support-item" style="color: #38bdf8 !important;">
-                                ✨ Voir tous nos supports d'impression
+                <div class="supports-mobile-only">
+                    <span class="menu-section-title">📁 Nos supports :</span>
+                    
+                    {% if prestations %}
+                        {% for p in prestations %}
+                            <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
+                                📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
                             </a>
-                        {% endif %}
-                    </div> 
+                        {% endfor %}
+                    {% elif listes_prestations %}
+                        {% for p in listes_prestations %}
+                            <a href="{% url 'detail_prestation' prestation_id=p.id %}" class="btn-support-item">
+                                📁 {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <a href="{% url 'page_prestations' %}" class="btn-support-item" style="color: #38bdf8 !important;">
+                            ✨ Voir tous nos supports d'impression
+                        </a>
+                    {% endif %}
                 </div> 
             </div> 
-        </nav>
+        </div> 
+    </nav>
 
-        <!-- ⚡ BANDEAU ZIGZAG : Affiché UNIQUEMENT sur l'impression -->
-        <div class="ribbon-promo-zigzag">
-            🔥 RÉDUCTION -10%
-        </div>
+<!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
+{% elif request.path != "/" %}
+    
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="nav-logo">🔮 YaTout Ci</a>
+            
+            <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
-    <!-- 🛍️ HEADER STANDARD : Masqué STRICTEMENT sur l'adresse racine "/" (Écran de Bienvenue) -->
-    {% elif request.path != "/" %}
-        
-        <!-- HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
-        <nav class="navbar">
-            <div class="container" style="position: relative;">
-                <a href="/" class="nav-logo">🔮 YaTout Ci</a>
-                
-                <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');" style="cursor: pointer;">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-
-                <div class="nav-actions">
-                    <a href="{% url 'panier_detail' %}" class="link-nav">🛒 Mon Panier</a>
-                    {% if user.is_authenticated %}
-                        <span class="nav-welcome">Bonjour, <strong>{{ user.username }}</strong></span>
-                        <a href="{% url 'dashboard_vendeur' %}" class="btn-nav btn-nav-purple">Tableau de bord</a>
-                        <a href="{% url 'ajouter_produit' %}" class="btn-nav btn-nav-purple">＋ Ajouter produit</a>
-                        
-                        <form method="POST" action="{% url 'deconnexion_vendeur' %}" style="margin: 0; width: 100%;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-nav" style="background-color: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">
-                                🚪 Déconnexion
-                            </button>
-                        </form>
-                    {% else %}
-                        <a href="{% url 'connexion' %}" class="link-nav">Connexion</a>
-                        <a href="{% url 'inscription_vendeur' %}" class="btn-nav btn-nav-white">Devenir Vendeur</a>
-                    {% endif %}
-                </div>
+            <div class="nav-actions">
+                <a href="{% url 'panier_detail' %}" class="link-nav">🛒 Mon Panier</a>
+                {% if user.is_authenticated %}
+                    <span class="nav-welcome">Bonjour, <strong>{{ user.username }}</strong></span>
+                    <a href="{% url 'dashboard_vendeur' %}" class="btn-nav btn-nav-purple">Tableau de bord</a>
+                    <a href="{% url 'ajouter_produit' %}" class="btn-nav btn-nav-purple">＋ Ajouter produit</a>
+                    
+                    <form method="POST" action="{% url 'deconnexion_vendeur' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-logout-submit">
+                            🚪 Déconnexion
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'connexion' %}" class="link-nav">Connexion</a>
+                    <a href="{% url 'inscription_vendeur' %}" class="btn-nav btn-nav-white">Devenir Vendeur</a>
+                {% endif %}
             </div>
-        </nav>
-    {% endif %}
-
+        </div>
+    </nav>
+{% endif %}
     <!-- 2. AFFICHAGE DES MESSAGES -->
     {% if messages %}
     <div class="container alert-container">

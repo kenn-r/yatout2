@@ -3,6 +3,160 @@
 {% block title %}YaTout — Finaliser votre panier{% endblock %}
 
 {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* --- STRUCTURE DE LA PAGE --- */
+    .checkout-container {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+        max-width: 1200px !important;
+        margin: 40px auto !important;
+        padding: 0 20px !important;
+        color: #1e293b !important;
+        box-sizing: border-box !important;
+    }
+
+    .checkout-layout {
+        display: grid !important;
+        grid-template-columns: 1.6fr 1fr !important;
+        gap: 30px !important;
+        align-items: flex-start !important;
+    }
+
+    /* Panneaux blancs épurés */
+    .checkout-form-section, .checkout-summary-section {
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03) !important;
+        padding: 35px !important;
+        border: 1px solid #e2e8f0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .section-title {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        margin: 0 0 25px 0 !important;
+        letter-spacing: -0.3px !important;
+        border-bottom: 2px solid #f1f5f9 !important;
+        padding-bottom: 12px !important;
+    }
+
+    /* --- FORMULAIRE DE LIVRAISON --- */
+    .form-group {
+        margin-bottom: 20px !important;
+    }
+    .form-label {
+        display: block !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: #334155 !important;
+        margin-bottom: 6px !important;
+    }
+    .form-input {
+        width: 100% !important;
+        padding: 11px 14px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        font-size: 14px !important;
+        color: #0f172a !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+        transition: all 0.2s ease !important;
+    }
+    .form-input:focus {
+        border-color: #7b24cc !important;
+        box-shadow: 0 0 0 3px rgba(123, 36, 204, 0.1) !important;
+    }
+    textarea.form-input {
+        resize: vertical !important;
+        min-height: 90px !important;
+    }
+
+    .btn-submit-order {
+        width: 100% !important;
+        background: #7b24cc !important; /* Mauve officiel YaTout */
+        color: #ffffff !important;
+        border: none !important;
+        padding: 15px !important;
+        border-radius: 10px !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        box-shadow: 0 4px 12px rgba(123, 36, 204, 0.15) !important;
+        transition: background 0.2s !important;
+        margin-top: 15px !important;
+    }
+    .btn-submit-order:hover {
+        background: #2e0854 !important;
+    }
+
+    /* --- PANNEAU RÉSUMÉ DES ARTICLES (COLONNE DROITE) --- */
+    /* Ligne produit réorganisée de façon rectiligne et alignée */
+    .prod-mini-card {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 12px 14px !important;
+        background: #f8fafc !important;
+        border-radius: 10px !important;
+        border: 1px solid #f1f5f9 !important;
+        margin-bottom: 12px !important;
+    }
+    .prod-mini-details {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+    }
+    .prod-mini-details h4 {
+        margin: 0 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #0f172a !important;
+        text-transform: capitalize !important;
+    }
+    .prod-mini-shop {
+        font-size: 11px !important;
+        color: #7b24cc !important;
+        font-weight: 700 !important;
+    }
+
+    /* --- ZONE DES TOTAUX FINANCIERS --- */
+    .summary-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-top: 15px !important;
+        font-size: 14px !important;
+        color: #64748b !important;
+    }
+    
+    /* Boîte de total général de la marchandise sombre et haut de gamme */
+    .summary-total {
+        background: #1e293b !important;
+        color: #ffffff !important;
+        border-radius: 12px !important;
+        padding: 16px 20px !important;
+        margin-top: 20px !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        box-shadow: 0 4px 15px rgba(30, 41, 59, 0.1) !important;
+        border: none !important;
+    }
+    .summary-total span:last-child {
+        color: #f59e0b !important; /* Jaune ambré ultra visible pour le prix total */
+        font-size: 18px !important;
+    }
+
+    /* Responsive Mobile */
+    @media (max-width: 991px) {
+        .checkout-layout {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+
 <div class="checkout-container">
     <div class="checkout-layout">
         
@@ -40,22 +194,22 @@
                 <div class="prod-mini-details">
                     <h4>{{ item.produit.nom }}</h4>
                     <span class="prod-mini-shop">🏪 {{ item.produit.vendeur.nom_boutique }}</span>
-                    <div style="font-size: 0.85rem; margin-top: 4px; color: #625770;">
+                    <div style="font-size: 0.85rem; margin-top: 4px; color: #64748b;">
                         Quantité : <strong>{{ item.quantity }}</strong>
                     </div>
                 </div>
-                <div style="margin-left: auto; font-weight: 700; color: #2e0854; font-size: 0.95rem;">
+                <div style="margin-left: auto; font-weight: 700; color: #0f172a; font-size: 15px; white-space: nowrap;">
                     {{ item.total_price }} {{ item.produit.vendeur.get_devise_display }}
                 </div>
             </div>
             {% endfor %}
             
-            <div class="summary-row" style="margin-top: 20px;">
+            <div class="summary-row" style="margin-top: 25px;">
                 <span>Livraison</span>
-                <span style="color: #1e7e43; font-weight: 700;">Gratuite</span>
+                <span style="color: #10b981; font-weight: 700;">Gratuite</span>
             </div>
             
-            <!-- Bloc du Total Général -->
+            <!-- Bloc du Total Général Sombre -->
             <div class="summary-row summary-total">
                 <span>Prix Total: </span>
                 <span>
@@ -69,6 +223,6 @@
             </div>
         </div>
 
-    </div> <!-- Balise de fermeture ajoutée pour corriger la structure du layout -->
+    </div> 
 </div>
 {% endblock %}
