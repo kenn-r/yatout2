@@ -59,14 +59,15 @@
         margin-bottom: 20px !important;
     }
 }
+@keyframes pulseVisual {
+    0% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); }
+    100% { transform: scale(1.05); box-shadow: 0 6px 22px rgba(255, 78, 80, 0.6); }
+}
 </style>
 
 <div class="container-catalogue-header" style="position: relative; max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif;">
     
-    <!-- 🔴 LE MACARON ROUGE PARFAITEMENT ANCRÉ À DROITE -->
-    <div class="badge-promo-catalogue">
-        <span class="badge-promo-catalogue-text">🔥<br>REDUC<br>-10%</span>
-    </div>
+   
 
     <!-- En-tête -->
     <div style="text-align: center; margin-bottom: 45px; padding-right: 80px;">
@@ -77,6 +78,18 @@
             Cliquez sur le support de votre choix pour découvrir ses caractéristiques techniques, ses finitions et ses tarifs.
         </p>
     </div>
+   <!-- 🎁 BANDEAU PROMOTIONNEL HORIZONTAL IDENTIQUE -->
+<div class="promo-banner-container" style="max-width: 100%; margin: 20px auto 30px auto; padding: 20px; background: linear-gradient(135deg, #fdf4ff, #f3e8ff); border: 2px dashed #a855f7; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.05);">
+    <p style="margin: 0 0 10px 0; color: #2e0854; font-size: 1.15rem; font-weight: 800; font-family: sans-serif; letter-spacing: -0.3px;">
+        🛒 Commandez directement sur notre site et obtenez :
+    </p>
+    <div class="promo-badge" style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #ff4e50, #f9d423); color: white; font-size: 1.6rem; font-weight: 900; border-radius: 50px; box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); text-transform: uppercase; font-family: sans-serif; animation: pulseVisual 2s infinite alternate;">
+        🔥 10% DE RÉDUCTION
+    </div>
+    <p style="margin: 10px 0 0 0; color: #6b21a8; font-size: 0.9rem; font-weight: 600; opacity: 0.9;">
+        Offre exclusive en ligne — Configuration instantanée à droite !
+    </p>
+</div>
     
     <!-- Grille des cartes prestations -->
     <div class="product-grid">

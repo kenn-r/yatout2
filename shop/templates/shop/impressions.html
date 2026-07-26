@@ -91,40 +91,95 @@
     .btn-valider { background: #166534; color: white; }
     .btn-transfert { background: #0284c7; color: white; }
     .btn-close-modal { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+/* Configuration globale en Flexbox */
+    .custom-responsive-layout {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 30px !important;
+        width: 100% !important;
+    }
+
+    /* Sur grand écran : deux colonnes distinctes */
+    @media (min-width: 992px) {
+        .custom-responsive-layout .products-column {
+            flex: 1 !important;
+            min-width: 400px !important;
+        }
+        .custom-responsive-layout .cart-column {
+            width: 380px !important;
+        }
+    }
+
+    /* Sur petit écran / fenêtre réduite : forcer l'empilement vertical strict */
+    @media (max-width: 991px) {
+        .custom-responsive-layout {
+            flex-direction: column !important;
+        }
+        .custom-responsive-layout .products-column {
+            width: 100% !important;
+            order: 1 !important; /* Le catalogue reste obligatoirement tout en haut */
+        }
+        .custom-responsive-layout .cart-column {
+            width: 100% !important;
+            order: 2 !important; /* La galerie et le simulateur passent en dessous */
+        }
+    }
+
+
+@keyframes pulseVisual {
+    0% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); }
+    100% { transform: scale(1.05); box-shadow: 0 6px 22px rgba(255, 78, 80, 0.6); }
+}
 </style>
-
 <div class="print-container">
-    <div class="print-title-box">
-        <!-- Titre récepteur de l'appui long secret -->
-        <h1 id="titre-secret-admin">🖨️ Espace Impression Professionnel YaTout</h1>
-        <p>Découvrez nos offres à gauche et configurez votre estimation en temps réel à droite.</p>
+    <div class="print-title-box" style="text-align: center; padding: 20px 10px;">
+    <!-- 🌟 TITRE EN BLEU DÉGRADÉ ULTRA ATTIRANT -->
+    <h1 id="titre-secret-admin" style="font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #2563eb, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; font-family: sans-serif; letter-spacing: -0.5px;">
+        🖨️ Espace Impression Professionnel YaTout
+    </h1>
+    <p style="color: #64748b; font-size: 0.95rem; margin: 0;">Découvrez nos offres à gauche et configurez votre estimation en temps réel à droite.</p>
+</div>
     </div>
-
-    <div class="print-layout">
-        
-        <!-- 📋 COLONNE GAUCHE : CATALOGUE DES SUPPORTS -->
-        <div class="products-column">
+ <!-- 📋 COLONNE GAUCHE : CATALOGUE DES SUPPORTS -->
+<div class="products-column">
     <!-- 🟢 BLOC ENVELOPPE POUR LE TEXTE À PLACER ICI -->
     <div class="catalog-header">
-        <h2>📋 Notre Catalogue de Supports</h2>
+        <h2>📋 Nos Prestations</h2>
         <p>Cliquez sur le support de votre choix pour découvrir ses caractéristiques techniques, ses finitions et ses tarifs.</p>
     </div>
+ <!-- 🎁 NOUVEAU BLOC PROMOTIONNEL ATTIRANT -->
+    <div class="promo-banner-container" style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #fdf4ff, #f3e8ff); border: 2px dashed #a855f7; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.05);">
+        <p style="margin: 0 0 10px 0; color: #2e0854; font-size: 1.15rem; font-weight: 800; font-family: sans-serif; letter-spacing: -0.3px;">
+            🛒 Commandez directement sur notre site et obtenez :
+        </p>
+        <div class="promo-badge" style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #ff4e50, #f9d423); color: white; font-size: 1.6rem; font-weight: 900; border-radius: 50px; box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); text-transform: uppercase; font-family: sans-serif; animation: pulseVisual 2s infinite alternate;">
+            🔥 10% DE RÉDUCTION
+        </div>
+        <p style="margin: 10px 0 0 0; color: #6b21a8; font-size: 0.9rem; font-weight: 600; opacity: 0.9;">
+            Offre exclusive en ligne — Configuration instantanée à droite !
+        </p>
+    </div>
+</div>
+
+    <!-- Modifié : Ajout d'une classe spécifique pour appliquer le Flexbox responsive -->
+    <div class="print-layout custom-responsive-layout">
+        
+       
 
     <div class="catalog-list">
         {% for prest in prestations %}
-    
-                <!-- ... reste de votre code inchangé ... -->
-                    <div class="item-list-row">
-                        <h3>🖨️ {{ prest.titre }}</h3>
-                        <a href="{% url 'page_prestations' %}#prestation-{{ prest.id }}" class="btn-link-prestation">
-                            👁️ Voir nos supports
-                        </a>
-                    </div>
-                {% empty %}
-                    <p>Aucun support configuré.</p>
-                {% endfor %}
+            <div class="item-list-row">
+                <h3>🖨️ {{ prest.titre }}</h3>
+                <a href="{% url 'page_prestations' %}#prestation-{{ prest.id }}" class="btn-link-prestation">
+                    👁️ Voir nos supports
+                </a>
             </div>
-        </div>
+        {% empty %}
+            <p>Aucun support configuré.</p>
+        {% endfor %}
+    </div>
+
+   
 
         <!-- 🧮 COLONNE DROITE : GALERIE ET CALCULATEUR SIMULATEUR -->
         <div class="cart-column">
@@ -206,6 +261,7 @@
         </div> <!-- Fermeture .cart-column -->
     </div> <!-- Fermeture .print-layout -->
 </div> <!-- Fermeture .print-container -->
+
 
 <!-- Fenêtre Modale d'administration (Affichée uniquement pour le staff) -->
 {% if user.is_authenticated and user.is_staff %}
