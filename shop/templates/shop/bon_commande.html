@@ -1,177 +1,442 @@
+{% extends 'shop/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <!-- 🟢 FIX 1 : Utilisation de la nouvelle méthode de numérotation pour la balise Title -->
-    <title>Bon de Commande {{ commande.numero_bon_commande }}</title>
-    <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; margin: 30px; line-height: 1.4; }
-        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-        .logo { max-height: 70px; width: auto; object-fit: contain; }
-        .title { font-size: 26px; font-weight: bold; color: #1e293b; text-transform: uppercase; text-align: right; }
-        .info-section { width: 100%; margin-bottom: 30px; }
-        .info-box { width: 45%; vertical-align: top; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .items-table th { background-color: #7c3aed; color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
-        .items-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        .total-box { margin-top: 30px; text-align: right; font-size: 16px; line-height: 2; }
-        .total-box p { margin: 4px 0; }
-        .text-danger { color: #ef4444; font-weight: bold; }
-        .text-success { color: #15803d; font-size: 22px; font-weight: bold; }
-        
-        .input-remise { width: 70px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center; }
-        
-        @media print { 
-            .btn-print, .admin-box { display: none !important; } 
-            .print-only { display: inline !important; }
-            body { margin: 15px; }
+
+{% block title %}Gestion du Bon de Commande - YaTout{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* --- STYLE GLOBAL PREMIUM --- */
+    .admin-wrapper {
+        font-family: 'Inter', sans-serif !important;
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 0 20px;
+        color: #1e293b;
+    }
+
+    .admin-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+        padding: 35px;
+        border: 1px solid #f1f5f9;
+    }
+
+    /* --- BOUTON IMPRESSION --- */
+    .btn-print-action {
+        background: #6d21a8;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(109, 33, 168, 0.15);
+    }
+    .btn-print-action:hover {
+        background: #581c87;
+        transform: translateY(-1px);
+    }
+
+    /* --- EN-TÊTE HARMONISÉ --- */
+    .header-layout {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 25px;
+        margin-bottom: 30px;
+    }
+    .logo-container img {
+        max-height: 55px;
+        width: auto;
+    }
+    .logo-container .slogan {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 6px;
+        font-weight: 500;
+    }
+    .document-title-box {
+        text-align: right;
+    }
+    .document-title {
+        font-size: 26px;
+        font-weight: 800;
+        color: #0f172a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+    .document-ref-top {
+        font-family: monospace;
+        font-size: 15px;
+        color: #6d21a8;
+        font-weight: 700;
+        background: #f3e8ff;
+        padding: 3px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 5px;
+    }
+
+    /* --- BLOCS COORDONNÉES --- */
+    .parties-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 35px;
+    }
+    .info-card-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+    }
+    .info-card-box h3 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        margin: 0 0 10px 0;
+        font-weight: 700;
+    }
+    .info-card-box p {
+        margin: 4px 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* --- TABLEAU COMPTABLE --- */
+    .modern-table-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+    }
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+    .modern-table th {
+        background: #0f172a;
+        color: #ffffff;
+        padding: 14px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .modern-table td {
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+    .modern-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Input Remise */
+    .input-remise-admin {
+        width: 65px;
+        padding: 6px 8px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 700;
+        color: #0f172a;
+        outline: none;
+    }
+    .input-remise-admin:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    /* --- CONTENEUR DES TOTAUX & ACTIONS INTERNES --- */
+    .table-footer-layout {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+        gap: 20px;
+    }
+    .btn-submit-table {
+        background: #4c1d95;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-submit-table:hover { background: #351569; }
+
+    /* Case Sombre des Totaux (Assortie au reste de votre site) */
+    .summary-total-card {
+        background: #1e293b;
+        color: #f1f5f9;
+        border-radius: 12px;
+        padding: 22px;
+        min-width: 320px;
+        box-shadow: 0 4px 15px rgba(30, 41, 59, 0.1);
+    }
+    .total-row-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: #94a3b8;
+    }
+    .total-row-item.net-to-pay {
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        margin-top: 14px;
+        padding-top: 14px;
+        margin-bottom: 0;
+        color: #ffffff;
+    }
+    .total-row-item .val-bold {
+        font-weight: 600;
+        color: #ffffff;
+    }
+    .total-row-item .val-price-final {
+        color: #f59e0b; /* Jaune ambré dynamique */
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    /* --- PANNEAU DE CONTRÔLE BAS --- */
+    .admin-bottom-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 30px;
+    }
+    .control-box {
+        border-radius: 12px;
+        padding: 20px;
+    }
+    .control-box.remise-globale-box {
+        background-color: #fafafa;
+        border: 1px dashed #7c3aed;
+    }
+    .control-box.validation-box {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+    }
+    .panel-label {
+        font-weight: 700;
+        font-size: 14px;
+        display: block;
+        margin-bottom: 8px;
+    }
+    .input-global-remise {
+        width: 80px;
+        padding: 8px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-weight: bold;
+        text-align: center;
+    }
+    .btn-panel-purple {
+        background: #7c3aed;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .btn-panel-purple:hover { background: #6d21a8; }
+    
+    .btn-panel-green {
+        background: #16a34a;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
+        transition: background 0.2s;
+    }
+    .btn-panel-green:hover { background: #15803d; }
+
+    /* --- NOTIFICATIONS BANNIÈRE --- */
+    .banner-notification {
+        padding: 12px 20px;
+        background-color: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+    /* =========================================================================
+       🖨️ MODE IMPRESSION NETTOYÉ
+       ========================================================================= */
+    @media print {
+        .btn-print-action, .admin-box, .admin-bottom-panel, .btn-submit-table, input {
+            display: none !important;
         }
-    </style>
-</head>
-<body>
+        .print-only {
+            display: inline-block !important;
+        }
+        body, .admin-wrapper, .admin-card {
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        .modern-table th {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-bottom: 2px solid #0f172a !important;
+        }
+        .summary-total-card {
+            background: transparent !important;
+            color: #0f172a !important;
+            box-shadow: none !important;
+        }
+        .total-row-item, .total-row-item .val-bold, .total-row-item.net-to-pay {
+            color: #0f172a !important;
+        }
+        .total-row-item .val-price-final {
+            color: #0f172a !important;
+            font-size: 16px !important;
+        }
+    }
+</style>
 
-    <!-- BOUTON IMPRIMER -->
-    <button class="btn-print" onclick="window.print()" style="padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 20px;">
-        🖨️ Imprimer / Sauvegarder en PDF
-    </button>
+<div class="admin-wrapper">
+    <div class="admin-card">
 
-    <!-- EN-TÊTE AVEC LOGO -->
-    <table class="header-table">
-        <tr>
-            <td>
-                <img src="{% static 'shop/js/images/logo.png' %}" alt="Logo YaTout" class="logo">
-            </td>
-            <td class="title">Bon de Commande</td>
-        </tr>
-    </table>
+        <!-- BOUTON IMPRIMER -->
+        <button class="btn-print-action" onclick="window.print()">
+            🖨️ Imprimer / Sauvegarder en PDF
+        </button>
 
-    <!-- COORDONNÉES DES PARTIES -->
-    <table class="info-section">
-        <tr>
-            <td class="info-box">
-                <strong>ÉMETTEUR :</strong><br>
-                <strong>YaTout Impression</strong><br>
-                Abidjan, Côte d'Ivoire<br>
-                Téléphone : +225 05 74 70 20 92
-            </td>
-            <td style="width: 10%;"></td>
-            <td class="info-box">
-                <strong>DESTINATAIRE :</strong><br>
-                Client : {{ commande.nom_client }}<br>
-                Téléphone : {{ commande.telephone }}<br>
-                Date : {{ commande.date_commande|date:"d/m/Y H:i" }}<br>
-                <!-- 🟢 FIX 2 : Utilisation de la méthode numero_bon_commande pour la facture -->
-                <strong>Référence : {{ commande.numero_bon_commande }}</strong>
-            </td>
-        </tr>
-    </table>
+        <!-- EN-TÊTE SYNCHRONISÉ -->
+        <div class="header-layout">
+            <div class="logo-container">
+                <img src="{% static 'shop/js/images/logo.png' %}" alt="Logo YaTout">
+                <div class="slogan">YaTout Impression — Votre image mérite la perfection</div>
+            </div>
+            <div class="document-title-box">
+                <h1 class="document-title">Bon de Commande</h1>
+                <span class="document-ref-top">N° {{ commande.numero_bon_commande }}</span>
+            </div>
+        </div>
 
-    <!-- MESSAGES DE SUCCÈS OU D'ERREUR -->
-    {% if messages %}
-        <div class="btn-print" style="margin-top: 20px; margin-bottom: 20px;">
+        <!-- MESSAGES DE NOTIFICATION -->
+        {% if messages %}
             {% for message in messages %}
-                <div style="padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
-                    {{ message }}
+                <div class="banner-notification">
+                    ✨ {{ message }}
                 </div>
             {% endfor %}
-        </div>
-    {% endif %}
+        {% endif %}
 
-    <!-- 1. FORMULAIRE COMPTABLE POUR LES REMISES PAR ARTICLE -->
-    <form method="POST">
-        {% csrf_token %}
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>Désignation de la prestation</th>
-                    <th style="text-align: center; width: 100px;">Quantité</th>
-                    <th style="text-align: right; width: 140px;">Prix unitaire</th>
-                    <th style="text-align: center; width: 120px;">Rem. %</th>
-                    <th style="text-align: right; width: 140px;">Montant net</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in articles_liste %}
-                <tr class="js-ligne-article" data-prix="{{ item.prix_entier }}" data-qte="{{ item.qte_entier }}">
-                    <td>{{ item.titre }}</td>
-                    <td style="text-align: center;">{{ item.qte_entier }}</td>
-                    <td style="text-align: right;">{{ item.prix_entier|stringformat:"d" }} FCFA</td>
-                    
-                    <td style="text-align: center;">
-                        <span class="admin-box">
-                            <input type="number" 
-                                   name="remise_{{ forloop.counter0 }}" 
-                                   value="{{ item.remise_pourcent|default:0 }}" 
-                                   min="0" 
-                                   max="100"
-                                   class="input-remise js-input-remise-ligne">
-                            <strong style="margin-left: 3px;">%</strong>
-                        </span>
-                        <span style="display: none; font-weight: bold; color: #ef4444;" class="print-only js-print-remise-text">
-                            {{ item.remise_pourcent_entier }}
-                        </span>
-                    </td>
-                    
-                    <td style="text-align: right; font-weight: bold;" class="js-montant-net-ligne">{{ item.total_net_entier|stringformat:"d" }} FCFA</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- COORDONNÉES DES PARTIES -->
+        <div class="parties-grid">
+            <div class="info-card-box">
+                <h3>Émetteur</h3>
+                <p><strong>YaTout Impression</strong></p>
+                <p>Abidjan, Côte d'Ivoire</p>
+                </tbody>
+                </table>
+            </div> <!-- Fermeture de la div .modern-table-container -->
 
-        <div class="admin-box" style="margin-top: 15px; text-align: right;">
-            <button type="submit" name="appliquer_remises_articles" style="background-color: #4c1d95; color: white; border: none; padding: 10px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
-                🔄 Calculer les remises articles
-            </button>
-        </div>
-    </form>
-
-    <!-- SECTION DE RÉCAPITULATION DES TOTAUX -->
-    <div class="total-box">
-        <p>Sous-total Brut : <span id="js-total-brut-global">{{ commande.total_brut_entier|stringformat:"d" }}</span> FCFA</p>
-        <p class="text-danger" id="js-box-remise-globale" style="display: {% if commande.montant_remise_global > 0 %}block{% else %}none{% endif %};">
-            Remise globale de la marchandise : -<span id="js-montant-remise-globale">{{ commande.montant_remise_global_entier|stringformat:"d" }}</span> FCFA
-        </p>
-        <p class="text-success">Net à payer : <span id="js-net-a-payer-global">{{ commande.total_final_entier|stringformat:"d" }}</span> FCFA</p>
-    </div>
-
-    <!-- BLOC ADMINISTRATION -->
-    <div class="admin-box" style="margin-top: 30px; display: flex; gap: 20px; flex-wrap: wrap;">
-        
-        <!-- 2. Formulaire d'ajustement de la remise globale -->
-        <div style="background-color: #f8fafc; border: 1px dashed #7c3aed; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
-            <form method="POST">
-                {% csrf_token %}
-                <label style="font-weight: bold; font-size: 13px; color: #4c1d95; display: block; margin-bottom: 5px;">
-                    🛠️ Ajuster la remise commerciale globale :
-                </label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" id="js-remise-globale-input" name="pourcentage_remise" value="{{ pourcentage_actuel|default:0 }}" min="0" max="100" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; text-align: center;">
-                    <span style="align-self: center; font-weight: bold;">%</span>
-                    <button type="submit" name="changer_remise" style="background-color: #7c3aed; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">
-                        Appliquer et recalculer
+            <!-- STRUCTURE BAS DE TABLEAU (Bouton + Bloc Sombre des Totaux) -->
+            <div class="table-footer-layout">
+                <div class="admin-box">
+                    <button type="submit" name="appliquer_remises_articles" class="btn-submit-table">
+                        🔄 Recalculer les remises lignes
                     </button>
                 </div>
-            </form>
-        </div>
+                
+                <div class="summary-total-card">
+                    <div class="total-row-item">
+                        <span>Sous-total Brut :</span>
+                        <span class="val-bold">{{ commande.total_brut_formate }} FCFA</span>
+                    </div>
+                    
+                    {% if commande.montant_remise_global > 0 %}
+                    <div class="total-row-item" style="color: #f87171;">
+                        <span>Remise globale :</span>
+                        <span style="font-weight: 600;">-{{ commande.montant_remise_formate }} FCFA</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="total-row-item net-to-pay">
+                        <span style="font-weight: 600;">Net à payer :</span>
+                        <span class="val-price-final">{{ commande.total_final_formate }} FCFA</span>
+                    </div>
+                </div>
+            </div>
+        </form> <!-- Fermeture propre du premier formulaire comptable -->
 
-        <!-- 🟢 FIX 3 : Réécriture et fermeture propre du formulaire de validation en Bon de Livraison (BL) -->
-        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px; flex: 1; min-width: 300px;">
-            <form method="POST">
-                {% csrf_token %}
-                <label style="font-weight: bold; font-size: 13px; color: #166534; display: block; margin-bottom: 8px;">
-                    🚚 Validation & Expédition :
-                </label>
-                <p style="font-size: 12px; color: #475569; margin: 0 0 12px 0; line-height: 1.4;">
-                    En cliquant ci-dessous, la commande passera en statut "Validé" et un mail de fabrication sera envoyé automatiquement au destinataire.
-                </p>
-                <button type="submit" name="generer_bl" style="background-color: #16a34a; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; width: 100%;">
-                    🚀 Confirmer et Générer le Bon de Livraison
-                </button>
-            </form>
-        </div>
+        <!-- BLOC ADMINISTRATION ET ACTIONS GLOBALES -->
+        <div class="admin-bottom-panel">
+            
+            <!-- 2. Ajustement Remise Globale -->
+            <div class="control-box remise-globale-box">
+                <form method="POST">
+                    {% csrf_token %}
+                    <label class="panel-label" style="color: #4c1d95;">
+                        🛠️ Appliquer une remise uniforme sur tout le bon :
+                    </label>
+                    <p style="font-size: 12px; color: #64748b; margin: 0 0 12px 0;">
+                        Cette action écrasera les remises individuelles pour appliquer le pourcentage choisi sur chaque ligne.
+                    </p>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" name="pourcentage_remise" value="{{ pourcentage_actuel|default:0 }}" min="0" max="100" class="input-global-remise">
+                        <span style="align-self: center; font-weight: 700; color: #475569;">%</span>
+                        <button type="submit" name="changer_remise" class="btn-panel-purple">
+                            Appliquer partout
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-    </div>
+            <!-- 3. Validation en BL -->
+            <div class="control-box validation-box">
+                <form method="POST">
+                    {% csrf_token %}
+                    <label class="panel-label" style="color: #166534;">
+                        🚚 Clôture de commande & Expédition :
+                    </label>
+                    <p style="font-size: 12px; color: #475569; margin: 0 0 15px 0; line-height: 1.4;">
+                        Génère le Bon de Livraison d'atelier officiel et transmet automatiquement la notification par email au client.
+                    </p>
+                    <button type="submit" name="generer_bl" class="btn-panel-green">
+                        🚀 Valider la commande et générer le BL
+                    </button>
+                </form>
+            </div>
 
-</body>
-</html>
+        </div> <!-- Fin de la div .admin-bottom-panel -->
+
+    </div> <!-- Fin de la div .admin-card -->
+</div> <!-- Fin de la div .admin-wrapper -->
+
+{% endblock %}

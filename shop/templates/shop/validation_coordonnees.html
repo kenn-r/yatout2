@@ -173,6 +173,89 @@
     }
 </style>
 
+<!-- Importation de la police attractive 'Inter' -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Application de la police et refonte globale de la box */
+    .checkout-card {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    .summary-box {
+        background: #1e293b; /* Fond bleu ardoise moderne et pro */
+        color: #f1f5f9;
+        padding: 22px;
+        border-radius: 14px;
+        box-shadow: 0 4px 15px rgba(30, 41, 59, 0.15);
+        margin-bottom: 28px;
+        border-left: 5px solid #3b82f6; /* Ligne d'accentuation bleue */
+    }
+
+    .summary-tag {
+        background: rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .summary-product {
+        display: block;
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+        line-height: 1.4;
+    }
+
+    /* Lignes financières harmonisées */
+    .summary-row-financial {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #94a3b8; /* Texte secondaire clair */
+    }
+
+    .summary-row-financial .valeur-spec {
+        color: #cbd5e1;
+        font-weight: 500;
+    }
+
+    .summary-row-financial .text-danger {
+        color: #f87171 !important; /* Rouge désaturé plus lisible sur fond sombre */
+    }
+
+    /* Ligne de séparation et prix final */
+    .summary-divider {
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        margin-top: 16px;
+        padding-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .summary-spec-total {
+        font-size: 15px;
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    .summary-price {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f59e0b; /* Jaune ambré ultra visible et attractif pour le prix */
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
 <div class="container px-3">
     <div class="checkout-wrapper">
         
@@ -187,30 +270,30 @@
             <h2 class="checkout-title">Finaliser ma commande</h2>
             <p class="checkout-subtitle">Veuillez renseigner vos coordonnées pour générer votre bon de commande numérique.</p>
 
-            <!-- Détails de la commande -->
+            <!-- 🎨 Détails de la commande (VERSION ATTRACTIVE) -->
             <div class="summary-box">
                 <span class="summary-tag">Votre sélection</span>
                 <strong class="summary-product">{{ commande_session.prestation_titre }}</strong>
                 
-                <div class="summary-row-financial" style="margin-top: 12px;">
-                    <span class="text-muted">Spécification :</span>
-                    <span class="font-weight-bold text-dark">{{ commande_session.unite_texte }}</span>
+                <div class="summary-row-financial">
+                    <span>Spécification :</span>
+                    <span class="valeur-spec">{{ commande_session.unite_texte }}</span>
                 </div>
 
-                <!-- 🟢 FIX 1 & 2 : Application du formatage d'affichage propre sur les montants bruts -->
+                <!-- Application du formatage d'affichage propre sur les montants bruts -->
                 {% if commande_session.montant_remise > 0 %}
                 <div class="summary-row-financial">
-                    <span class="text-muted">Tarif catalogue :</span>
-                    <span class="text-muted" style="text-decoration: line-through;">{{ commande_session.total_brut|stringformat:"d" }} F</span>
+                    <span>Tarif catalogue :</span>
+                    <span style="text-decoration: line-through; opacity: 0.7;">{{ commande_session.total_brut|stringformat:"d" }} F</span>
                 </div>
                 <div class="summary-row-financial">
-                    <span class="text-muted">Remise déduite :</span>
+                    <span>Remise déduite :</span>
                     <span class="text-danger font-weight-bold">-{{ commande_session.montant_remise|stringformat:"d" }} F ({{ commande_session.remise_texte_whatsapp }})</span>
                 </div>
                 {% endif %}
                 
                 <div class="summary-divider">
-                    <span class="summary-spec" style="font-weight: 700; color: #0f172a;">Net à payer :</span>
+                    <span class="summary-spec-total">Net à payer :</span>
                     <span class="summary-price">{{ commande_session.total_final_formate }} FCFA</span>
                 </div>
             </div>

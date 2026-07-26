@@ -284,11 +284,67 @@
         box-sizing: border-box !important;
     }
 }
+
 </style>
+<!-- 🟢 CONFIGURATION CIBLÉE : S'affiche UNIQUEMENT sur l'espace impression -->
+{% if '/impression' in request.path %}
+<style>
+    .ribbon-promo-zigzag {
+        position: fixed;
+        top: 140px; 
+        right: 0;
+        z-index: 9999; 
+        background: #dc2626; 
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 10px 20px 10px 15px;
+        box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.15);
+        border-radius: 4px 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        
+        /* Effet de découpe en Zigzag */
+        clip-path: polygon(
+            10px 0%, 100% 0%, 100% 100%, 10px 100%, 
+            0% 87.5%, 10px 75%, 0% 62.5%, 10px 50%, 
+            0% 37.5%, 10px 25%, 0% 12.5%
+        );
+        
+        /* Animation d'alerte et clignotement */
+        animation: promo-flash-pulse 1.8s infinite ease-in-out;
+    }
+
+    @keyframes promo-flash-pulse {
+        0%, 100% {
+            background-color: #dc2626;
+            transform: scale(1);
+            box-shadow: -4px 4px 15px rgba(220, 38, 38, 0.3);
+        }
+        50% {
+            background-color: #b91c1c;
+            transform: scale(1.03);
+            box-shadow: -6px 6px 20px rgba(220, 38, 38, 0.5);
+        }
+    }
+
+    @media print {
+        .ribbon-promo-zigzag { display: none !important; }
+    }
+</style>
+
+<div class="ribbon-promo-zigzag">
+    🔥 RÉDUCTION -10%
+</div>
+{% endif %}
 </head>
 <body>
 
-    <!-- 1. SÉPARATION DES HEADERS VIA DJANGO -->
+    <!-- 1. SÉPARATION DES HEADERS ET EXCLUSION UNIQUEMENT DE LA RACINE DU SITE (BIENVENUE) -->
     {% if "impression" in request.path or prestation %}
         
         <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
@@ -296,14 +352,14 @@
             <div class="container" style="position: relative;">
                 <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Impression</a>
                 
-                <!-- 🟢 Bouton burger autonome avec déclencheur direct infaillible -->
+                <!-- Bouton burger autonome -->
                 <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');" style="cursor: pointer;">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
 
-                <!-- 🟢 CONTENEUR DES ACTIONS DE L'IMPRESSION (CORRIGÉ ET BALISES REFERMÉES) -->
+                <!-- CONTENEUR DES ACTIONS DE L'IMPRESSION -->
                 <div class="nav-actions">
                     <a href="{% url 'page_prestations' %}" class="btn-nav btn-prestations">Nos Prestations</a>
                     <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller" style="background-color: #22c55e; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold;">
@@ -330,17 +386,23 @@
                                 ✨ Voir tous nos supports d'impression
                             </a>
                         {% endif %}
-                    </div> <!-- 🆕 Fermeture de .supports-mobile-only -->
-                </div> <!-- 🆕 Fermeture de .nav-actions -->
-            </div> <!-- 🆕 Fermeture de .container -->
+                    </div> 
+                </div> 
+            </div> 
         </nav>
 
-    {% else %}
+        <!-- ⚡ BANDEAU ZIGZAG : Affiché UNIQUEMENT sur l'impression -->
+        <div class="ribbon-promo-zigzag">
+            🔥 RÉDUCTION -10%
+        </div>
+
+    <!-- 🛍️ HEADER STANDARD : Masqué STRICTEMENT sur l'adresse racine "/" (Écran de Bienvenue) -->
+    {% elif request.path != "/" %}
         
-        <!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
+        <!-- HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
         <nav class="navbar">
             <div class="container" style="position: relative;">
-                <a href="{% url 'accueil' %}" class="nav-logo">🔮 YaTout Ci</a>
+                <a href="/" class="nav-logo">🔮 YaTout Ci</a>
                 
                 <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');" style="cursor: pointer;">
                     <span></span>

@@ -272,6 +272,9 @@ class GrilleCataloguePages(models.Model):
 import datetime
 from django.db import models
 
+import datetime  # 🟢 FIX : Importation requise pour la génération des numéros BC et BL
+from django.db import models
+
 class CommandeImpression(models.Model):
     STATUT_CHOICES = [
         ('EN_ATTENTE', 'En attente'),
@@ -294,6 +297,13 @@ class CommandeImpression(models.Model):
     
     validee_par_client = models.BooleanField(default=False, verbose_name="Validé par le client")
     bl_genere = models.BooleanField(default=False, verbose_name="Transféré en Bon de Livraison")
+    
+    # 🟢 AJOUT : Nouveau champ pour éditer dynamiquement le transporteur/livreur depuis l'admin
+    livre_par = models.CharField(
+        max_length=100, 
+        default="Nous-mêmes", 
+        verbose_name="Livré par"
+    )
 
     def numero_bon_commande(self):
         """Génère le numéro sous la forme BC/26-07-0001 basé sur la date réelle"""

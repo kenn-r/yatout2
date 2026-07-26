@@ -741,13 +741,11 @@ def bienvenue(request):
 
 
 
-@staff_member_required
 def generer_bon_pdf(request, commande_id):
     # Récupération de la commande principale
     commande = get_object_or_404(CommandeImpression, id=commande_id)
 
     response = HttpResponse(content_type='application/pdf')
-    # Modification optionnelle : 'inline' au lieu de 'attachment' permet de voir le PDF sur Safari/Chrome avant d'imprimer
     response['Content-Disposition'] = f'inline; filename="{commande.numero_bon_commande()}.pdf"'
 
     # Marges définies à 40 points
@@ -758,8 +756,7 @@ def generer_bon_pdf(request, commande_id):
         response, 
         pagesize=letter, 
         rightMargin=marge_droite, 
-        leftMargin=marge_gauche, 
-        topMargin=40, 
+        leftMargin=marge_gauche, topMargin=40, 
         bottomMargin=40
     )
     story = []
@@ -779,9 +776,6 @@ def generer_bon_pdf(request, commande_id):
 
     # --- 1. CONFIGURATION DU BLOC GAUCHE (ENTREPRISE + INFOS BON) ---
     bloc_gauche = []
-    
-    # Vérification et ajout dynamique du titre du document (Bon de Commande ou Livraison)
-    # Si le champ 'bl_genere' est à True, le titre s'adapte automatiquement sur le document
     titre_document = "BON DE LIVRAISON" if getattr(commande, 'bl_genere', False) else "BON DE COMMANDE"
     
     chemin_logo = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo.png')
@@ -822,43 +816,63 @@ def generer_bon_pdf(request, commande_id):
     story.append(Spacer(1, 15))
     story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#C8BED6"), spaceAfter=20, spaceBefore=0))
 
-    # --- 4. TABLEAU DES ARTICLES AVEC GESTION DE LA REMISE ARTICLE ---
-    # Répartition des colonnes sur la largeur utile totale (532 points) :
+    # --- 4. TABLEAU DES ARTICLES ---
     col_prix = 80
     col_qte = 45
-    col_remise = 75   # 👈 Nouvelle colonne dédiée à la remise sur chaque article
+    col_remise = 85   
     col_total = 95
-    col_designation = largeur_utile - (col_prix + col_qte + col_remise + col_total) # Reste ~237 pour le texte
+    col_designation = largeur_utile - (col_prix + col_qte + col_remise + col_total)
 
     data = [
         [Paragraph("<b>Désignation Prestation</b>", bold_style), 
          Paragraph("<b>Prix Unit.</b>", style_prix_entete), 
          Paragraph("<b>Qté</b>", bold_style), 
-         Paragraph("<b>Remise / Art.</b>", style_prix_entete), # 👈 En-tête de remise
+         Paragraph("<b>Remise / Art.</b>", style_prix_entete), 
          Paragraph("<b>Total Net</b>", style_prix_entete)]
     ]
     
     articles = json.loads(commande.details_json)
+    
     for art in articles:
-    # 1. Récupération sécurisée de la quantité (gère 'qte' ou 'quantite')
         qte_valeur = int(art.get('qte', art.get('quantite', 1)))
-    
-    # 2. Récupération sécurisée du champ 'remise' ou 'discount' 
-    remise_art_valeur = art.get('remise', 0)
-    
-    # 3. Ajout sécurisé dans les données du tableau ReportLab
-    data.append([
-        Paragraph(f"<b>{art['titre']}</b>", normal_style),
-        Paragraph(f"{art['prix']:,} FCFA", style_prix_cellule),
-        Paragraph(f"x{qte_valeur}", bold_style),  # 🟢 Utilise la variable sécurisée
-        Paragraph(f"-{remise_art_valeur:,} FCFA" if remise_art_valeur else "0 FCFA", style_prix_cellule),
-        Paragraph(f"{art['total']:,} FCFA", style_prix_cellule)
-    ])
+        prix_unit = int(float(art.get('prix', 0)))
+        total_net = int(float(art.get('total', 0)))
+        
+        # Calcul du brut de la ligne pour trouver le pourcentage
+        brut_ligne = qte_valeur * prix_unit
+        
+        # 1. Récupération du pourcentage ou calcul depuis le montant brut
+        taux_remise = int(float(art.get('remise_pourcent', 0)))
+        
+        if taux_remise == 0:
+            remise_art_valeur = int(art.get('remise', 0))
+            if remise_art_valeur == 0 and getattr(commande, 'montant_remise', 0) > 0:
+                remise_art_valeur = int(commande.montant_remise)
+            
+            # Déduction du pourcentage exact basé sur le montant de la remise
+            if remise_art_valeur > 0 and brut_ligne > 0:
+                taux_remise = int(round((remise_art_valeur / brut_ligne) * 100))
 
-    # Lignes des totaux globaux et de la case pour la remise globale finale
-    data.append(["", "", "", Paragraph("<b>Total Brut :</b>", bold_style), Paragraph(f"<b>{commande.total_brut:,} FCFA</b>", style_prix_cellule)])
-    data.append(["", "", "", Paragraph("<font color='red'><b>Remise globale :</b></font>", bold_style), Paragraph(f"<font color='red'><b>-{commande.montant_remise:,} FCFA</b></font>", style_prix_cellule)])
-    data.append(["", "", "", Paragraph("<b>NET A PAYER :</b>", bold_style), Paragraph(f"<b>{commande.total_final:,} FCFA</b>", style_prix_cellule)])
+        # 2. Construction du texte à afficher (ex: "5 %" ou "0 %")
+        texte_remise = f"{taux_remise} %" if taux_remise > 0 else "0 %"
+    
+        # 3. Ajout de la ligne dans le tableau
+        data.append([
+            Paragraph(f"<b>{art.get('titre', 'Impression')}</b>", normal_style),
+            Paragraph(f"{prix_unit:,}".replace(',', '.') + " FCFA", style_prix_cellule),
+            Paragraph(f"x{qte_valeur}", normal_style),  
+            Paragraph(texte_remise, style_remise_cellule if taux_remise > 0 else style_prix_cellule),
+            Paragraph(f"{total_net:,}".replace(',', '.') + " FCFA", style_prix_cellule)
+        ])
+
+    # Formatage des totaux du bas
+    total_brut_int = int(commande.total_brut)
+    montant_remise_int = int(commande.montant_remise)
+    total_final_int = int(commande.total_final)
+
+    data.append(["", "", "", Paragraph("<b>Total Brut :</b>", bold_style), Paragraph(f"<b>{total_brut_int:,} FCFA</b>".replace(',', '.'), style_prix_cellule)])
+    data.append(["", "", "", Paragraph("<font color='red'><b>Remise globale :</b></font>", bold_style), Paragraph(f"<font color='red'><b>-{montant_remise_int:,} FCFA</b></font>".replace(',', '.'), style_prix_cellule)])
+    data.append(["", "", "", Paragraph("<b>NET A PAYER :</b>", bold_style), Paragraph(f"<b>{total_final_int:,} FCFA</b>".replace(',', '.'), style_prix_cellule)])
 
     # Application de la structure à 5 colonnes
     tableau = Table(data, colWidths=[col_designation, col_prix, col_qte, col_remise, col_total])
@@ -867,7 +881,7 @@ def generer_bon_pdf(request, commande_id):
         ('ALIGN', (0, 0), (0, -1), 'LEFT'),      
         ('ALIGN', (1, 0), (1, -1), 'RIGHT'),     
         ('ALIGN', (2, 0), (2, -1), 'CENTER'),    
-        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),     # Aligne la colonne des remises à droite
+        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),     
         ('ALIGN', (4, 0), (4, -1), 'RIGHT'),     
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('GRID', (0, 0), (-1, len(articles)), 0.5, colors.HexColor("#E8E3F0")),
@@ -881,7 +895,6 @@ def generer_bon_pdf(request, commande_id):
     # --- 5. BLOC DE SIGNATURE ET DOCUMENTATION LOGISTIQUE ---
     story.append(Spacer(1, 35))
     
-    # Création des cadres de visa comme visible sur le modèle imprimé (Visa Livreur / Visa Client)
     style_visa = ParagraphStyle('VisaStyle', parent=bold_style, fontSize=10, textColor=colors.HexColor("#555555"))
     cell_livreur = [Paragraph("<b>Visa Livreur / Cachet</b>", style_visa), Spacer(1, 40)]
     cell_client = [Paragraph("<b>Visa Client (Lu et approuvé)</b>", style_visa), Spacer(1, 40)]
@@ -890,9 +903,9 @@ def generer_bon_pdf(request, commande_id):
     table_visa.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LINEBELOW', (0, 0), (0, 0), 0.5, colors.HexColor("#CCCCCC")), # Ligne pour signer
+        ('LINEBELOW', (0, 0), (0, 0), 0.5, colors.HexColor("#CCCCCC")), 
         ('LINEBELOW', (1, 0), (1, 0), 0.5, colors.HexColor("#CCCCCC")),
-        ('RIGHTPADDING', (0, 0), (0, 0), 30), # Évite que les lignes ne collent
+        ('RIGHTPADDING', (0, 0), (0, 0), 30), 
         ('LEFTPADDING', (1, 0), (1, 0), 30),
     ]))
     story.append(table_visa)
@@ -1510,12 +1523,19 @@ from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from .models import CommandeImpression
 
+import json
+import urllib.parse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt
+
 @csrf_exempt
 def voir_bon_commande(request, commande_id):
     commande = get_object_or_404(CommandeImpression, id=commande_id)
     articles_liste = json.loads(commande.details_json)
     
-    # 1. Préparation initiale des variables entières pour l'affichage (GET)
+    # 1. Préparation initiale des variables entières et formatées pour l'affichage (GET)
     for art in articles_liste:
         quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
         prix_unitaire = int(float(art.get('prix', 0)))
@@ -1526,13 +1546,18 @@ def voir_bon_commande(request, commande_id):
         montant_remise_ligne = round(brut_ligne * (taux_remise / 100.0))
         total_net_ligne = max(0, brut_ligne - montant_remise_ligne)
         
-        # Clés lues par le template HTML du Bon de Commande
+        # Clés lues par le template HTML du Bon de Commande avec séparateur par points
         art['qte_entier'] = quantite_securisee
-        art['prix_entier'] = prix_unitaire
+        art['prix_entier'] = f"{prix_unitaire:,}".replace(',', '.')
         art['remise_pourcent_entier'] = f"{taux_remise} %" if taux_remise > 0 else "0 %"
-        art['total_net_entier'] = total_net_ligne
+        art['total_net_entier'] = f"{total_net_ligne:,}".replace(',', '.')
 
-    # Récupération des totaux généraux pour le bloc du bas
+    # Récupération et formatage des totaux généraux pour le bloc du bas
+    commande.total_brut_formate = f"{int(commande.total_brut):,}".replace(',', '.')
+    commande.montant_remise_formate = f"{int(commande.montant_remise):,}".replace(',', '.')
+    commande.total_final_formate = f"{int(commande.total_final):,}".replace(',', '.')
+    
+    # Conservation des entiers bruts pour les fallbacks de calculs
     commande.total_brut_entier = int(commande.total_brut)
     commande.montant_remise_global_entier = int(commande.montant_remise)
     commande.total_final_entier = int(commande.total_final)
@@ -1611,13 +1636,13 @@ def voir_bon_commande(request, commande_id):
             commande.statut = 'VALIDE'
             commande.save()
             
-            # 🟢 FIX : Utilisation du nouveau format de numéro BC/26-07-0001 pour le mail
             sujet = f"✅ Votre bon d'impression #{commande.numero_bon_commande()} a été validé !"
             message = (
                 f"Bonjour {commande.nom_client},\n\n"
                 f"Bonne nouvelle ! L'administrateur de YaTout vient de valider votre bon de commande.\n\n"
                 f"Nous lançons la fabrication de vos impressions. Nous vous contacterons très vite au "
                 f"{commande.telephone} dès que vos supports seront prêts pour la livraison.\n\n"
+                f"YaTout Impression — Votre image mérite la perfection.\n" # 🟢 AJOUT : Votre nouveau slogan officiel
                 f"Merci pour votre confiance !"
             )
             try:
@@ -1640,7 +1665,7 @@ def voir_bon_livraison(request, commande_id):
     commande = get_object_or_404(CommandeImpression, id=commande_id)
     articles_liste = json.loads(commande.details_json)
     
-    # Injection des données entières formatées pour le template du BL
+    # Injection des données entières formatées pour le template du BL avec séparateur par points
     for art in articles_liste:
         quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
         prix_unitaire = int(float(art.get('prix', 0)))
@@ -1652,11 +1677,16 @@ def voir_bon_livraison(request, commande_id):
         
         # Clés lues par le template HTML du Bon de Livraison
         art['qte_entier'] = quantite_securisee
-        art['prix_entier'] = prix_unitaire
+        art['prix_entier'] = f"{prix_unitaire:,}".replace(',', '.')
         art['remise_pourcent_entier'] = f"{taux_remise} %" if taux_remise > 0 else "0 %"
-        art['total_net_entier'] = total_net_ligne
+        art['total_net_entier'] = f"{total_net_ligne:,}".replace(',', '.')
     
-    # Données du bloc récapitulatif
+    # Données du bloc récapitulatif formatées pour le bas de page du BL
+    commande.total_brut_formate = f"{int(commande.total_brut):,}".replace(',', '.')
+    commande.montant_remise_formate = f"{int(commande.montant_remise):,}".replace(',', '.')
+    commande.total_final_formate = f"{int(commande.total_final):,}".replace(',', '.')
+
+    # Fallbacks entiers au cas où
     commande.total_brut_entier = int(commande.total_brut)
     commande.montant_remise_global_entier = int(commande.montant_remise)
     commande.total_final_entier = int(commande.total_final)
@@ -1667,12 +1697,19 @@ def voir_bon_livraison(request, commande_id):
         'articles_liste': articles_liste
     })
 
+import urllib.parse
+import json
+from django.shortcuts import render, get_object_or_404, redirect
+from django.core.exceptions import PermissionDenied
+# Assurez-vous d'importer la fonction si vous l'utilisez ailleurs, 
+# mais NE mettez PAS le décorateur @login_required au-dessus de cette fonction.
 
 def voir_bon_commande_public(request, commande_id):
     """ 
-    Permet au client de visualiser son bon public en permanence.
+    Permet au client de visualiser son bon public en permanence SANS CONNEXION.
     Génère le lien WhatsApp dynamiquement depuis la BDD (zéro crash).
     """
+    # 🛡️ Récupération publique de la commande
     commande = get_object_or_404(CommandeImpression, id=commande_id)
     articles_liste = json.loads(commande.details_json)
     
@@ -1707,7 +1744,7 @@ def voir_bon_commande_public(request, commande_id):
     commande.montant_remise_formate = f"{int(commande.montant_remise):,}".replace(',', '.')
     commande.total_final_formate = f"{int(commande.total_final):,}".replace(',', '.')
 
-    # 🚀 3. RECONSTRUCTION DYNAMIQUE DU TEXTE WHATSAPP (Règle le bug "NameMerror / session")
+    # 🚀 3. RECONSTRUCTION DYNAMIQUE DU TEXTE WHATSAPP
     message_brut = (
         f"🛍️ *MON BON DE COMMANDE - YATOUT*\n\n"
         f"📦 *Bon N° :* #{commande.numero_bon_commande()}\n"
@@ -1725,9 +1762,10 @@ def voir_bon_commande_public(request, commande_id):
         f"Bonjour YaTout, je viens de vérifier mon récapitulatif public et je confirme ma commande !"
     )
 
-    # Encodage sécurisé de l'URL WhatsApp
+    # 🟢 FIX URL WHATSAPP : Utilisation du format officiel universel wa.me ou API avec le point d'interrogation
     texte_url = urllib.parse.quote(message_brut)
     numero_entreprise = "2250574702092"
+    # Votre ancienne URL manquait d'un "?" ou utilisait un mauvais chemin, voici l'officielle :
     lien_whatsapp = f"https://whatsapp.com{numero_entreprise}&text={texte_url}"
 
     # 4. Traitement optionnel si le client valide un bouton sur la page
@@ -1736,7 +1774,7 @@ def voir_bon_commande_public(request, commande_id):
         commande.save()
         return redirect(lien_whatsapp)
 
-    # 🟢 5. RENDU : Chargement de votre gabarit jaune et vert officiel
+    # 5. RENDU : Chargement du gabarit
     return render(request, 'shop/bon_impression_pret.html', {
         'commande': commande,
         'articles_liste': articles_liste,

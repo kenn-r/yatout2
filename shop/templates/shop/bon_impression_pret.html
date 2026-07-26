@@ -3,41 +3,197 @@
 {% block title %}Bon d'Impression Prêt - YaTout{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 600px; margin: 60px auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; text-align: center; font-family: system-ui, sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+<!-- Importation de la police attractive 'Inter' -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Application de la police et design moderne globale */
+    .success-card-wrapper {
+        font-family: 'Inter', sans-serif !important;
+        max-width: 600px; 
+        margin: 60px auto; 
+        padding: 40px 30px; 
+        border-radius: 16px; 
+        background: white; 
+        text-align: center; 
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
     
-    <div style="font-size: 50px; margin-bottom: 15px;">🎉</div>
+    .success-emoji {
+        font-size: 50px; 
+        margin-bottom: 15px;
+    }
+
+    .success-title {
+        color: #0f172a; 
+        margin: 0 0 12px 0; 
+        font-weight: 700;
+        font-size: 24px;
+    }
+
+    /* 🏷️ TEXTE PLUS GROS : Taille augmentée à 17px et meilleure graisse */
+    .success-subtitle {
+        color: #475569; 
+        font-size: 17px; 
+        margin-bottom: 28px; 
+        line-height: 1.6;
+    }
+
+    /* ⚡ ANIMATION DE COULEUR FLUIDE : Alterne entre Bleu et Rouge */
+    @keyframes color-blink {
+        0%, 100% { 
+            background-color: rgba(59, 130, 246, 0.15); /* Fond bleu transparent */
+            color: #2563eb;                             /* Texte bleu électrique */
+            border-color: #3b82f6;
+        }
+        50% { 
+            background-color: rgba(239, 68, 68, 0.15);   /* Fond rouge transparent */
+            color: #dc2626;                             /* Texte rouge vif */
+            border-color: #ef4444;
+        }
+    }
+
+    .success-reference {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-weight: 700;
+        display: inline-block;
+        border: 1px solid transparent;
+        animation: color-blink 1.5s infinite ease-in-out; /* Changement de couleur cyclique toutes les 1.5s */
+    }
+
+    /* Bloc récapitulatif financier et contact */
+    .success-details-box {
+        background: #1e293b; 
+        color: #f1f5f9;
+        padding: 20px; 
+        border-radius: 12px; 
+        margin-bottom: 28px; 
+        text-align: left; 
+        box-shadow: 0 4px 12px rgba(30, 41, 59, 0.1);
+    }
+
+    .success-details-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    }
+
+    .success-details-row.contact-row {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+
+    .success-details-label {
+        color: #94a3b8;
+    }
+
+    .success-details-value {
+        color: #ffffff;
+        font-weight: 500;
+    }
+
+    .success-details-price {
+        color: #f59e0b; 
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    /* Styles des boutons d'action */
+    .btn-action-pdf {
+        display: block; 
+        text-align: center; 
+        background-color: #ffffff; 
+        color: #334155; 
+        border: 1.5px solid #cbd5e1; 
+        padding: 13px; 
+        border-radius: 10px; 
+        text-decoration: none; 
+        font-weight: 600; 
+        font-size: 15px; 
+        margin-bottom: 14px; 
+        transition: all 0.2s ease;
+    }
+
+    .btn-action-pdf:hover {
+        background-color: #f8fafc;
+        border-color: #94a3b8;
+        color: #0f172a;
+    }
+
+    .btn-action-whatsapp {
+        display: block; 
+        text-align: center; 
+        background-color: #22c55e; 
+        color: white; 
+        padding: 15px; 
+        border-radius: 10px; 
+        text-decoration: none; 
+        font-weight: 600; 
+        font-size: 16px; 
+        box-shadow: 0 4px 12px rgba(34,197,94,0.25);
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-action-whatsapp:hover {
+        background-color: #1ed162;
+    }
+
+    .btn-link-return {
+        display: inline-block; 
+        margin-top: 24px; 
+        color: #64748b; 
+        text-decoration: none; 
+        font-size: 14px; 
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .btn-link-return:hover {
+        color: #3b82f6;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="success-card-wrapper">
     
-    <!-- 🟢 Modification : Utilisation du terme universel BC suivi du chiffre -->
-    <h2 style="color: #2e0854; margin: 0 0 10px 0; font-weight: 800;">Votre Bon de Commande est prêt !</h2>
+    <div class="success-emoji">🎉</div>
     
-    <p style="color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.5;">
-        Félicitations <strong>{{ commande.nom_client }}</strong>, votre demande d'impression a été validée sous la référence <strong>{{ commande.numero_bon_commande }}</strong>.
+    <h2 class="success-title">Votre Bon de Commande est prêt !</h2>
+    
+    <!-- 🟢 Le paragraphe entier est plus grand et met mieux en valeur les informations -->
+    <p class="success-subtitle">
+        Félicitations <strong>{{ commande.nom_client }}</strong>, votre demande d'impression a été validée sous la référence <span class="success-reference">{{ commande.numero_bon_commande }}</span>.
     </p>
 
-    <!-- Encadré récapitulatif -->
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: left; font-size: 14px;">
-        <div style="margin-bottom: 6px;"><strong>📍 Contact client :</strong> {{ commande.telephone }}</div>
-        
-        <!-- 🟢 FIX : Sécurisation de l'affichage financier avec le séparateur des milliers -->
-        <div><strong>💵 Montant net à payer :</strong> <span style="color: #15803d; font-weight: bold;">{{ commande.total_final|stringformat:"d" }} FCFA</span></div>
+    <!-- Encadré récapitulatif moderne -->
+    <div class="success-details-box">
+        <div class="success-details-row contact-row">
+            <span class="success-details-label">📍 Contact client :</span>
+            <span class="success-details-value">{{ commande.telephone }}</span>
+        </div>
+        <div class="success-details-row">
+            <span class="success-details-label">💵 Montant net à payer :</span>
+            <span class="success-details-price">{{ commande.total_final|stringformat:"d" }} FCFA</span>
+        </div>
     </div>
 
     <!-- 📄 Bouton : Visualiser / Télécharger le Bon officiel en PDF -->
-    <a href="{% url 'generer_bon_pdf' commande.id %}" 
-       target="_blank" 
-       style="display: block; text-align: center; background-color: #ffffff; color: #4c1d95; border: 2px solid #4c1d95; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s;">
+    <a href="{% url 'generer_bon_pdf' commande.id %}" target="_blank" class="btn-action-pdf">
         📄 Voir mon Bon de Commande (PDF Officiel)
     </a>
 
     <!-- Le bouton de redirection vers l'API WhatsApp -->
-    <a href="{{ lien_whatsapp }}" 
-       target="_blank" 
-       style="display: block; text-align: center; background-color: #22c55e; color: white; padding: 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(34,197,94,0.2);">
+    <a href="{{ lien_whatsapp }}" target="_blank" class="btn-action-whatsapp">
         💬 Envoyer ma commande sur WhatsApp
     </a>
 
-    <a href="{% url 'page_prestations' %}" style="display: inline-block; margin-top: 20px; color: #7c3aed; text-decoration: none; font-size: 14px; font-weight: bold;">
-        ⬅️ Retourner aux prestations
+    <!-- Retour aux prestations -->
+    <a href="{% url 'page_prestations' %}" class="btn-link-return">
+        ← Retourner aux prestations
     </a>
 
 </div>
