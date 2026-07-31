@@ -1,6 +1,8 @@
 /* ==========================================
    1. CONFIGURATION GÉNÉRALE & RESETS
    ========================================== */
+   /* --- TEMPLATE DE FOND GLOBAL --- */
+
 * {
     box-sizing: border-box;
     margin: 0;

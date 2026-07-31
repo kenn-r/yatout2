@@ -1,0 +1,350 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 1000px; margin: 40px auto; padding: 35px; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+    
+    <div style="margin-bottom: 35px;">
+        <a href="{% url 'espace_devis_dashboard' %}" style="color: #7c3aed; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 15px;">
+            ⬅️ Retour au tableau de bord
+        </a>
+        <h2 style="color: #0f172a; font-weight: 800; margin: 0; font-size: 1.8rem;">
+            {% if devis %}✏️ Modifier le Devis #00{{ devis.id }}{% else %}➕ Créer un Nouveau Devis{% endif %}
+        </h2>
+        <p style="color: #64748b; margin: 6px 0 0 0;">Saisissez vos lignes. Les totaux et calculs de remises s'effectuent de manière entièrement automatisée.</p>
+    </div>
+
+    <!-- Le formulaire pointe vers votre logique Django standard -->
+    <form method="POST" id="formulaire-devis" style="display: flex; flex-direction: column; gap: 24px;">
+        {% csrf_token %}
+
+        <!-- Coordonnées Client -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            <div>
+                <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 8px;">Nom complet du client *</label>
+                <input type="text" name="nom_client" placeholder="Ex: Jean-Eudes Kouassi" value="{{ devis.nom_client|default:'' }}" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+            </div>
+            <div>
+                <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 8px;">Numéro portable / WhatsApp *</label>
+                <input type="tel" name="telephone" placeholder="Ex: 0574702092" value="{{ devis.telephone|default:'' }}" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+            </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 8px;">Adresse Email (Optionnel)</label>
+            <input type="email" name="email" placeholder="Ex: client@gmail.com" value="{{ devis.email|default:'' }}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+        </div>
+
+        <!-- 🪄 ASSISTANT CATALOGUE RAPIDE -->
+        <div style="background: rgba(124, 58, 237, 0.04); padding: 15px; border-radius: 12px; border: 1px dashed #7c3aed;">
+            <label style="display: block; font-weight: 700; color: #7c3aed; margin-bottom: 8px; font-size: 0.9rem;">Ajout rapide depuis le catalogue de prix :</label>
+            <select id="assistant-catalogue" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: white;">
+                <option value="">-- Sélectionnez un support pour l'insérer automatiquement au tableau --</option>
+                {% for prest in liste_prestations %}
+                    <option value="{% firstof prest.titre prest.nom prest.libelle %}" data-prix="{{ prest.prix|default:0 }}">
+                        🖨️ {% firstof prest.titre prest.nom prest.libelle %} ({% if prest.prix %}{{ prest.prix }} F{% else %}Sur mesure{% endif %})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- 📊 TABLEAU DE Saisie EN DIRECT (AUTOMATISÉ)                           -->
+        <!-- ===================================================================== -->
+        <div>
+            <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 12px;">Éléments de la facture commerciale :</label>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; min-width: 750px;" id="tableau-lignes-devis">
+                    <thead>
+                        <tr style="background: #0f172a; color: white; text-align: left; font-size: 0.85rem;">
+                            <th style="padding: 10px; border-radius: 6px 0 0 0; width: 150px;">RÉFÉRENCE</th>
+                            <th style="padding: 10px;">DÉSIGNATION PRESTATION *</th>
+                            <th style="padding: 10px; width: 90px; text-align: center;">QTÉ *</th>
+                            <th style="padding: 10px; width: 120px; text-align: right;">PRIX UNIT. (F) *</th>
+                            <th style="padding: 10px; width: 90px; text-align: center;">REM (%)</th>
+                            <th style="padding: 10px; width: 130px; text-align: right;">MONTANT (F)</th>
+                            <th style="padding: 10px; border-radius: 0 6px 0 0; width: 50px; text-align: center;">✕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corps-tableau">
+                        <!-- Les lignes injectées en JS apparaîtront ici -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <button type="button" onclick="ajouterNouvelleLigneVide()" style="background: #0f172a; color: white; border: none; padding: 8px 16px; font-size: 0.85rem; border-radius: 6px; margin-top: 12px; cursor: pointer; font-weight: 600;">
+                ➕ Ajouter une ligne personnalisée
+            </button>
+        </div>
+
+        <!-- Champ caché technique qui va compiler toutes les données pour Django -->
+        <input type="hidden" id="description_prestation_hidden" name="description_prestation">
+
+        <!-- ZONE DES TOTALISATION ET OPTIONS CORRECTEMENT STRUCTURÉE -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; align-items: flex-end; margin-top: 15px;">
+    
+    <!-- 1. Bloc Statut du dossier (Maintenant bien fermé) -->
+    <div>
+        <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 8px;">Statut du dossier</label>
+        <select name="statut" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: white;">
+            <option value="brouillon" {% if devis.statut == 'brouillon' %}selected{% endif %}>📄 Brouillon</option>
+            <option value="envoye" {% if devis.statut == 'envoye' %}selected{% endif %}>📩 Envoyé au client</option>
+            <option value="valide" {% if devis.statut == 'valide' %}selected{% endif %}>✅ Validé par le client</option>
+            <option value="rejete" {% if devis.statut == 'rejete' %}selected{% endif %}>❌ Rejeté</option>
+        </select>
+    </div>
+    
+   <!-- Bloc Mode de livraison corrigé -->
+<div>
+    <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 8px;">📦 Mode de livraison</label>
+    <select name="livre_par" id="select-livraison" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.9rem; background: #ffffff;">
+        <option value="Nous-mêmes" {% if devis.livre_par == "Nous-mêmes" or not devis.livre_par %}selected{% endif %}>Nous-mêmes</option>
+        <option value="Livreur compagnie" {% if devis.livre_par == "Livreur compagnie" %}selected{% endif %}>Livreur compagnie</option>
+        
+        <!-- Cette option contiendra par défaut la valeur enregistrée ou le nom du client -->
+        <option value="{{ devis.livre_par|default:'' }}" id="option-client" {% if devis.livre_par and devis.livre_par != "Nous-mêmes" and devis.livre_par != "Livreur compagnie" %}selected{% endif %}>
+            {% if devis.livre_par and devis.livre_par != "Nous-mêmes" and devis.livre_par != "Livreur compagnie" %}{{ devis.livre_par }}{% else %}Nom du client{% endif %}
+        </option>
+    </select>
+</div>
+    
+    <!-- 3. Affichage du montant calculé -->
+    <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: right;">
+        <span style="font-size: 0.85rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">MONTANT TOTAL CALCULÉ</span>
+        <span style="font-size: 1.6rem; font-weight: 800; color: #7c3aed;" id="label-total-calculer">{{ devis.montant_total|default:"0" }}</span> <span style="font-weight: 800; color: #7c3aed;">FCFA</span>
+        <input type="hidden" id="form-montant" name="montant_total" value="{{ devis.montant_total|default:0 }}">
+    </div>
+
+</div> <!-- Fin de la grille -->
+
+        <div style="text-align: right; margin-top: 20px;">
+            <button type="submit" style="min-width: 250px; padding: 14px 28px; background: #7c3aed; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer;">
+                💾 Enregistrer et Générer le Devis
+            </button>
+        </div>
+    </form>
+</div>
+<!-- ===================================================================== -->
+<!-- 🧠 SCRIPT INTÉGRET CORRIGÉ POUR LE CALCUL ET L'AFFICHAGE DU M²        -->
+<!-- ===================================================================== -->
+<script>
+    const corpsTableau = document.getElementById('corps-tableau');
+    const labelTotal = document.getElementById('label-total-calculer');
+    const inputTotalHidden = document.getElementById('form-montant');
+    const selectAssistant = document.getElementById('assistant-catalogue');
+    const hiddenDesc = document.getElementById('description_prestation_hidden');
+    const formulaire = document.getElementById('formulaire-devis');
+
+    // Récupération sécurisée de l'ancien contenu (safe évite les bugs d'affichage de caractères)
+    const ancienContenu = `{% if devis %}{{ devis.description_prestation|safe }}{% endif %}`;
+
+    // ➕ FONCTION POUR INJECTER UNE LIGNE DANS LA GRILLE
+    function ajouterNouvelleLigneVide(ref="", des="", qte=1, pxu=0, rem=0, largeur=1, hauteur=1) {
+        const idUnique = 'ligne-' + Date.now() + Math.floor(Math.random() * 100);
+        if(!ref) ref = "YAT-" + Math.floor(100 + Math.random() * 900);
+
+        // Détection stricte si la désignation implique un calcul au m²
+        let estMetreCarre = false;
+        const nomMinuscule = des.toLowerCase();
+        if (nomMinuscule.includes('bâche') || nomMinuscule.includes('bache') || nomMinuscule.includes('rollup') || nomMinuscule.includes('roll up') || nomMinuscule.includes('roll-up') || nomMinuscule.includes('affiche')) {
+            estMetreCarre = true;
+        }
+
+        const tr = document.createElement('tr');
+        tr.id = idUnique;
+        tr.style.borderBottom = "1px solid #e2e8f0";
+
+        // Structure HTML des cellules
+        tr.innerHTML = `
+            <td style="padding: 10px;"><input type="text" class="cell-ref" value="${ref}" style="padding: 6px !important; font-size:0.85rem !important;"></td>
+            <td style="padding: 10px;">
+                <input type="text" class="cell-des" value="${des}" placeholder="Ex: Impression de Flyers" required style="padding: 6px !important; font-size:0.85rem !important; margin-bottom: ${estMetreCarre ? '6px' : '0'};">
+                <div class="zone-dimensions" style="display: ${estMetreCarre ? 'flex' : 'none'}; align-items: center; gap: 5px; font-size: 0.75rem; color: #64748b; margin-top: 4px;">
+                    📐 Dim : 
+                    <input type="number" class="cell-largeur" value="${largeur}" step="0.1" min="0.1" style="width: 55px !important; padding: 2px 4px !important; text-align: center; background: rgba(255,255,255,0.9) !important; color:#000 !important;" title="Largeur en mètres"> m x 
+                    <input type="number" class="cell-hauteur" value="${hauteur}" step="0.1" min="0.1" style="width: 55px !important; padding: 2px 4px !important; text-align: center; background: rgba(255,255,255,0.9) !important; color:#000 !important;" title="Hauteur en mètres"> m
+                    <span class="label-m2" style="font-weight: 700; color: #7c3aed; margin-left: 5px;">(${(largeur * hauteur).toFixed(2)} m²)</span>
+                </div>
+            </td>
+            <td style="padding: 10px;"><input type="number" class="cell-qte" value="${qte}" min="1" required style="padding: 6px !important; text-align:center !important; font-size:0.85rem !important;"></td>
+            <td style="padding: 10px;">
+                <input type="number" class="cell-pxu" value="${pxu}" min="0" required style="padding: 6px !important; text-align:right !important; font-size:0.85rem !important;">
+                <small class="label-type-prix" style="display: block; text-align: right; color: #64748b; font-size: 0.7rem; margin-top: 2px;">${estMetreCarre ? 'par m²' : 'l\'unité'}</small>
+            </td>
+            <td style="padding: 10px;"><input type="number" class="cell-rem" value="${rem}" min="0" max="100" style="padding: 6px !important; text-align:center !important; font-size:0.85rem !important;"></td>
+            <td style="padding: 10px; text-align: right; font-weight: 700; color:#0f172a; font-size:0.9rem;" class="cell-total-ligne">0 F</td>
+            <td style="padding: 10px; text-align: center;"><button type="button" onclick="supprimerLigne('${idUnique}')" style="background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer; font-size:1.1rem;">✕</button></td>
+        `;
+
+        corpsTableau.appendChild(tr);
+
+        // Déclencheur interactif pour la saisie manuelle
+        tr.querySelector('.cell-des').addEventListener('input', function() {
+            const nom = this.value.toLowerCase();
+            const zone = tr.querySelector('.zone-dimensions');
+            const lbl = tr.querySelector('.label-type-prix');
+            if (nom.includes('bâche') || nom.includes('bache') || nom.includes('rollup') || nom.includes('roll up') || nom.includes('roll-up') || nom.includes('affiche')) {
+                zone.style.display = 'flex';
+                lbl.textContent = 'par m²';
+            } else {
+                zone.style.display = 'none';
+                lbl.textContent = 'l\'unité';
+                tr.querySelector('.cell-largeur').value = 1;
+                tr.querySelector('.cell-hauteur').value = 1;
+            }
+            calculerTotauxTableau();
+        });
+
+        // Liaison des écouteurs de calcul automatique
+        tr.querySelector('.cell-qte').addEventListener('input', calculerTotauxTableau);
+        tr.querySelector('.cell-pxu').addEventListener('input', calculerTotauxTableau);
+        tr.querySelector('.cell-rem').addEventListener('input', calculerTotauxTableau);
+        tr.querySelector('.cell-largeur').addEventListener('input', calculerTotauxTableau);
+        tr.querySelector('.cell-hauteur').addEventListener('input', calculerTotauxTableau);
+
+        calculerTotauxTableau();
+    }
+
+    // ✕ SUPPRESSION D'UNE LIGNE
+    function supprimerLigne(id) {
+        document.getElementById(id).remove();
+        calculerTotauxTableau();
+    }
+
+    // ⚡ CALCUL DU TOTAL GÉNÉRAL ET DES MULTIPLICATIONS AU M²
+    function calculerTotauxTableau() {
+        let totalGeneral = 0;
+        const lignes = corpsTableau.querySelectorAll('tr');
+
+        lignes.forEach(tr => {
+            const qte = parseFloat(tr.querySelector('.cell-qte').value) || 0;
+            const pxu = parseFloat(tr.querySelector('.cell-pxu').value) || 0;
+            const rem = parseFloat(tr.querySelector('.cell-rem').value) || 0;
+            const larg = parseFloat(tr.querySelector('.cell-largeur').value) || 1;
+            const haut = parseFloat(tr.querySelector('.cell-hauteur').value) || 1;
+
+            const surfaceM2 = larg * haut;
+            const labelM2 = tr.querySelector('.label-m2');
+            if (labelM2) {
+                labelM2.textContent = `(${surfaceM2.toFixed(2)} m²)`;
+            }
+
+            let montantLigne = qte * surfaceM2 * pxu;
+            if (rem > 0) {
+                montantLigne = montantLigne * (1 - (rem / 100));
+            }
+
+            tr.querySelector('.cell-total-ligne').textContent = Math.round(montantLigne).toLocaleString('fr-FR') + " F";
+            totalGeneral += montantLigne;
+        });
+
+        labelTotal.textContent = Math.round(totalGeneral).toLocaleString('fr-FR');
+        inputTotalHidden.value = Math.round(totalGeneral);
+    }
+
+    // Assistant catalogue
+    selectAssistant.addEventListener('change', function() {
+        if(this.value === "") return;
+        const option = this.options[this.selectedIndex];
+        const nomSupport = option.value;
+        const prixSupport = option.getAttribute('data-prix');
+
+        ajouterNouvelleLigneVide("", nomSupport, 1, prixSupport, 0, 1.0, 1.0);
+        this.value = ""; 
+    });
+
+    // Compilation textuelle propre pour le backend lors du submit
+    formulaire.addEventListener('submit', function(e) {
+        let chaineCompilation = [];
+        const lignes = corpsTableau.querySelectorAll('tr');
+
+        lignes.forEach((tr) => {
+            const ref = tr.querySelector('.cell-ref').value.replace(/\|/g, "-") || "YAT";
+            const des = tr.querySelector('.cell-des').value.replace(/\|/g, "-") || "Prestation";
+            const qte = tr.querySelector('.cell-qte').value || "1";
+            const pxu = tr.querySelector('.cell-pxu').value || "0";
+            const rem = tr.querySelector('.cell-rem').value || "0";
+            const larg = tr.querySelector('.cell-largeur').value || "1";
+            const haut = tr.querySelector('.cell-hauteur').value || "1";
+
+            chaineCompilation.push(`${ref}|${des}|${qte}|${pxu}|${rem}|${larg}|${haut}`);
+        });
+
+        hiddenDesc.value = chaineCompilation.join("\n");
+    });
+
+    // 🔥 LE NOUVEAU BLOC : Rechargement automatique des lignes en mode édition
+    document.addEventListener("DOMContentLoaded", function() {
+        if (ancienContenu && ancienContenu.trim() !== "") {
+            const lignesInitiales = ancienContenu.split('\n');
+            
+            lignesInitiales.forEach(ligne => {
+                const ligneNettoyee = ligne.trim();
+                if (ligneNettoyee === "") return;
+                
+                const col = ligneNettoyee.split('|');
+                
+                if (col.length >= 4) {
+                    const ref = col[0];
+                    const des = col[1];
+                    const qte = parseInt(col[2]) || 1;
+                    const pxu = parseFloat(col[3]) || 0;
+                    const rem = parseFloat(col[4]) || 0;
+                    const largeur = col[5] ? parseFloat(col[5]) : 1;
+                    const hauteur = col[6] ? parseFloat(col[6]) : 1;
+                    
+                    // Recrée la ligne à l'écran
+                    ajouterNouvelleLigneVide(ref, des, qte, pxu, rem, largeur, hauteur);
+                }
+            });
+            calculerTotauxTableau();
+        }
+        // Écouteur pour mettre à jour le mode de livraison avec le nom du client en direct
+const inputNomClient = document.querySelector('input[name="nom_client"]');
+const selectLivraison = document.getElementById('select-livraison');
+const optionClient = selectLivraison.querySelector('.option-nom-client');
+
+if (inputNomClient && optionClient) {
+    inputNomClient.addEventListener('input', function() {
+        const nomSaisi = this.value.trim();
+        
+        if (nomSaisi !== "") {
+            // Met à jour le texte visible ET la valeur soumise au serveur
+            optionClient.textContent = nomSaisi;
+            optionClient.value = nomSaisi;
+        } else {
+            optionClient.textContent = "Nom du client";
+            optionClient.value = "";
+        }
+    });
+}
+// Script de synchronisation du nom du client
+(function() {
+    // On cible précisément l'input du nom du client grâce à son attribut name
+    const inputClient = document.querySelector('input[name="nom_client"]');
+    const optionClient = document.getElementById('option-client');
+
+    if (inputClient && optionClient) {
+        // Fonction locale pour mettre à jour l'affichage et la valeur soumise
+        function rafraichirNomLivraison() {
+            const valeurSaisie = inputClient.value.trim();
+            if (valeurSaisie !== "") {
+                optionClient.textContent = valeurSaisie;
+                // Important : on change la valeur de l'attribut value envoyé au serveur Django
+                optionClient.value = valeurSaisie; 
+            } else {
+                optionClient.textContent = "Nom du client";
+                optionClient.value = "";
+            }
+        }
+
+        // Action 1 : On synchronise en direct dès que l'utilisateur tape au clavier
+        inputClient.addEventListener('input', rafraichirNomLivraison);
+
+        // Action 2 : On synchronise immédiatement au chargement de la page (si modification)
+        rafraichirNomLivraison();
+    }
+})();
+    });
+</script>
+{% endblock %}

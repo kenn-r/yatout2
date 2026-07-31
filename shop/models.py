@@ -176,12 +176,15 @@ class Prestation(models.Model):
                 remise_pourcentage = self.remise_custom
 
         except Exception:
+            # 🎯 CORRECTION : Utilise le prix de base par défaut du modèle au lieu de 0
+            prix_base = getattr(self, 'prix_unitaire', 0)
+            brut_secours = prix_base * quantite
             return {
-                "prix_brut": 0,
+                "prix_brut": brut_secours,
                 "remise_appliquee_pourcent": 0,
                 "montant_remise": 0,
-                "prix_final": 0,
-                "erreur": "Tarif non trouvé."
+                "prix_final": brut_secours,
+                "erreur": "Tarif spécifique non trouvé, application du tarif de base."
             }
 
         montant_remise = int(prix_brut * (remise_pourcentage / 100.0))
@@ -340,3 +343,40 @@ class Realisation(models.Model):
     
 
 
+from django.db import models
+from django.contrib.auth.models import User
+
+class Devis(models.Model):
+    STATUT_CHOICES = [
+        ('brouillon', 'Brouillon'),
+        ('envoye', 'Envoyé au client'),
+        ('valide', 'Validé par le client'),
+        ('rejete', 'Rejeté'),
+        ('converti_bl', 'Converti en BL'),
+    ]
+
+    # Informations Client
+    nom_client = models.CharField(max_length=150, verbose_name="Nom complet du client")
+    telephone = models.CharField(max_length=20, verbose_name="Numéro de téléphone / WhatsApp")
+    email = models.EmailField(blank=True, null=True, verbose_name="Email (optionnel)")
+    
+    # Détails du Devis
+    description_prestation = models.TextField(verbose_name="Détails des prestations demandées")
+    montant_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Montant Total (FCFA)")
+    
+    # Suivi & Droits
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='brouillon')
+    cree_par = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={'is_staff': True})
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+
+    # Référence vers le Bon de Livraison une fois converti
+    numero_bl = models.CharField(max_length=50, blank=True, null=True, verbose_name="Numéro de BL associé")
+    numero_devis_personnalise = models.CharField(max_length=20, unique=True, blank=True, null=True)
+
+    def __str__(self):
+        return f"Devis #{self.id} - {self.nom_client} ({self.get_statut_display()})"
+
+    class Meta:
+        verbose_name = "Devis"
+        ordering = ['-date_creation']

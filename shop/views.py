@@ -12,7 +12,7 @@ from .models import Produit, Vendeur, Commande
 from .forms import InscriptionVendeurForm, ProduitForm
 from .models import Commande, LigneCommande
 from .cart import Cart
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.timezone import now
@@ -1929,3 +1929,556 @@ def verifier_code_admin(request):
             return JsonResponse({'autorise': False, 'error': str(e)}, status=500)
             
     return JsonResponse({'autorise': False}, status=403)
+
+
+from django.contrib.auth.decorators import user_passes_test
+from .models import Devis
+from django.contrib import messages
+
+# Sécurité : Seul le staff / superutilisateur a le droit d'entrer ici
+def est_administrateur(user):
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+@user_passes_test(est_administrateur, login_url='connexion')
+def espace_devis_dashboard(request):
+    """Affiche la liste complète de tous les devis"""
+    devis_list = Devis.objects.all()
+    return render(request, 'shop/admin_devis_dashboard.html', {
+        'devis_list': devis_list, 
+        'prestation': True
+    })
+
+
+
+
+import io
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import FileResponse
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib import messages
+from reportlab.pdfgen import canvas
+from .models import Devis, Prestation  # Ajustez 'Prestation' selon votre modèle réel
+
+# =====================================================================
+# 🔐 SÉCURITÉ ACCÈS ADMINISTRATEUR
+# =====================================================================
+def est_administrateur(user):
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+# =====================================================================
+# 📊 TABLEAU DE BORD DES DEVIS
+# =====================================================================
+@user_passes_test(est_administrateur, login_url='connexion')
+def espace_devis_dashboard(request):
+    """Affiche la liste complète de tous les devis"""
+    devis_list = Devis.objects.all()
+    return render(request, 'shop/admin_devis_dashboard.html', {
+        'devis_list': devis_list, 
+        'prestation': True
+    })
+
+
+# =====================================================================
+# 🪄 CRÉATION / MODIFICATION DE DEVIS
+# =====================================================================
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from decimal import Decimal
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from decimal import Decimal
+
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from decimal import Decimal
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
+from decimal import Decimal
+
+@user_passes_test(est_administrateur, login_url='connexion')
+def creer_ou_modifier_devis(request, devis_id=None):
+    """Formulaire unique pour créer un nouveau devis ou modifier un devis existant"""
+    devis = get_object_or_404(Devis, id=devis_id) if devis_id else None
+    toutes_les_prestations = Prestation.objects.all()
+
+    if request.method == "POST":
+        nom = request.POST.get('nom_client')
+        tel = request.POST.get('telephone')
+        email = request.POST.get('email')
+        desc = request.POST.get('description_prestation')
+        statut = request.POST.get('statut', 'brouillon')
+        
+        # 📦 RÉCUPÉRATION STRICTE DU MODE DE LIVRAISON SÉLECTIONNÉ
+        livre_par = request.POST.get('livre_par', 'Nous-mêmes')
+        
+        # Récupération de la valeur brute du montant total
+        montant_brut = request.POST.get('form-montant') or request.POST.get('montant_total') or '0'
+        
+        # Nettoyage complet et sécurisé de la chaîne de caractères du prix
+        montant_propre = str(montant_brut).replace('\xa0', '').replace(' ', '').replace(',', '.')
+        if 'F' in montant_propre:
+            montant_propre = montant_propre.split('F')[0].strip()
+            
+        try:
+            montant_decimal = Decimal(montant_propre)
+        except Exception:
+            montant_decimal = Decimal('0.00')
+
+        if devis:
+            devis.nom_client = nom
+            devis.telephone = tel
+            devis.email = email
+            devis.description_prestation = desc
+            devis.montant_total = montant_decimal  
+            devis.statut = statut
+            devis.livre_par = livre_par  # Enregistrement en base de données pour la modification
+            devis.save()
+            messages.success(request, f"Le devis #{devis.id} a été modifié avec succès.")
+        else:
+            devis = Devis.objects.create(
+                nom_client=nom, 
+                telephone=tel, 
+                email=email,
+                description_prestation=desc, 
+                montant_total=montant_decimal,  
+                statut=statut,
+                livre_par=livre_par,  # Enregistrement en base de données pour la création
+                cree_par=request.user
+            )
+            messages.success(request, f"Nouveau devis #{devis.id} créé.")
+        
+        return redirect('espace_devis_dashboard')
+
+    return render(request, 'shop/admin_form_devis.html', {
+        'devis': devis, 
+        'prestation': True,
+        'liste_prestations': toutes_les_prestations
+    })
+
+# =====================================================================
+# 🚚 CONVERSION SÉCURISÉE EN BON DE LIVRAISON (BL)
+# =====================================================================
+@user_passes_test(est_administrateur, login_url='connexion')
+def convertir_en_bl(request, devis_id):
+    """Bascule le statut du devis et génère un numéro de Bon de Livraison"""
+    devis = get_object_or_404(Devis, id=devis_id)
+    
+    if devis.statut == 'valide':
+        devis.statut = 'converti_bl'
+        devis.numero_bl = f"BL-{devis.id}-2026"
+        devis.save()
+        messages.success(request, f"Succès ! Le devis #{devis.id} a été converti en Bon de Livraison ({devis.numero_bl}).")
+    else:
+        messages.error(request, "Impossible de générer le BL : Le devis doit d'abord être validé par le client.")
+        
+    return redirect('espace_devis_dashboard')
+
+import io
+from django.shortcuts import get_object_or_404
+from django.http import FileResponse
+from django.contrib.auth.decorators import user_passes_test
+from reportlab.pdfgen import canvas
+
+@user_passes_test(est_administrateur, login_url='connexion')
+def telecharger_devis_pdf(request, devis_id):
+    """Génère un PDF officiel avec toutes les informations triées sur le bloc de droite"""
+    devis = get_object_or_404(Devis, id=devis_id)
+
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=(595, 842)) # Format de page standard A4
+    
+    # --- EN-TÊTE DE L'ENTREPRISE (YaTout imprim) ---
+    p.setFont("Helvetica-Bold", 22)
+    p.setFillColorRGB(0.43, 0.16, 0.92) # Violet signature
+    p.drawString(50, 760, "YaTout imprim")
+    
+    p.setFont("Helvetica", 10)
+    p.setFillColorRGB(0.3, 0.3, 0.3)
+    p.drawString(50, 740, "Atelier d'Impression Numérique & Publicitaire")
+    p.drawString(50, 725, "Contact : +225 05 74 70 20 92 | Abidjan, Côte d'Ivoire")
+    
+    # --- DETAILS DU BLOC COMPTABLE ALIGNÉS À DROITE ---
+    X_ALIGNE_DROITE = 545 # Limite droite du tableau
+    
+    # Titre principal
+    p.setFont("Helvetica-Bold", 14)
+    p.setFillColorRGB(0, 0, 0)
+    p.drawRightString(X_ALIGNE_DROITE, 760, "DEVIS")
+    
+    p.setFont("Helvetica", 11)
+    # De: Nom du client
+    p.drawRightString(X_ALIGNE_DROITE, 742, f"De: {devis.nom_client}")
+    
+    # Récupération ou calcul à la volée du numéro séquentiel (ex: 26/Dv07-001)
+    if hasattr(devis, 'numero_devis_personnalise') and devis.numero_devis_personnalise:
+        num_affiche = devis.numero_devis_personnalise
+    else:
+        # Solution de secours si la base n'est pas encore migrée : utilise l'ID réel pour incrémenter (001, 002, etc.)
+        annee = devis.date_creation.strftime('%y')
+        mois = devis.date_creation.strftime('%m')
+        num_affiche = f"{annee}/Dv{mois}-{devis.id:03d}"
+        
+    p.drawRightString(X_ALIGNE_DROITE, 725, f"n° : {num_affiche}")
+    
+    # Date d'émission
+    p.drawRightString(X_ALIGNE_DROITE, 708, f"Date: {devis.date_creation.strftime('%d/%m/%Y')}")
+    
+    # Heure d'émission
+    p.drawRightString(X_ALIGNE_DROITE, 691, f"Heure: {devis.date_creation.strftime('%H:%M')}")
+
+    # Téléphone du client aligné à droite sous l'heure
+    p.drawRightString(X_ALIGNE_DROITE, 674, f"Téléphone : {devis.telephone}")
+
+    # Ligne horizontale de démarcation supérieure abaissée pour inclure le téléphone
+    p.setStrokeColorRGB(0.85, 0.85, 0.85)
+    p.setLineWidth(1)
+    p.line(50, 655, X_ALIGNE_DROITE, 655)
+
+    # =====================================================================
+    # STRUCTURATION CALIBRÉE DU TABLEAU DE FACTURATION (y=540)
+    # =====================================================================
+    y = 540
+    hauteur_ligne = 25
+    
+    # Tracé du rectangle gris d'en-tête de tableau
+    p.setFillColorRGB(0.95, 0.95, 0.96)
+    p.rect(50, y, 495, hauteur_ligne, fill=True, stroke=False)
+    
+    # Titres des colonnes
+    p.setFont("Helvetica-Bold", 9)
+    p.setFillColorRGB(0, 0, 0)
+    p.drawString(55, y + 8, "REFERENCE")
+    p.drawString(135, y + 8, "DESIGNATION")
+    p.drawCentredString(340, y + 8, "QUANTITÉ")
+    p.drawRightString(425, y + 8, "PRIX UNIT.")
+    p.drawCentredString(470, y + 8, "REM %")
+    p.drawRightString(X_ALIGNE_DROITE, y + 8, "MONTANT")
+    
+    # Soulignement de l'en-tête du tableau
+    p.setStrokeColorRGB(0.2, 0.2, 0.2)
+    p.line(50, y, X_ALIGNE_DROITE, y)
+    
+    # Configuration police des lignes de données
+    p.setFont("Helvetica", 9)
+    p.setStrokeColorRGB(0.85, 0.85, 0.85)
+    
+    lignes_prestation = devis.description_prestation.split('\n')
+    
+    # Traitement ligne par ligne
+    for idx, ligne in enumerate(lignes_prestation):
+        if not ligne.strip():
+            continue
+            
+        y -= hauteur_ligne
+        elements = [e.strip() for e in ligne.split('|')]
+        
+        ref = elements[0] if len(elements) > 0 and elements[0] else f"YAT-{100+idx}"
+        des = elements[1] if len(elements) > 1 and elements[1] else "Prestation"
+        qte_val = int(elements[2]) if len(elements) > 2 and elements[2].isdigit() else 1
+        pxu_val = float(elements[3]) if len(elements) > 3 and elements[3].replace('.', '', 1).isdigit() else 0.0
+        rem_val = float(elements[4]) if len(elements) > 4 and elements[4].replace('.', '', 1).isdigit() else 0.0
+        
+        larg_val = float(elements[5]) if len(elements) > 5 and elements[5].replace('.', '', 1).isdigit() else 1.0
+        haut_val = float(elements[6]) if len(elements) > 6 and elements[6].replace('.', '', 1).isdigit() else 1.0
+        
+        surface_m2 = larg_val * haut_val
+
+        # Formatage de la désignation pour placer la surface à la fin
+        nom_minuscule = des.lower()
+        mots_cles = ['bâche', 'bache', 'rollup', 'roll up', 'roll-up', 'affiche']
+        
+        if any(mot in nom_minuscule for mot in mots_cles):
+            des = des.replace("[", "").replace("]", "").replace("(", "").replace(")", "").strip()
+            des = des.replace(f"{int(surface_m2)}m2", "").replace(f"{int(surface_m2)}m²", "").strip()
+            des = des.replace(f"{surface_m2:.2f}m2", "").replace(f"{surface_m2:.2f}m²", "").strip()
+            des = " ".join(des.split())
+
+            if des.lower().startswith("bâche") or des.lower().startswith("bache"):
+                des = "Bâche" + des[5:]
+            elif des.lower().startswith("affiche"):
+                des = "Affiche" + des[7:]
+
+            suffixe_m2 = f"{int(surface_m2)}m²" if surface_m2.is_integer() else f"{surface_m2:.2f}m²"
+            des = f"{des} ({suffixe_m2})"
+
+        montant_brut = qte_val * surface_m2 * pxu_val
+        if rem_val > 0:
+            montant_brut = montant_brut * (1 - (rem_val / 100))
+        
+        qte_text = str(qte_val)
+        pxu_text = f"{int(pxu_val):,}".replace(",", " ")
+        rem_text = f"{int(rem_val)}%" if rem_val > 0 else "0%"
+        tot_text = f"{int(montant_brut):,}".replace(",", " ")
+
+        p.drawString(55, y + 7, ref)
+        p.drawString(135, y + 7, des[:45]) 
+        p.drawCentredString(340, y + 7, qte_text)
+        p.drawRightString(425, y + 7, pxu_text)
+        p.drawCentredString(470, y + 7, rem_text)
+        p.drawRightString(X_ALIGNE_DROITE, y + 7, tot_text)
+        
+        p.line(50, y, X_ALIGNE_DROITE, y)
+
+    # =====================================================================
+    # CADRAGE FINANCIER DU BAS DE PAGE
+    # =====================================================================
+    y_total = y - 45
+    p.setStrokeColorRGB(0.7, 0.7, 0.7)
+    p.rect(345, y_total - 20, 200, 40, fill=False, stroke=True)
+    p.line(345, y_total, X_ALIGNE_DROITE, y_total)
+    
+    p.setFont("Helvetica", 10)
+    p.setFillColorRGB(0.1, 0.1, 0.1)
+    p.drawString(355, y_total + 5, "Sous-total")
+    prix_formate = f"{int(devis.montant_total):,}".replace(",", " ")
+    p.drawRightString(535, y_total + 5, f"{prix_formate} FCFA")
+    
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(355, y_total - 14, "Total Général")
+    p.setFillColorRGB(0.43, 0.16, 0.92) 
+    p.drawRightString(535, y_total - 14, f"{prix_formate} FCFA")
+
+    # --- PIED DE PAGE ---
+    p.setFont("Helvetica-Oblique", 9)
+    p.setFillColorRGB(0.5, 0.5, 0.5)
+    p.drawCentredString(297, 50, "Ce devis est valable pour une durée de 30 jours à compter de sa date d'émission.")
+    p.setFont("Helvetica-BoldOblique", 9)
+    p.setFillColorRGB(0.43, 0.16, 0.92)
+    p.drawCentredString(297, 35, "YaTout imprim - L'excellence graphique à votre service. ✨")
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    
+    nom_fichier = f"Devis_{num_affiche.replace('/', '_')}.pdf"
+    return FileResponse(buffer, as_attachment=True, filename=nom_fichier)
+
+
+import io
+from django.shortcuts import get_object_or_404
+from django.http import FileResponse
+from django.contrib.auth.decorators import user_passes_test
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from datetime import timedelta
+
+
+@user_passes_test(est_administrateur, login_url='connexion')
+def telecharger_bl_pdf(request, devis_id):
+    """Génère un Bon de Livraison au design épuré avec alignements recalibrés"""
+    devis = get_object_or_404(Devis, id=devis_id)
+
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=(595, 842)) # Format A4 standard
+    
+    X_GAUCHE = 40
+    X_DROITE = 555
+    LARGEUR_UTILE = X_DROITE - X_GAUCHE # 515 points
+
+    # --- 1. EN-TÊTE ENTRÈPRISE ---
+    p.setFont("Helvetica-Bold", 14)
+    p.setFillColor(colors.HexColor("#1e293b")) 
+    p.drawString(X_GAUCHE, 780, "YaTout imprim")
+    
+    p.setFont("Helvetica", 9)
+    p.setFillColor(colors.HexColor("#475569"))
+    p.drawString(X_GAUCHE, 766, "Abidjan, Côte d'Ivoire")
+    p.drawString(X_GAUCHE, 754, "Téléphone : +225 05 74 70 20 92")
+    p.drawString(X_GAUCHE, 742, "Email : contact@yatout.ci")
+    
+    p.setFont("Helvetica-Oblique", 9)
+    p.setFillColor(colors.HexColor("#64748b"))
+    p.drawString(X_GAUCHE, 726, "Votre image mérite la perfection")
+
+    # --- 2. BLOC CLIENT ---
+    p.setFillColor(colors.HexColor("#f1f5f9")) 
+    p.roundRect(360, 715, 195, 80, 6, fill=True, stroke=False)
+    
+    p.setFont("Helvetica-Bold", 10)
+    p.setFillColor(colors.HexColor("#0f172a"))
+    p.drawString(375, 775, devis.nom_client.upper())
+    
+    p.setFont("Helvetica", 9)
+    p.setFillColor(colors.HexColor("#334155"))
+    p.drawString(375, 758, f"Contact : {devis.telephone}")
+    if devis.email:
+        p.drawString(375, 744, f"Email : {devis.email}")
+    p.drawString(375, 730, "Abidjan, Côte d'Ivoire")
+
+    # --- 3. CALCUL DU NUMÉRO DE BL ---
+    annee_court = devis.date_creation.strftime('%y')
+    mois_court = str(int(devis.date_creation.strftime('%m')))
+    
+    if hasattr(devis, 'numero_bl') and devis.numero_bl and '/' in devis.numero_bl:
+        num_bl_final = devis.numero_bl
+    else:
+        prefixe_mois = f"{annee_court}/BL-{mois_court}-"
+        bl_du_mois = Devis.objects.filter(
+            statut='converti_bl',
+            date_creation__year=devis.date_creation.year,
+            date_creation__month=devis.date_creation.month
+        ).order_by('date_creation')
+        
+        liste_ids = list(bl_du_mois.values_list('id', flat=True))
+        rang = liste_ids.index(devis.id) + 1 if devis.id in liste_ids else len(liste_ids) + 1
+        num_bl_final = f"{prefixe_mois}{rang:04d}"
+        
+        if hasattr(devis, 'numero_bl'):
+            devis.numero_bl = num_bl_final
+            devis.save()
+
+    # --- 4. TITRE DU DOCUMENT ---
+    p.setFont("Helvetica-Bold", 16)
+    p.setFillColor(colors.HexColor("#0f172a"))
+    p.drawString(X_GAUCHE, 680, f"BON DE LIVRAISON {num_bl_final}")
+
+    # --- 5. BLOC DES MÉTADONNÉES (4 Colonnes grises) ---
+    y_bloc = 620
+    hauteur_bloc = 40
+    p.setFillColor(colors.HexColor("#f8fafc")) 
+    p.rect(X_GAUCHE, y_bloc, LARGEUR_UTILE, hauteur_bloc, fill=True, stroke=False)
+    
+    # Séparateurs verticaux blancs discrets entre les 4 colonnes
+    p.setStrokeColor(colors.white)
+    p.setLineWidth(1.5)
+    p.line(165, y_bloc, 165, y_bloc + hauteur_bloc)
+    p.line(295, y_bloc, 295, y_bloc + hauteur_bloc)
+    p.line(425, y_bloc, 425, y_bloc + hauteur_bloc)
+
+    # Écriture des étiquettes (Labels)
+    p.setFont("Helvetica-Bold", 7)
+    p.setFillColor(colors.HexColor("#64748b"))
+    p.drawString(48, y_bloc + 26, "DATE DU BON :")
+    p.drawString(175, y_bloc + 26, "DATE D'ÉCHÉANCE :") # Rétabli et décalé à 175
+    p.drawString(303, y_bloc + 26, "ORIGINE :")
+    p.drawString(433, y_bloc + 26, "LIVRÉ PAR :")
+
+    # Calcul de la date d'échéance à +30 jours
+    from datetime import timedelta
+    date_echeance = devis.date_creation + timedelta(days=30)
+
+    # Écriture des valeurs dynamiques bien centrées dans leurs cases respectives
+    p.setFont("Helvetica-Bold", 9)
+    p.setFillColor(colors.HexColor("#1e293b"))
+    p.drawString(48, y_bloc + 10, devis.date_creation.strftime('%d/%m/%Y'))
+    p.drawString(175, y_bloc + 10, date_echeance.strftime('%d/%m/%Y')) # Affiche la date + 30 jours
+    
+    num_origine = devis.numero_devis_personnalise or f"{annee_court}/Dv{devis.date_creation.strftime('%m')}-{devis.id:03d}"
+    p.drawString(303, y_bloc + 10, num_origine)
+    p.drawString(433, y_bloc + 10, "Nous-mêmes")
+
+    # =====================================================================
+    # 6. TABLEAU DES PRESTATIONS RECALIBRÉ (Espaces élargis)
+    # =====================================================================
+    y = 565
+    hauteur_ligne = 24
+    
+    p.setFillColor(colors.HexColor("#f1f5f9"))
+    p.rect(X_GAUCHE, y, LARGEUR_UTILE, hauteur_ligne, fill=True, stroke=False)
+    
+    p.setFont("Helvetica-Bold", 8)
+    p.setFillColor(colors.HexColor("#475569"))
+    p.drawString(45, y + 8, "RÉFÉRENCE")
+    p.drawString(125, y + 8, "DÉSIGNATION")
+    p.drawCentredString(335, y + 8, "QTÉ")            # Décalé à gauche (335 au lieu de 360)
+    p.drawRightString(430, y + 8, "PRIX UNITAIRE")     # Reculé à gauche (430 au lieu de 440)
+    p.drawCentredString(480, y + 8, "REM. %")          # Réajusté
+    p.drawRightString(X_DROITE - 5, y + 8, "MONTANT")
+    
+    p.setStrokeColor(colors.HexColor("#cbd5e1"))
+    p.setLineWidth(0.5)
+    p.line(X_GAUCHE, y, X_DROITE, y)
+    
+    p.setFont("Helvetica", 9)
+    lignes_prestation = devis.description_prestation.split('\n')
+    
+    for idx, ligne in enumerate(lignes_prestation):
+        if not ligne.strip():
+            continue
+            
+        y -= hauteur_ligne
+        elements = [e.strip() for e in ligne.split('|')]
+        
+        ref = elements[0] if len(elements) > 0 and elements[0] else f"REF-{100+idx}"
+        des = elements[1] if len(elements) > 1 and elements[1] else "Prestation"
+        qte_val = int(elements[2]) if len(elements) > 2 and elements[2].isdigit() else 1
+        pxu_val = float(elements[3]) if len(elements) > 3 and elements[3].replace('.', '', 1).isdigit() else 0.0
+        rem_val = float(elements[4]) if len(elements) > 4 and elements[4].replace('.', '', 1).isdigit() else 0.0
+        larg_val = float(elements[5]) if len(elements) > 5 and elements[5].replace('.', '', 1).isdigit() else 1.0
+        haut_val = float(elements[6]) if len(elements) > 6 and elements[6].replace('.', '', 1).isdigit() else 1.0
+        
+        surface_m2 = larg_val * haut_val
+
+        nom_minuscule = des.lower()
+        mots_cles = ['bâche', 'bache', 'rollup', 'roll up', 'roll-up', 'affiche']
+        if any(mot in nom_minuscule for mot in mots_cles):
+            des = des.replace("[", "").replace("]", "").replace("(", "").replace(")", "").strip()
+            des = des.replace(f"{int(surface_m2)}m2", "").replace(f"{int(surface_m2)}m²", "").strip()
+            des = " ".join(des.split())
+            if des.lower().startswith("bâche") or des.lower().startswith("bache"):
+                des = "Bâche" + des[5:]
+            suffixe_m2 = f"{int(surface_m2)}m²" if surface_m2.is_integer() else f"{surface_m2:.2f}m²"
+            des = f"{des} ({suffixe_m2})"
+
+        montant_brut = qte_val * surface_m2 * pxu_val
+        if rem_val > 0:
+            montant_brut = montant_brut * (1 - (rem_val / 100))
+        
+        # Dessin avec les nouveaux calages X précis
+        p.drawString(45, y + 7, ref)
+        p.drawString(125, y + 7, des[:35])              # Diminué légèrement la coupure texte à 35 pour la sécurité
+        p.drawCentredString(335, y + 7, str(qte_val))
+        p.drawRightString(430, y + 7, f"{int(pxu_val):,}".replace(",", " ") + " F") # Écrit "F" au lieu de "FCFA" pour gagner de la place
+        p.drawCentredString(480, y + 7, f"{int(rem_val)}%" if rem_val > 0 else "0%")
+        p.drawRightString(X_DROITE - 5, y + 7, f"{int(montant_brut):,}".replace(",", " ") + " F")
+        
+        p.setStrokeColor(colors.HexColor("#f1f5f9"))
+        p.line(X_GAUCHE, y, X_DROITE, y)
+
+    # =====================================================================
+    # 7. BLOC FINANCIER STRUCTURÉ
+    # =====================================================================
+    y_total = y - 35
+    largeur_grille = 195
+    x_grille = X_DROITE - largeur_grille
+    hauteur_case = 20
+    
+    p.setStrokeColor(colors.HexColor("#cbd5e1"))
+    p.setLineWidth(0.5)
+    
+    labels_finance = ["Sous-total", "Remise globale", "TVA 0%", "Total"]
+    prix_formate = f"{int(devis.montant_total):,}".replace(",", " ") + " FCFA"
+    valeurs_finance = [prix_formate, "-0 FCFA", "0 FCFA", prix_formate]
+    
+    for i in range(4):
+        if i == 3:
+            p.setFillColor(colors.HexColor("#f8fafc"))
+            p.rect(x_grille, y_total - (i * hauteur_case), largeur_grille, hauteur_case, fill=True, stroke=False)
+            p.setFont("Helvetica-Bold", 9)
+            p.setFillColor(colors.HexColor("#0f172a"))
+        else:
+            p.setFont("Helvetica", 9)
+            p.setFillColor(colors.HexColor("#475569"))
+            
+        p.rect(x_grille, y_total - (i * hauteur_case), largeur_grille, hauteur_case, fill=False, stroke=True)
+        p.drawString(x_grille + 10, y_total - (i * hauteur_case) + 6, labels_finance[i])
+        p.drawRightString(X_DROITE - 10, y_total - (i * hauteur_case) + 6, valeurs_finance[i])
+
+    # --- 8. MENTIONS LÉGALES ---
+    p.setFont("Helvetica-Bold", 8)
+    p.setFillColor(colors.HexColor("#64748b"))
+    p.drawString(X_GAUCHE, y_total - 100, f"Merci d'utiliser la communication suivante pour votre paiement : {num_bl_final}")
+    
+    p.setFont("Helvetica", 8)
+    p.drawString(X_GAUCHE, y_total - 114, "Arrêter la facture à la somme de : Conforme au montant net indiqué ci-dessus.")
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    
+    nom_fichier = f"BL_{num_bl_final.replace('/', '_')}.pdf"
+    return FileResponse(buffer, as_attachment=True, filename=nom_fichier)

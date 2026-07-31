@@ -1,0 +1,137 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<!-- Conteneur principal utilisant le style Glassmorphism grâce au background inline -->
+<div class="container my-5" style="max-width: 1200px; margin: 40px auto; padding: 30px; background: #ffffff; border-radius: 24px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h2 style="color: #1e293b; font-weight: 800; margin: 0; font-size: 1.8rem;">🛠️ Gestion des Devis & Bons de Livraison</h2>
+            <p style="color: #64748b; margin: 5px 0 0 0;">Espace de suivi commercial réservé à l'administrateur YaTout.</p>
+        </div>
+        <a href="{% url 'creer_devis' %}" class="btn-link-prestation" style="padding: 14px 24px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            ➕ Créer un Devis
+        </a>
+    </div>
+
+    <!-- Messages d'alerte Django (Succès de création, modification ou conversion BL) -->
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 12px 20px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #15803d; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 0.9rem;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Tableau de suivi des dossiers clients -->
+    <div style="overflow-x: auto; width: 100%;">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0 12px; min-width: 800px;">
+            <thead>
+                <tr style="color: #475569; text-align: left; font-weight: 700; font-size: 0.9rem;">
+                    <th style="padding: 0 15px;">RÉF</th>
+                    <th style="padding: 0 15px;">CLIENT</th>
+                    <th style="padding: 0 15px;">DESCRIPTION DES PRESTATIONS</th>
+                    <th style="padding: 0 15px;">MONTANT TOTAL</th>
+                    <th style="padding: 0 15px;">ÉTAT ACTUEL</th>
+                    <th style="padding: 0 15px; text-align: right;">ACTIONS COMMERCIALES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for devis in devis_list %}
+                <tr class="item-list-row" style="background: rgba(255, 255, 255, 0.6) !important;">
+                    <!-- Numéro Personnalisé ou ID du Devis -->
+                    <td style="padding: 20px 15px; font-weight: 800; color: #7c3aed; font-size: 1rem; white-space: nowrap;">
+                        {% if devis.numero_devis_personnalise %}
+                            {{ devis.numero_devis_personnalise }}
+                        {% else %}
+                            #00{{ devis.id }}
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Coordonnées Client -->
+                    <td style="padding: 20px 15px;">
+                        <strong style="color: #0f172a; font-size: 1rem; display: block; margin-bottom: 4px;">{{ devis.nom_client }}</strong>
+                        <span style="color: #64748b; font-size: 0.85rem; display: block;">📱 {{ devis.telephone }}</span>
+                        {% if devis.email %}
+                            <span style="color: #94a3b8; font-size: 0.85rem; display: block;">✉️ {{ devis.email }}</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Contenu textuel de la commande -->
+                    <td style="padding: 20px 15px; color: #334155; font-size: 0.9rem; max-width: 300px; line-height: 1.5;">
+                        <div style="max-height: 60px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                            {{ devis.description_prestation }}
+                        </div>
+                    </td>
+                    
+                    <!-- Prix -->
+                    <td style="padding: 20px 15px; font-weight: 800; color: #0f172a; font-size: 1.05rem; white-space: nowrap;">
+                        {{ devis.montant_total }} FCFA
+                    </td>
+                    
+                    <!-- Badge de statut dynamique -->
+                    <td style="padding: 20px 15px; white-space: nowrap;">
+                        {% if devis.statut == 'converti_bl' %}
+                            <span style="background: #dcfce7; color: #15803d; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(21, 128, 61, 0.2);">
+                                📦 BL GÉNÉRÉ ({{ devis.numero_bl }})
+                            </span>
+                        {% elif devis.statut == 'valide' %}
+                            <span style="background: #e0f2fe; color: #0369a1; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(3, 105, 161, 0.2);">
+                                ✅ VALIDÉ PAR LE CLIENT
+                            </span>
+                        {% elif devis.statut == 'envoye' %}
+                            <span style="background: #fef9c3; color: #a16207; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(161, 98, 7, 0.2);">
+                                📩 ENVOYÉ AU CLIENT
+                            </span>
+                        {% elif devis.statut == 'rejete' %}
+                            <span style="background: #fee2e2; color: #b91c1c; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(185, 28, 28, 0.2);">
+                                ❌ REJETÉ
+                            </span>
+                        {% else %}
+                            <span style="background: #f1f5f9; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(71, 85, 105, 0.2);">
+                                📄 BROUILLON
+                            </span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Boutons d'actions contextuels -->
+                    <td style="padding: 20px 15px; text-align: right;">
+                        <div style="display: inline-flex; align-items: center; gap: 10px;">
+                            
+                            <!-- 🟢 BOUTON NOUVEAU : Télécharger le BL en PDF (S'affiche uniquement si converti_bl) -->
+                            {% if devis.statut == 'converti_bl' %}
+                                <a href="{% url 'telecharger_bl_pdf' devis_id=devis.id %}" title="Télécharger le Bon de Livraison" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #10b981; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                                    📦
+                                </a>
+                            {% endif %}
+
+                            <!-- 🔴 Télécharger l'officiel Devis en PDF -->
+                            <a href="{% url 'telecharger_devis_pdf' devis_id=devis.id %}" title="Télécharger le Devis PDF" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #ef4444; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                                📄
+                            </a>
+
+                            <!-- 🟢 Envoyer la fiche pré-remplie sur WhatsApp -->
+                            <a href="{{ devis.generer_lien_whatsapp }}" target="_blank" title="Envoyer par WhatsApp" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #25d366; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                                💬
+                            </a>
+
+                            <!-- Editer les informations du devis -->
+                            <a href="{% url 'modifier_devis' devis_id=devis.id %}" style="color: #7c3aed; font-weight: 700; text-decoration: none; font-size: 0.9rem; padding: 6px 12px; background: rgba(124, 58, 237, 0.08); border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(124, 58, 237, 0.15)'" onmouseout="this.style.background='rgba(124, 58, 237, 0.08)'">
+                                ✏️ Modifier
+                            </a>
+                            
+                            <!-- Conversion sécurisée en BL (uniquement disponible si le devis est uniquement validé) -->
+                            {% if devis.statut == 'valide' %}
+                                <a href="{% url 'convertir_en_bl' devis_id=devis.id %}" style="color: #10b981; font-weight: 700; text-decoration: none; font-size: 0.9rem; padding: 6px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.15)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'">
+                                    🔄 Convertir en BL
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

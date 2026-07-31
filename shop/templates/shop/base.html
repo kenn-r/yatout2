@@ -7,19 +7,407 @@
     <title>{% block title %}YaTout Ci{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
    <style>
-    /* ===================================================================== */
-    /* 🟢 CONFIGURATION RESPONSIVE ET SÉCURISÉE DU SITE                      */
-    /* ===================================================================== */
+ /* ===================================================================== */
+/* 🖨️ INTERFACE PREMIUM COMPLÈTE POUR L'ESPACE IMPRESSION                */
+/* ===================================================================== */
+{% if "impression" in request.path or prestation %}
+    
+    /* 1. FOND ANIMÉ EXISTANT */
+    @keyframes gradientMovement {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
     html, body {
         max-width: 100% !important;
         overflow-x: hidden !important;
         margin: 0;
         padding: 0;
         width: 100% !important;
-        background-color: #f8fafc;
         font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+        background-attachment: fixed !important;
+        background-color: #6366f1 !important;
+        background-image: 
+            radial-gradient(at 0% 0%, #f43f8e 0px, transparent 55%),
+            radial-gradient(at 100% 0%, #00b4d8 0px, transparent 55%),
+            radial-gradient(at 50% 100%, #7c3aed 0px, transparent 70%),
+            radial-gradient(at 100% 100%, #f43f8e 0px, transparent 60%) !important;
+        background-size: 200% 200% !important;
+        animation: gradientMovement 20s ease infinite !important;
     }
 
+    /* 2. LE CONTENEUR VITRE (GLASSMORPHISM) */
+    .print-container {
+        background-color: rgba(255, 255, 255, 0.75) !important; 
+        backdrop-filter: blur(25px) !important;                
+        -webkit-backdrop-filter: blur(25px) !important;        
+        border: 1px solid rgba(255, 255, 255, 0.5) !important; 
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1) !important;  
+        border-radius: 16px !important;                         
+    }
+
+    /* 3. 🎯 POINT 1 : BOUTONS D'ACTION ULTRA-INTERACTIFS (Ex: Bouton Conseiller ou de Validation) */
+    /* Remplacez ou ciblez vos classes de boutons (ex: .btn-nav, .btn-conseiller-green, ou vos boutons de choix) */
+    .btn-nav, .btn-conseiller-green, .btn-support-item, button[type="submit"] {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative;
+        overflow: hidden;
+    }
+    /* Effet d'aimant et d'élévation lumineuse au survol */
+    .btn-nav:hover, .btn-conseiller-green:hover, .btn-support-item:hover, button[type="submit"]:hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3) !important;
+        filter: brightness(1.1) !important;
+    }
+    /* Effet d'enfoncement au clic */
+    .btn-nav:active, .btn-conseiller-green:active, .btn-support-item:active, button[type="submit"]:active {
+        transform: translateY(-1px) scale(0.99) !important;
+    }
+
+    /* 4. 📁 POINT 2 : EFFET DE CARTES FLOTTANTES POUR VOS SUPPORTS (Flyers, dépliants...) */
+    /* Ciblez la classe de vos boîtes de produits (ajustez le nom si votre classe de carte est différente) */
+    .products-column a, .card, .product-card-item {
+        background: rgba(255, 255, 255, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-radius: 12px !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    /* Au survol, la carte flotte, l'ombre s'aggrandit et la bordure s'illumine */
+    .products-column a:hover, .card:hover, .product-card-item:hover {
+        transform: translateY(-8px) !important;
+        background: rgba(255, 255, 255, 0.85) !important;
+        border-color: rgba(244, 63, 142, 0.4) !important; /* Bordure rose subtile au survol */
+        box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15) !important;
+    }
+
+    /* 5. 🤖 POINT 3 : INTÉGRATION VISUELLE DU CHATBOT IA */
+    /* Bouton rond flottant */
+    #btn-flottant-ia {
+        background: linear-gradient(135deg, #7c3aed, #f43f8e) !important; /* Dégradé assorti au site */
+        box-shadow: 0 8px 25px rgba(244, 63, 142, 0.4) !important;
+        animation: pulseVisual 3s infinite; /* Utilise votre animation pulse déjà existante */
+    }
+    #btn-flottant-ia:hover {
+        transform: scale(1.1) rotate(5deg) !important;
+    }
+    /* Fenêtre de discussion */
+    #fenetre-chat-ia {
+        background: rgba(255, 255, 255, 0.85) !important; /* Vitre translucide */
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15) !important;
+    }
+    /* En-tête du Chat */
+    #fenetre-chat-ia > div:first-child {
+        background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+    }
+    /* Bouton envoyer à l'intérieur du chat */
+    #fenetre-chat-ia button {
+        background: linear-gradient(135deg, #7c3aed, #f43f8e) !important;
+        transition: all 0.2s !important;
+    }
+    #fenetre-chat-ia button:hover {
+        transform: scale(1.05) !important;
+        filter: brightness(1.1) !important;
+    }
+    /* 📁 CARTES ET SUPPORTS À L'INTÉRIEUR DE LA COLONNE GAUCHE */
+    /* Cible la colonne ainsi que tous les liens ou blocs de supports cliquables à l'intérieur */
+    .products-column, .products-column a, .catalog-header {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    /* Effet flottant haut de gamme au survol des éléments de la colonne */
+    .products-column a:hover {
+        transform: translateY(-5px) !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        box-shadow: 0 12px 25px rgba(244, 63, 142, 0.15) !important;
+        border-color: rgba(244, 63, 142, 0.3) !important;
+    }
+
+    /* 🏷️ MAGNIFIQUE EFFET VITRE SUR LE BLOC PROMO (Ligne 151) */
+    .promo-banner-container {
+        /* On remplace le fond opaque par une version translucide hyper propre */
+        background: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        
+        /* Bordure fine et adoucissement des angles */
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        border-radius: 12px !important;
+        
+        /* Transition pour l'animation au survol */
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04) !important;
+    }
+    
+    /* Animation du bloc promo quand on passe la souris dessus */
+    .promo-banner-container:hover {
+        transform: scale(1.02) translateY(-3px) !important;
+        background: rgba(255, 255, 255, 0.7) !important;
+        box-shadow: 0 15px 30px rgba(124, 58, 237, 0.15) !important;
+        border-color: rgba(124, 58, 237, 0.3) !important;
+    }
+
+    /* Ajustement du badge de réduction (Ligne 155) pour qu'il ressorte fort */
+    .promo-badge {
+        border-radius: 20px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 10px rgba(244, 63, 142, 0.3) !important;
+    }
+    /* 📋 ALIGNEMENT DESIGN DE LA LISTE DES PRESTATIONS (Ligne 169) */
+    .catalog-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important; /* Ajoute un espace élégant entre chaque prestation */
+        margin-top: 20px !important;
+    }
+
+    /* ✨ EFFET VITRE FLOTTANTE SUR CHAQUE LIGNE DE PRESTATION (Ligne 171) */
+    .item-list-row {
+        background: rgba(255, 255, 255, 0.55) !important; /* Verre translucide */
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+        
+        /* Bordures adoucies et lumineuses */
+        border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        
+        /* Ombres douces et transitions fluides */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* 🚀 ANIMATION PREMIUM AU SURVOL DE LA LIGNE */
+    .item-list-row:hover {
+        transform: translateY(-5px) scale(1.01) !important; /* Flotte vers le haut */
+        background: rgba(255, 255, 255, 0.75) !important;  /* Devient plus lumineuse */
+        border-color: rgba(244, 63, 142, 0.3) !important;   /* Rappel du rose néon en bordure */
+        box-shadow: 0 15px 30px rgba(124, 58, 237, 0.12) !important; /* Ombre violette diffuse */
+    }
+
+    /* 🔗 STYLISATION DU BOUTON DE LIEN (Ligne 174) */
+    .btn-link-prestation {
+        display: inline-flex !important;
+        align-items: center !important;
+        background: linear-gradient(135deg, #7c3aed, #f43f8e) !important; /* Dégradé premium assorti */
+        color: #ffffff !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        padding: 10px 20px !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 142, 0.2) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* Animation du bouton au survol */
+    .btn-link-prestation:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(244, 63, 142, 0.4) !important;
+        filter: brightness(1.1) !important;
+
+    }
+    /* 🔎 CONFIGURATION DU BOUTON SPAN "VOIR LES TARIFS" (Correction JS) */
+    /* Cible spécifiquement le span qui possède l'attribut onmouseover visible sur l'image */
+    span[onmouseover*="this.style"] {
+        display: block !important;
+        text-align: center !important;
+        padding: 12px 24px !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        border-radius: 30px !important; /* Transformation en forme de capsule */
+        cursor: pointer !important; /* Force le curseur en forme de main cliquable */
+        
+        /* Style initial épuré (Finit le bleu ciel d'origine) */
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        color: #7c3aed !important;
+        border: 2px solid #7c3aed !important;
+        
+        /* Transition fluide indispensable pour l'effet d'élévation */
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.05) !important;
+    }
+
+    /* 🚀 APPLIQUE L'EFFET DU THÈME AU SURVOL DU CURSEUR (HOVER) */
+    span[onmouseover*="this.style"]:hover {
+        transform: translateY(-4px) scale(1.02) !important; /* Élévation fluide */
+        
+        /* Transition vers votre dégradé dynamique de l'espace impression */
+        background: linear-gradient(135deg, #7c3aed, #f43f8e) !important;
+        color: #ffffff !important; /* Le texte passe en blanc pur */
+        border-color: transparent !important; /* Cache l'ancienne bordure violette */
+        
+        /* Ombre lumineuse diffuse */
+        box-shadow: 0 10px 22px rgba(244, 63, 142, 0.35) !important;
+    }
+
+    /* Effet d'enfoncement physique au clic de la souris */
+    span[onmouseover*="this.style"]:active {
+        transform: translateY(-1px) scale(0.99) !important;
+    }
+    /* ===================================================================== */
+    /* 🎛️ DESIGN SAAS GLASSMORPHISM TOTAL (SANS DEPENDANCE DE CLASSE)       */
+    /* ===================================================================== */
+    
+    /* Cible TOUTES les div avec un fond blanc écrit en dur sur les pages d'impression */
+    div[style*="background: #ffffff"],
+    div[style*="background:#ffffff"],
+    div[style*="background: white"],
+    div[style*="background-color: #ffffff"],
+    div[style*="background-color:#ffffff"],
+    div[style*="background:  #ffffff"],
+    .card {
+        /* Force le remplacement du fond blanc par la vitre transparente */
+        background: rgba(255, 255, 255, 0.45) !important; 
+        backdrop-filter: blur(25px) !important;           
+        -webkit-backdrop-filter: blur(25px) !important;   
+        
+        /* Harmonisation des bordures et arrondis (Lignes 12 et 22 de votre code) */
+        border: 1px solid rgba(255, 255, 255, 0.5) !important; 
+        border-radius: 24px !important; /* Garde vos superbes 24px d'origine */
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05) !important; 
+        transition: all 0.3s ease !important;
+    }
+
+    /* 2. STYLE ULTRA-PRO POUR LES LISTES DEROULANTES (Format, Quantité) */
+    select, 
+    input:not([type="submit"]):not([type="hidden"]) {
+        background-color: rgba(255, 255, 255, 0.7) !important; 
+        border: 1px solid rgba(124, 58, 237, 0.2) !important;  
+        color: #1e293b !important;                              
+        border-radius: 8px !important;
+        padding: 12px 14px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* Halo lumineux quand on clique dans un champ */
+    select:focus, 
+    input:focus {
+        background-color: #ffffff !important;                   
+        border-color: #7c3aed !important;                       
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15) !important; 
+        outline: none !important;
+    }
+
+    /* 3. DESIGN EN CAPSULE NÉON POUR TOUS LES BOUTONS DE VALIDATION DE L'IMPRESSION */
+    button[type="submit"], 
+    input[type="submit"],
+    [class*="btn-valider"] {
+        background: linear-gradient(135deg, #7c3aed, #f43f8e) !important; 
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        border: none !important;
+        padding: 14px 28px !important;
+        border-radius: 30px !important; /* Transforme le bouton rectangulaire en capsule moderne */
+        box-shadow: 0 5px 15px rgba(244, 63, 142, 0.3) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+    }
+
+    /* Effet d'élévation interactive au survol de la souris */
+    button[type="submit"]:hover,
+    input[type="submit"]:hover {
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 12px 25px rgba(244, 63, 142, 0.45) !important;
+        filter: brightness(1.1) !important;
+    }
+    /* ===================================================================== */
+    /* 🛍️ STYLE PREMIUM POUR LA PAGE DE FINALISATION DE COMMANDE            */
+    /* ===================================================================== */
+    
+    /* 1. EFFET VERRE DÉPOLI SUR LE GRAND BLOC DU FORMULAIRE DE COMMANDE */
+    .container div[style*="background-color: white"],
+    .container div[style*="background: #ffffff"],
+    main form,
+    div[class*="checkout"],
+    div[class*="commande"] {
+        background: rgba(255, 255, 255, 0.55) !important; /* Vitre translucide */
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        border-radius: 20px !important; /* Des bords bien arrondis et adoucis */
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    /* 2. ADOUCISSEMENT ET LUMINOSITÉ SUR LE BLOC NOIR "VOTRE SÉLECTION" */
+    div[style*="background-color: #2e0854"], 
+    div[style*="background: #1e293b"],
+    div[class*="selection"],
+    div[class*="summary-box"] {
+        background: rgba(15, 23, 42, 0.8) !important; /* Un ardoise sombre mais légèrement transparent */
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 14px !important;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* 3. STYLISATION DES CHAMPS DE SAISIE (NOM, WHATSAPP...) */
+    .container input[type="text"],
+    .container input[type="tel"],
+    .container input[type="number"],
+    input[placeholder*="Ex:"] {
+        background-color: rgba(255, 255, 255, 0.7) !important; /* Fond épuré semi-transparent */
+        border: 1px solid rgba(124, 58, 237, 0.25) !important; /* Fine bordure violette */
+        color: #0f172a !important;
+        font-weight: 600 !important;
+        border-radius: 10px !important;
+        padding: 14px 16px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Halo lumineux quand le client clique pour écrire son nom/téléphone */
+    .container input[type="text"]:focus,
+    .container input[type="tel"]:focus,
+    input[placeholder*="Ex:"]:focus {
+        background-color: #ffffff !important; /* Repasse en blanc pur pour l'écriture */
+        border-color: #f43f8e !important;   /* Bordure rose vibrante au focus */
+        box-shadow: 0 0 0 4px rgba(244, 63, 142, 0.15) !important;
+        outline: none !important;
+    }
+
+    /* 4. DYNAMISATION DU BOUTON "CONFIRMER ET ENVOYER SUR WHATSAPP" */
+    .container button[type="submit"],
+    .container a[href*="wa.me"],
+    [class*="btn-whatsapp"] {
+        background: linear-gradient(135deg, #25d366, #128c7e) !important; /* Dégradé vert WhatsApp officiel */
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        font-size: 0.95rem !important;
+        border: none !important;
+        padding: 16px 32px !important;
+        border-radius: 35px !important; /* Forme capsule fluide */
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Animation de pulsation douce et d'élévation sur le bouton WhatsApp */
+    .container button[type="submit"]:hover,
+    [class*="btn-whatsapp"]:hover {
+        transform: translateY(-4px) scale(1.01) !important;
+        box-shadow: 0 12px 25px rgba(37, 211, 102, 0.45) !important;
+        filter: brightness(1.05) !important;
+    }
+
+{% else %}
+    /* Reste du site inchangé */
+    html, body {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        margin: 0;
+        padding: 0;
+        width: 100% !important;
+        background-color: #f8fafc !important;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    }
+{% endif %}
     *, *:before, *:after {
         box-sizing: border-box !important;
     }
@@ -120,6 +508,15 @@
         font-weight: 700 !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     }
+    /* Ajoutez ceci à votre bloc actuel pour corriger le bloc blanc */
+
+.votre-conteneur-principal, .main-container {
+    background-color: rgba(255, 255, 255, 0.65) !important; /* Blanc translucide à 65% */
+    backdrop-filter: blur(12px) !important; /* Effet de flou haut de gamme en arrière-plan */
+    -webkit-backdrop-filter: blur(12px) !important; /* Compatibilité Safari/Mac */
+    border: 1px solid rgba(255, 255, 255, 0.4) !important; /* Fine bordure lumineuse */
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.05) !important; /* Ombre très légère */
+}
     .nav-actions .btn-nav-white:hover, .nav-actions .btn-nav-purple:hover {
         background-color: #f8fafc !important;
         transform: translateY(-1px);
@@ -331,7 +728,11 @@
                 <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller-green">
                     💬 Parler à un conseiller
                 </a>
-
+{% if user.is_authenticated and user.is_staff %}
+    <a href="{% url 'espace_devis_dashboard' %}" class="btn-nav" style="border: 1px dashed #7c3aed;">
+        📊 Administration Devis
+    </a>
+{% endif %}
                 <div class="supports-mobile-only">
                     <span class="menu-section-title">📁 Nos supports :</span>
                     

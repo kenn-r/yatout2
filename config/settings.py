@@ -138,12 +138,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Configuration de l'envoi d'e-mails via l'API HTTP de Brevo
-EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+EMAIL_BACKEND = "anymail.backends.stmp.EmailBackend"
 DEFAULT_FROM_EMAIL = 'yatoutci2@gmail.com'
 
 ANYMAIL = {
     "BREVO_API_KEY": os.environ.get('EMAIL_HOST_PASSWORD'),
+
+
 }
+
+
 
 # Permet de valider les sessions même sur les navigateurs mobiles stricts
 SESSION_COOKIE_SAMESITE = 'Lax'

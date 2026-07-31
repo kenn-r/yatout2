@@ -53,4 +53,12 @@ urlpatterns = [
     path('impressions/admin/check-code/', views.verifier_code_admin, name='verifier_code_admin'),
     path('commande/confirmer/', views.confirmer_commande_client, name='confirmer_commande_client'),
     path('impression/prestations/<int:prestation_id>/calcul/', views.calculer_tarif_ajax, name='calculer_tarif_ajax'),
+    path('gestion-devis/', views.espace_devis_dashboard, name='espace_devis_dashboard'),
+    path('gestion-devis/nouveau/', views.creer_ou_modifier_devis, name='creer_devis'),
+    # COPIEZ ET REMPLACEZ VOS LIGNES EN CONSERVANT LE DEUX-POINTS (:)
+    path('gestion-devis/modifier/<int:devis_id>/', views.creer_ou_modifier_devis, name='modifier_devis'),
+    path('gestion-devis/convertir-bl/<int:devis_id>/', views.convertir_en_bl, name='convertir_en_bl'),  
+    # ASSUREZ-VOUS D'AJOUTER CETTE LIGNE EXACTE DANS VOS URLPATTERNS
+    path('gestion-devis/pdf/<int:devis_id>/', views.telecharger_devis_pdf, name='telecharger_devis_pdf'),
+    path('gestion-devis/bl/<int:devis_id>/pdf/', views.telecharger_bl_pdf, name='telecharger_bl_pdf'),
 ]
