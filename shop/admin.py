@@ -232,3 +232,22 @@ class DevisAuditLogAdmin(admin.ModelAdmin):
     list_display = ('date_action', 'devis_ref', 'client', 'montant', 'action', 'resultat', 'execute_par')
     list_filter = ('action', 'date_action')
     search_fields = ('devis_ref', 'client', 'resultat')
+
+    
+
+from django.contrib import admin
+from .models import Temoignage  # 👈 Import de votre modèle
+
+@admin.register(Temoignage)
+class TemoignageAdmin(admin.ModelAdmin):
+    # Liste des colonnes visibles dans l'interface admin
+    list_display = ('nom_client', 'note', 'date_publication', 'est_approuve')
+    
+    # Filtres rapides sur le côté droit
+    list_filter = ('est_approuve', 'note', 'date_publication')
+    
+    # Barre de recherche par nom ou contenu du commentaire
+    search_fields = ('nom_client', 'commentaire')
+    
+    # Optionnel : trier du plus récent au plus ancien par défaut
+    ordering = ('-date_publication',)

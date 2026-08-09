@@ -440,3 +440,15 @@ class Facture(models.Model):
 
     def __str__(self):
         return f"Facture {self.numero_facture} - Devis/BL #{self.devis_associe.id}"
+
+
+
+class Temoignage(models.Model):
+    nom_client = models.CharField(max_length=100, verbose_name="Nom ou Entreprise")
+    commentaire = models.TextField(verbose_name="Avis client")
+    note = models.IntegerField(default=5, verbose_name="Note sur 5")
+    date_publication = models.DateTimeField(auto_now_add=True)
+    est_approuve = models.BooleanField(default=False, verbose_name="Afficher sur le site")
+
+    def __str__(self):
+        return f"Avis de {self.nom_client} - {'Validé' if self.est_approuve else 'En attente'}"

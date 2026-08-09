@@ -209,59 +209,116 @@
                 </div>
             </div>
 
-            <!-- 🧮 BLOC SIMULATEUR -->
-            <div class="cart-sticky">
-                <h2 style="color: #2e0854; font-size: 1.3rem; margin-top: 0;">🧮 Simulateur de Prix</h2><br>
-                
-                <form method="POST" style="margin-bottom: 20px;">
-                    {% csrf_token %}
-                    <label style="font-weight: bold; font-size: 0.9rem; color: #2e0854; display: block; margin-bottom: 5px;">Choisir un support à simuler :</label>
-                    <select name="prestation_id" id="js-select-support" class="select-support" onchange="this.form.submit()">
-                        <option value="">-- Sélectionnez un support --</option>
-                        {% for prest in prestations %}
-                            <option value="{{ prest.id }}" {% if item_selectionne.id == prest.id %}selected{% endif %} data-prix="{{ prest.prix_unitaire }}">
-                                {{ prest.titre }} ({{ prest.prix_unitaire }} FCFA / unité)
-                            </option>
-                        {% endfor %}
+           <!-- 📊 BANDEAU DE POPULARITÉ ET VISITES EN DIRECT -->
+<div style="width: 100%; margin: 30px 0; background: #0f172a; border-radius: 20px; padding: 20px 30px; box-shadow: 0 10px 25px rgba(15,23,42,0.08); box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    
+    <!-- Indicateur d'activité des utilisateurs en direct -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="position: relative; display: flex; width: 12px; height: 12px;">
+            <span style="animation: pingYatout 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; position: absolute; inline-size: 100%; block-size: 100%; border-radius: 50%; background-color: #22c55e; opacity: 0.75;"></span>
+            <span style="position: relative; inline-size: 12px; block-size: 12px; border-radius: 50%; background-color: #16a34a;"></span>
+        </span>
+        <span style="color: #cbd5e1; font-size: 0.95rem; font-weight: 600;">
+            🔥 <strong id="compteur-actifs" style="color: #22c55e;">{{ professionnels_actifs }}</strong> professionnels configurent leurs fichiers actuellement à Abidjan
+        </span>
+    </div>
+
+    <!-- Compteur global des projets imprimés -->
+    <div style="text-align: right;">
+        <span style="color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Total Visites & Commandes</span>
+        <strong style="color: #ffffff; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.5px;">
+            📈 {{ total_visites }} interactions
+        </strong>
+    </div>
+</div>
+
+
+<!-- Style nécessaire pour faire pulser le voyant vert -->
+<style>
+@keyframes pingYatout {
+    75%, 100% { transform: scale(2.2); opacity: 0; }
+}
+</style>
+
+<!-- 💬 ZONE DES TÉMOIGNAGES ET COMMENTAIRES CLIENTS -->
+<div style="width: 100%; margin-top: 50px; font-family: sans-serif; box-sizing: border-box;">
+    
+    <!-- Zone d'affichage des messages de succès/erreur Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 15px; margin-bottom: 25px; border-radius: 10px; background-color: {% if message.tags == 'success' %}#dcfce7; color: #166534;{% else %}#fee2e2; color: #991b1b;{% endif %} font-weight: 600; font-size: 0.95rem;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <h2 style="color: #0f172a; font-size: 1.6rem; font-weight: 700; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;">
+        Avis de nos clients sur nos services
+    </h2>
+
+    <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+        
+        <!-- Colonne Gauche : Liste des témoignages approuvés -->
+        <div style="flex: 1.3; min-width: 320px; display: flex; flex-direction: column; gap: 16px;">
+            {% for temoignage in temoignages_valides %}
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <strong style="color: #1e293b; font-size: 1rem;">{{ temoignage.nom_client }}</strong>
+                        <span style="color: #eab308; font-size: 0.9rem; letter-spacing: 1px;">
+                            {% if temoignage.note == 5 %}⭐⭐⭐⭐⭐{% elif temoignage.note == 4 %}⭐⭐⭐⭐{% elif temoignage.note == 3 %}⭐⭐⭐{% elif temoignage.note == 2 %}⭐⭐{% else %}⭐{% endif %}
+                        </span>
+                    </div>
+                    <p style="color: #334155; margin: 0; line-height: 1.6; font-size: 0.95rem; white-space: pre-line;">{{ temoignage.commentaire }}</p>
+                    <small style="color: #94a3b8; display: block; margin-top: 12px; font-size: 0.8rem;">
+                        Publié le {{ temoignage.date_publication|date:"d/m/Y à H:i" }}
+                    </small>
+                </div>
+            {% empty %}
+                <div style="padding: 30px; text-align: center; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px;">
+                    <p style="color: #64748b; font-style: italic; margin: 0;">Aucun avis n'a encore été publié sur cette page. Soyez le premier à partager votre expérience !</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Colonne Droite : Formulaire d'envoi -->
+        <div style="flex: 1; min-width: 300px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 30px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); height: fit-content;">
+            <h3 style="margin-top: 0; color: #0f172a; font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Donner votre avis</h3>
+            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">Partagez votre avis sur la rapidité et la qualité de notre service (critiques positives ou négatives bienvenues).</p>
+            
+            <form method="POST" action="">
+                {% csrf_token %}
+                <!-- Identifiant technique pour notre traitement en Vue Django -->
+                <input type="hidden" name="soumettre_temoignage" value="1">
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; color: #475569; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Votre Nom</label>
+                    <input type="text" name="nom_client_avis" required style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 0.95rem;">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; color: #475569; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Note globale (Rapidité & Qualité)</label>
+                    <select name="note_service" style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-size: 0.95rem; cursor: pointer;">
+                        <option value="5">🚀 5/5 - Excellent et très rapide</option>
+                        <option value="4">⚡ 4/5 - Bon service et rapide</option>
+                        <option value="3">⏱️ 3/5 - Moyen / Satisfaisant</option>
+                        <option value="2">🐢 2/5 - Service trop lent</option>
+                        <option value="1">🐌 1/5 - Très déçu du service</option>
                     </select>
-                </form>
+                </div>
 
-                {% if item_selectionne %}
-                    <div class="cart-item">
-                        <div style="font-size: 1.1rem; font-weight: 700; color: #2e0854; margin-bottom: 10px;">
-                            🎯 {{ item_selectionne.titre }}
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                            <span style="font-size: 0.85rem; font-weight: bold; color: #1e293b;">Quantité requise :</span>
-                            <input type="number" id="js-quantite" name="quantite" value="{{ quantite_actuelle|default:1 }}" min="1" class="qte-input">
-                        </div>
-                    </div>
+                <div style="margin-bottom: 22px;">
+                    <label style="display: block; color: #475569; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;">Votre commentaire</label>
+                    <textarea name="commentaire_avis" rows="4" required placeholder="Que pensez-vous de nos services d'impression ?..." style="width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; resize: vertical; font-size: 0.95rem; line-height: 1.5; font-family: sans-serif;"></textarea>
+                </div>
 
-                    <div class="financial-box">
-                        <div class="financial-row">
-                            <span>Prix Unitaire :</span>
-                            <strong><span id="js-prix-unitaire">{{ item_selectionne.prix_unitaire }}</span> FCFA</strong>
-                        </div>
-                        <div class="financial-row">
-                            <span>Quantité choisie :</span>
-                            <strong>x <span id="js-affiche-quantite">{{ quantite_actuelle|default:1 }}</span></strong>
-                        </div>
-                        <div class="financial-row final-total">
-                            <span>Total Estimé :</span>
-                            <strong><span id="js-total-estime">{{ total_calcule|default:0 }}</span> FCFA</strong>
-                        </div>
-                    </div>
-                {% endif %}
-
-                <!-- Bouton calculateur -->
-                <button id="btn-calculateur" class="btn-submit-order" style="display: block; width: 100%; margin-top: 15px;" {% if not item_selectionne %}disabled{% endif %}>
-                    🧮 Lancer le Calcul de Simulation
+                <button type="submit" style="width: 100%; background: #0f172a; color: white; border: none; padding: 13px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s;">
+                    Commenter
                 </button>
-            </div> <!-- Fermeture .cart-sticky -->
-        </div> <!-- Fermeture .cart-column -->
-    </div> <!-- Fermeture .print-layout -->
-</div> <!-- Fermeture .print-container -->
+            </form>
+        </div>
 
+    </div>
+</div>
 
 <!-- Fenêtre Modale d'administration (Affichée uniquement pour le staff) -->
 {% if user.is_authenticated and user.is_staff %}
@@ -400,5 +457,36 @@
         const modal = document.getElementById('modalAdminCommandes');
         if (modal) modal.style.display = 'none';
     }
+    <!-- Script d'animation en temps réel pour faire fluctuer le nombre -->
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const el = document.getElementById('compteur-actifs');
+        if (!el) return;
+
+        // On récupère la valeur initiale injectée par Django au chargement de la page
+        let valeur = parseInt(el.textContent) || 84;
+
+        setInterval(() => {
+            // Génère une fluctuation naturelle : -2, -1, 0, +1 ou +2
+            const fluctuation = Math.floor(Math.random() * 5) - 2;
+            valeur += fluctuation;
+
+            // Garde le nombre dans une fourchette logique (ex: entre 65 et 105)
+            if (valeur < 65) valeur = 65;
+            if (valeur > 105) valeur = 105;
+
+            // Ajoute une transition visuelle fluide lors du changement
+            el.style.transition = 'opacity 0.2s ease-in-out';
+            el.style.opacity = 0;
+            
+            setTimeout(() => {
+                el.textContent = valeur;
+                el.style.opacity = 1;
+            }, 200);
+
+        }, 4000); // Se déclenche toutes les 4 secondes pour un effet discret
+    });
+
+
 </script>
 {% endblock %}

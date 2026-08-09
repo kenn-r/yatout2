@@ -137,6 +137,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
+
+# 📈 BASE DU COMPTEUR MARKETING YATOUT
+# Modifiez ce chiffre à tout moment pour changer le point de départ en production
+COMPTEUR_VISITES_BASE = 14320
+
+
 # Configuration de l'envoi d'e-mails via l'API HTTP de Brevo
 EMAIL_BACKEND = "anymail.backends.stmp.EmailBackend"
 DEFAULT_FROM_EMAIL = 'yatoutci2@gmail.com'
