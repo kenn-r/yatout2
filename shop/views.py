@@ -1059,7 +1059,7 @@ def page_impressions(request):
                     nom_client=nom,
                     note=int(note_recue),
                     commentaire=texte,
-                    est_approuve=True  # Reste caché jusqu'à validation admin
+                    est_approuve=False  # Reste caché jusqu'à validation admin
                 )
                 messages.success(request, "Merci ! Votre avis a été transmis.")
             else:
