@@ -1,137 +1,409 @@
 {% extends 'shop/base.html' %}
 
 {% block content %}
-<!-- Conteneur principal utilisant le style Glassmorphism grâce au background inline -->
-<div class="container my-5" style="max-width: 1200px; margin: 40px auto; padding: 30px; background: #ffffff; border-radius: 24px;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+<!-- En-tête : flex-direction: column-reverse direct pour forcer les boutons en haut en permanence -->
+<div style="display: flex; flex-direction: column-reverse !important; justify-content: flex-start; align-items: flex-start !important; margin-bottom: 30px; gap: 20px;">
+    <div style="flex-shrink: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
         <div>
             <h2 style="color: #1e293b; font-weight: 800; margin: 0; font-size: 1.8rem;">🛠️ Gestion des Devis & Bons de Livraison</h2>
             <p style="color: #64748b; margin: 5px 0 0 0;">Espace de suivi commercial réservé à l'administrateur YaTout.</p>
         </div>
-        <a href="{% url 'creer_devis' %}" class="btn-link-prestation" style="padding: 14px 24px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+
+        <!-- 📊 AFFICHAGE DU MIROIR (Visible UNIQUEMENT par l'admin connecté) -->
+        {% if user.is_authenticated and user.is_staff %}
+        <div style="background: #0f172a; color: #ffffff; padding: 12px 24px; border-radius: 14px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15); display: inline-flex; align-items: center; gap: 15px;">
+            <div>
+                <span style="color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: block; letter-spacing: 0.05em;">Encaissements du Mois</span>
+                <strong style="color: #34d399; font-size: 1.3rem; font-weight: 800;">{{ total_du_mois|default:"0" }} FCFA</strong>
+            </div>
+            <div style="border-left: 1px solid #334155; padding-left: 15px; height: 35px; display: flex; flex-direction: column; justify-content: center;">
+                <span style="color: #94a3b8; font-size: 0.75rem; font-weight: 600;">{{ nombre_transactions|default:"0" }} FAC</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- CONTENEUR DES ACTIONS (Boutons alignés côte à côte) -->
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <!-- Bouton Devis Existant -->
+        <a href="{% url 'creer_devis' %}" class="btn-link-prestation" style="padding: 14px 24px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; width: auto !important;">
             ➕ Créer un Devis
         </a>
+
+        <!-- 💳 BOUTON PAIEMENT -->
+        <button onclick="ouvrirModaleFacture()" style="background-color: #0284c7; color: #ffffff; border: none; padding: 14px 24px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);">
+            💳 Enregistrer un Paiement
+        </button>
+    </div>
+</div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px 20px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #15803d; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 0.9rem;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Tableau de suivi -->
+        <div style="overflow-x: auto; width: 100%;">
+            <table style="width: 100%; border-collapse: separate; border-spacing: 0 12px; min-width: 900px;">
+                <thead>
+                    <tr style="color: #475569; text-align: left; font-weight: 700; font-size: 0.9rem;">
+                        <th style="padding: 0 15px; width: 40px;">SÉLEC.</th>
+                        <th style="padding: 0 15px;">RÉF</th>
+                        <th style="padding: 0 15px;">CLIENT</th>
+                        <th style="padding: 0 15px;">DESCRIPTION DES PRESTATIONS</th>
+                        <th style="padding: 0 15px;">MONTANT TOTAL</th>
+                        <th style="padding: 0 15px;">ÉTAT ACTUEL</th>
+                        <th style="padding: 0 15px; text-align: right;">ACTIONS COMMERCIALES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for devis in devis_list %}
+                    <tr class="item-list-row" style="background: rgba(255, 255, 255, 0.6) !important;">
+                        
+                        <!-- 🔘 CASE À COCHER (Contient les données cachées du devis) -->
+                        <td style="padding: 20px 15px; text-align: center;">
+                           <input type="checkbox" name="select-devis" class="devis-checkbox" 
+       data-client="{{ devis.nom_client }}" 
+       data-montant="{{ devis.montant_total }}" 
+       data-bl="{{ devis.numero_bl }}"
+       {% if devis.statut != 'converti_bl' %}disabled title="Uniquement pour les dossiers avec BL généré"{% endif %}
+       style="width: 18px; height: 18px; cursor: pointer;">
+                        </td>
+
+                        <!-- Numéro Personnalisé ou ID du Devis -->
+                        <td style="padding: 20px 15px; font-weight: 800; color: #7c3aed; font-size: 1rem; white-space: nowrap;">
+                            {% if devis.numero_devis_personnalise %}
+                                {{ devis.numero_devis_personnalise }}
+                            {% else %}
+                                #00{{ devis.id }}
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Coordonnées Client -->
+                        <td style="padding: 20px 15px; white-space: nowrap;">
+                            <strong style="color: #0f172a; font-size: 1rem; display: block; margin-bottom: 4px;">{{ devis.nom_client }}</strong>
+                            <span style="color: #64748b; font-size: 0.85rem; display: block;">📱 {{ devis.telephone }}</span>
+                            {% if devis.email %}
+                                <span style="color: #94a3b8; font-size: 0.85rem; display: block;">✉️ {{ devis.email }}</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Contenu textuel -->
+                        <td style="padding: 20px 15px; color: #334155; font-size: 0.9rem; min-width: 250px; max-width: 300px; line-height: 1.5;">
+                            <div style="max-height: 60px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                {{ devis.description_prestation }}
+                            </div>
+                        </td>
+                        
+                        <!-- Prix -->
+                        <td style="padding: 20px 15px; font-weight: 800; color: #0f172a; font-size: 1.05rem; white-space: nowrap;">
+                            {{ devis.montant_total }} FCFA
+                        </td>
+                        
+                        <!-- Badge de statut -->
+                        <td style="padding: 20px 15px; white-space: nowrap;">
+                            {% if devis.statut == 'converti_bl' %}
+                                <span style="background: #dcfce7; color: #15803d; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(21, 128, 61, 0.2);">
+                                    📦 BL GÉNÉRÉ ({{ devis.numero_bl }})
+                                </span>
+                            {% elif devis.statut == 'valide' %}
+                                <span style="background: #e0f2fe; color: #0369a1; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(3, 105, 161, 0.2);">
+                                    ✅ VALIDÉ PAR LE CLIENT
+                                </span>
+                            {% elif devis.statut == 'envoye' %}
+                                <span style="background: #fef9c3; color: #a16207; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(161, 98, 7, 0.2);">
+                                    📩 ENVOYÉ AU CLIENT
+                                </span>
+                            {% elif devis.statut == 'rejete' %}
+                                <span style="background: #fee2e2; color: #b91c1c; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(185, 28, 28, 0.2);">
+                                    ❌ REJETÉ
+                                </span>
+                            {% else %}
+                                <span style="background: #f1f5f9; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(71, 85, 105, 0.2);">
+                                    📄 BROUILLON
+                                </span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Boutons d'actions -->
+                        <td style="padding: 20px 15px; text-align: right; white-space: nowrap;">
+                            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                                {% if devis.statut == 'converti_bl' %}
+                                    <a href="{% url 'telecharger_bl_pdf' devis_id=devis.id %}" title="Télécharger le BL PDF" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #22c55e; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                                        📥
+                                    </a>
+                                {% endif %}
+
+                                <a href="{% url 'telecharger_devis_pdf' devis_id=devis.id %}" title="Télécharger le Devis PDF" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #ef4444; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
+                                    📄
+                                </a>
+                                <!-- Fin de la zone d'actions de la ligne -->
+                                <a href="{% url 'modifier_devis' devis_id=devis.id %}" style="color: #7c3aed; font-weight: 700; text-decoration: none; font-size: 0.9rem; padding: 6px 12px; background: rgba(124, 58, 237, 0.08); border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(124, 58, 237, 0.15)'" onmouseout="this.style.background='rgba(124, 58, 237, 0.08)'">
+                                    ✏️ Modifier
+                                </a>
+
+                                {% if devis.statut == 'valide' %}
+                                    <a href="{% url 'convertir_en_bl' devis_id=devis.id %}" style="color: #10b981; font-weight: 700; text-decoration: none; font-size: 0.9rem; padding: 6px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.15)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'">
+                                        🔄 Convertir en BL
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="padding: 30px; text-align: center; color: #64748b;">
+                            Aucun devis disponible pour le moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- 📋 PANNEAU DE L'HISTORIQUE DES PAIEMENTS (VISIBLE UNIQUEMENT PAR L'ADMIN) -->
+{% if user.is_staff and historique_paiements %}
+<div class="container my-5" style="width: 1050px !important; min-width: 1050px !important; max-width: 1200px !important; margin: 50px auto !important; padding: 30px; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.02); box-sizing: border-box !important;">
+    
+    <div style="margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
+        <h3 style="color: #0f172a; font-weight: 800; margin: 0; font-size: 1.4rem;">💳 Miroir : Historique Global des Paiements Encaissements</h3>
+        <p style="color: #64748b; margin: 5px 0 0 0; font-size: 0.9rem;">Registre complet et inaltérable des règlements clients YaTout Imprim.</p>
     </div>
 
-    <!-- Messages d'alerte Django (Succès de création, modification ou conversion BL) -->
-    {% if messages %}
-        {% for message in messages %}
-            <div style="padding: 12px 20px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #15803d; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 0.9rem;">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <!-- Tableau de suivi des dossiers clients -->
     <div style="overflow-x: auto; width: 100%;">
-        <table style="width: 100%; border-collapse: separate; border-spacing: 0 12px; min-width: 800px;">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0 12px; min-width: 900px;">
             <thead>
                 <tr style="color: #475569; text-align: left; font-weight: 700; font-size: 0.9rem;">
-                    <th style="padding: 0 15px;">RÉF</th>
+                    <th style="padding: 0 15px;">N° FACTURE</th>
                     <th style="padding: 0 15px;">CLIENT</th>
-                    <th style="padding: 0 15px;">DESCRIPTION DES PRESTATIONS</th>
-                    <th style="padding: 0 15px;">MONTANT TOTAL</th>
-                    <th style="padding: 0 15px;">ÉTAT ACTUEL</th>
-                    <th style="padding: 0 15px; text-align: right;">ACTIONS COMMERCIALES</th>
+                    <th style="padding: 0 15px;">DATE RÈGLEMENT</th>
+                    <th style="padding: 0 15px;">MODE</th>
+                    <th style="padding: 0 15px;">MONTANT ENCAISSÉ</th>
+                    <th style="padding: 0 15px; text-align: right;">SÉCURITÉ AUDIT</th>
                 </tr>
             </thead>
             <tbody>
-                {% for devis in devis_list %}
-                <tr class="item-list-row" style="background: rgba(255, 255, 255, 0.6) !important;">
-                    <!-- Numéro Personnalisé ou ID du Devis -->
-                    <td style="padding: 20px 15px; font-weight: 800; color: #7c3aed; font-size: 1rem; white-space: nowrap;">
-                        {% if devis.numero_devis_personnalise %}
-                            {{ devis.numero_devis_personnalise }}
-                        {% else %}
-                            #00{{ devis.id }}
-                        {% endif %}
+                {% for paiement in historique_paiements %}
+                <tr style="background: #f8fafc; border-radius: 12px;">
+                    <!-- Numéro de facture clickable pour impression -->
+                    <td style="padding: 15px; font-weight: 800; color: #0284c7;">
+                        <a href="{% url 'detail_facture' facture_id=paiement.id %}" target="_blank" style="color: #0284c7; text-decoration: none;">
+                            📄 {{ paiement.numero_facture }}
+                        </a>
                     </td>
-                    
-                    <!-- Coordonnées Client -->
-                    <td style="padding: 20px 15px;">
-                        <strong style="color: #0f172a; font-size: 1rem; display: block; margin-bottom: 4px;">{{ devis.nom_client }}</strong>
-                        <span style="color: #64748b; font-size: 0.85rem; display: block;">📱 {{ devis.telephone }}</span>
-                        {% if devis.email %}
-                            <span style="color: #94a3b8; font-size: 0.85rem; display: block;">✉️ {{ devis.email }}</span>
-                        {% endif %}
+                    <td style="padding: 15px;">
+                        <strong style="color: #0f172a;">{{ paiement.devis_associe.nom_client }}</strong>
                     </td>
-                    
-                    <!-- Contenu textuel de la commande -->
-                    <td style="padding: 20px 15px; color: #334155; font-size: 0.9rem; max-width: 300px; line-height: 1.5;">
-                        <div style="max-height: 60px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-                            {{ devis.description_prestation }}
-                        </div>
+                    <td style="padding: 15px; color: #64748b;">
+                        {{ paiement.date_paiement|date:"d/m/Y H:i" }}
                     </td>
-                    
-                    <!-- Prix -->
-                    <td style="padding: 20px 15px; font-weight: 800; color: #0f172a; font-size: 1.05rem; white-space: nowrap;">
-                        {{ devis.montant_total }} FCFA
+                    <td style="padding: 15px;">
+                        <span style="padding: 4px 8px; background: #e2e8f0; border-radius: 6px; font-size: 0.85rem; font-weight: 700; color: #334155;">
+                            {{ paiement.get_mode_paiement_display }}
+                        </span>
                     </td>
-                    
-                    <!-- Badge de statut dynamique -->
-                    <td style="padding: 20px 15px; white-space: nowrap;">
-                        {% if devis.statut == 'converti_bl' %}
-                            <span style="background: #dcfce7; color: #15803d; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(21, 128, 61, 0.2);">
-                                📦 BL GÉNÉRÉ ({{ devis.numero_bl }})
-                            </span>
-                        {% elif devis.statut == 'valide' %}
-                            <span style="background: #e0f2fe; color: #0369a1; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(3, 105, 161, 0.2);">
-                                ✅ VALIDÉ PAR LE CLIENT
-                            </span>
-                        {% elif devis.statut == 'envoye' %}
-                            <span style="background: #fef9c3; color: #a16207; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(161, 98, 7, 0.2);">
-                                📩 ENVOYÉ AU CLIENT
-                            </span>
-                        {% elif devis.statut == 'rejete' %}
-                            <span style="background: #fee2e2; color: #b91c1c; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(185, 28, 28, 0.2);">
-                                ❌ REJETÉ
-                            </span>
-                        {% else %}
-                            <span style="background: #f1f5f9; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(71, 85, 105, 0.2);">
-                                📄 BROUILLON
-                            </span>
-                        {% endif %}
+                    <td style="padding: 15px; font-weight: 800; color: #16a34a;">
+                        {{ paiement.montant_recu }} FCFA
                     </td>
-                    
-                    <!-- Boutons d'actions contextuels -->
-                    <td style="padding: 20px 15px; text-align: right;">
-                        <div style="display: inline-flex; align-items: center; gap: 10px;">
-                            
-                            <!-- 🟢 BOUTON NOUVEAU : Télécharger le BL en PDF (S'affiche uniquement si converti_bl) -->
-                            {% if devis.statut == 'converti_bl' %}
-                                <a href="{% url 'telecharger_bl_pdf' devis_id=devis.id %}" title="Télécharger le Bon de Livraison" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #10b981; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
-                                    📦
-                                </a>
-                            {% endif %}
-
-                            <!-- 🔴 Télécharger l'officiel Devis en PDF -->
-                            <a href="{% url 'telecharger_devis_pdf' devis_id=devis.id %}" title="Télécharger le Devis PDF" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #ef4444; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
-                                📄
-                            </a>
-
-                            <!-- 🟢 Envoyer la fiche pré-remplie sur WhatsApp -->
-                            <a href="{{ devis.generer_lien_whatsapp }}" target="_blank" title="Envoyer par WhatsApp" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #25d366; border-radius: 50%; text-decoration: none; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.25); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">
-                                💬
-                            </a>
-
-                            <!-- Editer les informations du devis -->
-                            <a href="{% url 'modifier_devis' devis_id=devis.id %}" style="color: #7c3aed; font-weight: 700; text-decoration: none; font-size: 0.9rem; padding: 6px 12px; background: rgba(124, 58, 237, 0.08); border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(124, 58, 237, 0.15)'" onmouseout="this.style.background='rgba(124, 58, 237, 0.08)'">
-                                ✏️ Modifier
-                            </a>
-                            
-                            <!-- Conversion sécurisée en BL (uniquement disponible si le devis est uniquement validé) -->
-                            {% if devis.statut == 'valide' %}
-                                <a href="{% url 'convertir_en_bl' devis_id=devis.id %}" style="color: #10b981; font-weight: 700; text-decoration: none; font-size: 0.9rem; padding: 6px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.15)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'">
-                                    🔄 Convertir en BL
-                                </a>
-                            {% endif %}
-                        </div>
+                    <!-- Bouton Supprimer lié à la modale de mot de passe secret -->
+                    <td style="padding: 15px; text-align: right;">
+ <!-- Bouton Supprimer lié à la modale de mot de passe secret -->
+                    <td style="padding: 15px; text-align: right;">
+                        <button onclick="demanderSuppressionFacture('{{ paiement.id }}')" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;">
+                            🗑️ Supprimer
+                        </button>
                     </td>
+          </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+{% endif %}
+
+<!-- 💳 STRUCTURE DE LA MODALE ALIGNÉE SUR LE CODE PYTHON -->
+<div id="modaleFacture" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+    <div style="background-color: #ffffff; padding: 30px; border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); box-sizing: border-box; margin: 20px; position: relative;">
+        
+        <button type="button" onclick="fermerModalePaiement()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">&times;</button>
+
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #1e293b; font-weight: 800; margin: 0; font-size: 1.4rem;">💳 Enregistrer un Paiement</h3>
+            <p id="modaleClientInfo" style="color: #0284c7; margin: 5px 0 0 0; font-size: 0.95rem; font-weight: 600;"></p>
+        </div>
+
+        <!-- L'action cible la vue de génération de facture -->
+        <form method="POST" action="{% url 'generer_facture_bl' %}">
+            {% csrf_token %}
+            
+            <!-- Champ Numéro de BL (Requis par Python) -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: #475569; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px;">Numéro du Bon de Livraison (BL)</label>
+                <input type="text" id="modal_numero_bl" name="numero_bl" readonly required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; background: #f8fafc; color: #64748b; font-weight: 700;">
+            </div>
+
+            <!-- Champ Montant automatique modifiable (Requis par Python) -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: #475569; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px;">Montant reçu (FCFA)</label>
+                <input type="number" id="modal_montant_paye" name="montant_paye" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 1rem; font-weight: 700; color: #0f172a;">
+            </div>
+
+            <!-- Champ Mode de Paiement (Requis par Python) -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #475569; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px;">Mode de Paiement</label>
+                <select name="mode_paiement" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 0.95rem;">
+                    <option value="ESPECES">Espèces</option>
+                    <option value="MOBILE_MONEY">Mobile Money (Orange/MTN/Wave)</option>
+                    <option value="CHEQUE">Chèque</option>
+                    <option value="VIREMENT">Virement Bancaire</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px;">
+                <button type="button" onclick="fermerModalePaiement()" style="background: #f1f5f9; color: #475569; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;">Annuler</button>
+                <button type="submit" style="background: #0284c7; color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;">Valider et Facturer</button>
+            </div>
+        </form>
+    </div>
+</div><!-- 🔐 MODALE DE VERROUILLAGE DE SÉCURITÉ ADMIN STYLE MODERN UI -->
+<div id="modaleVerrouAdmin" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+    <div style="background: #ffffff; padding: 40px 30px; border-radius: 24px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); box-sizing: border-box; margin: 20px; position: relative;">
+        
+        <!-- Icône d'avertissement stylisée -->
+        <div style="width: 56px; height: 56px; background: #fef2f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+            <span style="font-size: 1.8rem; color: #ef4444;">⚠️</span>
+        </div>
+
+        <h4 style="margin: 0 0 8px 0; font-size: 1.35rem; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">Validation Administrateur</h4>
+        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5; padding: 0 10px;">Un code secret est requis pour détruire définitivement cette facture de la base YaTout.</p>
+        
+        <form id="formSuppressionAdmin" method="POST" action="">
+            {% csrf_token %}
+            
+            <!-- Champ de saisie modernisé avec padding interne -->
+            <div style="margin-bottom: 25px;">
+                <input type="password" name="code_secret" placeholder="••••••••" required 
+                       style="width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; font-size: 1.3rem; letter-spacing: 6px; box-sizing: border-box; color: #0f172a; background: #f8fafc; transition: border-color 0.2s; outline: none;"
+                       onfocus="this.style.borderColor='#0284c7'; this.style.background='#ffffff';" 
+                       onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc';">
+            </div>
+
+            <!-- Boutons d'action réalignés et stylisés avec padding -->
+            <div style="display: flex; gap: 12px;">
+                <button type="button" onclick="fermerVerrou()" 
+                        style="flex: 1; padding: 14px; background: #f1f5f9; color: #475569; border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: background 0.2s;"
+                        onmouseover="this.style.background='#e2e8f0'" 
+                        onmouseout="this.style.background='#f1f5f9'">
+                    Annuler
+                </button>
+                <button type="submit" 
+                        style="flex: 1; padding: 14px; background: #dc2626; color: #ffffff; border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); transition: background 0.2s;"
+                        onmouseover="this.style.background='#b91c1c'" 
+                        onmouseout="this.style.background='#dc2626'">
+                    Confirmer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 📜 2. LE SCRIPT DE CONTRÔLE ASSOCIÉ -->
+<script>
+    // Logique d'ouverture de la modale d'audit de suppression
+    function demanderSuppressionFacture(factureId) {
+        const form = document.getElementById('formSuppressionAdmin');
+        const modale = document.getElementById('modaleVerrouAdmin');
+        
+        if (form && modale) {
+            // Associe dynamiquement l'URL de suppression Django avec l'ID du paiement sélectionné
+            form.action = "/impression/facture/supprimer/" + factureId + "/"; 
+            modale.style.display = 'flex';
+        } else {
+            console.error("Erreur structurelle : 'formSuppressionAdmin' ou 'modaleVerrouAdmin' absent du HTML.");
+        }
+    }
+
+    // Logique de fermeture
+    function fermerVerrou() {
+        const modale = document.getElementById('modaleVerrouAdmin');
+        if (modale) modale.style.display = 'none';
+    }
+
+    // Fermeture automatique si l'utilisateur clique en dehors de la boîte blanche
+    window.addEventListener('click', function(event) {
+        const modaleVerrou = document.getElementById('modaleVerrouAdmin');
+        if (event.target === modaleVerrou) {
+            modaleVerrou.style.display = 'none';
+        }
+    });
+
+    // 1. Gestion des cases à cocher uniques
+    const checkboxes = document.querySelectorAll('.devis-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                checkboxes.forEach(cb => { if (cb !== this) cb.checked = false; });
+            }
+        });
+    });
+
+    // 2. Ouverture de la modale d'enregistrement de paiement
+    function ouvrirModaleFacture() {
+        const cochee = document.querySelector('.devis-checkbox:checked');
+        
+        if (!cochee) {
+            alert("⚠️ Veuillez cocher un dossier avec BL généré pour enregistrer son paiement.");
+            return;
+        }
+
+        const clientNom = cochee.getAttribute('data-client');
+        const montantTotal = cochee.getAttribute('data-montant');
+        const numeroBl = cochee.getAttribute('data-bl');
+
+        if (!numeroBl || numeroBl === "None" || numeroBl.trim() === "") {
+            alert("❌ Impossible de facturer : Ce dossier ne possède pas encore de numéro de Bon de Livraison.");
+            return;
+        }
+
+        document.getElementById('modal_numero_bl').value = numeroBl;
+        document.getElementById('modal_montant_paye').value = montantTotal;
+        document.getElementById('modaleClientInfo').innerText = "Dossier : " + clientNom + " (" + numeroBl + ")";
+
+        document.getElementById('modaleFacture').style.display = 'flex';
+    }
+
+    // 3. Fermetures des modales
+    function fermerModalePaiement() {
+        document.getElementById('modaleFacture').style.display = 'none';
+    }
+
+    function fermerVerrou() {
+        document.getElementById('modaleVerrouAdmin').style.display = 'none';
+    }
+
+    // 4. Ouverture de la modale de sécurité d'audit (Suppression)
+    function demanderSuppressionFacture(factureId) {
+        const form = document.getElementById('formSuppressionAdmin');
+        form.action = "/impression/facture/supprimer/" + factureId + "/"; 
+        document.getElementById('modaleVerrouAdmin').style.display = 'flex';
+    }
+
+    // 5. Fermeture sécurisée en cliquant à l'extérieur (CORRIGÉE)
+    window.addEventListener('click', function(event) {
+        const modalePaiement = document.getElementById('modaleFacture');
+        const modaleVerrou = document.getElementById('modaleVerrouAdmin');
+        
+        if (event.target === modalePaiement) {
+            modalePaiement.style.display = 'none';
+        }
+        if (event.target === modaleVerrou) {
+            modaleVerrou.style.display = 'none';
+        }
+    });
+</script>
 {% endblock %}

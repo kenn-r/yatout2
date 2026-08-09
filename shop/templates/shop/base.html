@@ -553,10 +553,16 @@
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15) !important;
     }
 
-    /* Masquage des éléments spécifiques mobiles sur ordinateur */
-    .burger-menu, .supports-mobile-only {
+   /* --- Masquage des éléments spécifiques mobiles sur ordinateur --- */
+@media screen and (min-width: 1024px) {
+    .burger-menu, 
+    .supports-mobile-only,
+    div[style*="background-color: #6d28d9"] { /* Cible la navbar violette si besoin */
         display: none !important;
     }
+}
+
+
 
     /* --- COMPOSANT MACARON PROMO PREMIUM HAUT-DROITE --- */
 
@@ -704,12 +710,47 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
             }
         }
+        /* --- EFFETS DE SURVOL (HOVER) POUR LE MENU MOBILE IMPRESSION --- */
+
+/* Style de base pour chaque ligne de support d'impression */
+#mobile-dropdown .btn-support-item {
+    display: block;
+    padding: 10px 14px !important;
+    border-radius: 8px;
+    color: #cbd5e1 !important; /* Gris clair texturé */
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* Effet au survol ou au clic sur le support */
+#mobile-dropdown .btn-support-item:hover {
+    background-color: #334155 !important; /* Ardoise plus claire */
+    color: #38bdf8 !important; /* Changement du texte en bleu ciel électrique */
+    padding-left: 18px !important; /* Léger décalage vers la droite très fluide */
+}
+
+/* Style pour les liens principaux (Prestations / Conseiller) dans le menu mobile */
+#mobile-dropdown a:not(.btn-support-item) {
+    padding: 10px 14px !important;
+    border-radius: 8px;
+    transition: background-color 0.2s ease !important;
+}
+
+/* Effet de survol sur le lien "Nos Prestations" */
+#mobile-dropdown a[href*="prestations"]:not(.btn-support-item):hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+}
+
+/* Effet de survol sur le lien "Parler à un conseiller" */
+#mobile-dropdown a[href*="conseiller"]:hover {
+    background-color: rgba(34, 197, 94, 0.1) !important; /* Fond vert très subtil */
+}
 </style>
 
-<!-- Retirez complètement l'ancien bandeau à gauche de la navbar -->
-<!-- ===================================================================== -->
-<!-- 1. ARCHITECTURE UNIQUEMENT DÉDIÉE AUX EN-TÊTES (NAVBARS)             -->
-<!-- ===================================================================== -->
+
 {% if "impression" in request.path or prestation %}
     
     <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
@@ -728,11 +769,11 @@
                 <a href="{% url 'page_conseiller' %}" class="btn-nav btn-conseiller-green">
                     💬 Parler à un conseiller
                 </a>
-{% if user.is_authenticated and user.is_staff %}
-    <a href="{% url 'espace_devis_dashboard' %}" class="btn-nav" style="border: 1px dashed #7c3aed;">
-        📊 Administration Devis
-    </a>
-{% endif %}
+                {% if user.is_authenticated and user.is_staff %}
+                    <a href="{% url 'espace_devis_dashboard' %}" class="btn-nav" style="border: 1px dashed #7c3aed;">
+                        📊 Administration Devis
+                    </a>
+                {% endif %}
                 <div class="supports-mobile-only">
                     <span class="menu-section-title">📁 Nos supports :</span>
                     
@@ -775,10 +816,23 @@
                 <a href="{% url 'panier_detail' %}" class="link-nav">🛒 Mon Panier</a>
                 {% if user.is_authenticated %}
                     <span class="nav-welcome">Bonjour, <strong>{{ user.username }}</strong></span>
-                    <a href="{% url 'dashboard_vendeur' %}" class="btn-nav btn-nav-purple">Tableau de bord</a>
-                    <a href="{% url 'ajouter_produit' %}" class="btn-nav btn-nav-purple">＋ Ajouter produit</a>
                     
-                    <form method="POST" action="{% url 'deconnexion_vendeur' %}" style="margin: 0;">
+                    <!-- 🔒 CONDITION DE SÉCURITÉ : N'apparaît que si le vendeur connecté visite sa propre page -->
+                    {% if user.username == vendeur_vitrine.user.username or not vendeur_vitrine %}
+                        <a href="{% url 'boutique_vendeur' username=user.username %}" class="btn-nav" style="background: #0284c7 !important; border: none; color: white !important;">
+                            👁️ Ma Vitrine
+                        </a>
+
+                        <button onclick="copierLienBoutiqueMagique('{{ request.scheme }}://{{ request.get_host }}{% url 'boutique_vendeur' username=user.username %}', this)" 
+                                style="background: #10b981; color: white; border: none; padding: 10px 14px; font-weight: 700; border-radius: 20px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
+                            🔗 Copier mon lien
+                        </button>
+
+                        <a href="{% url 'dashboard_vendeur' %}" class="btn-nav btn-nav-purple">Tableau de bord</a>
+                        <a href="{% url 'ajouter_produit' %}" class="btn-nav btn-nav-purple">＋ Ajouter produit</a>
+                    {% endif %}
+                    
+                    <form method="POST" action="{% url 'deconnexion_vendeur' %}" style="margin: 0; display: inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn-logout-submit">
                             🚪 Déconnexion
@@ -791,8 +845,9 @@
             </div>
         </div>
     </nav>
-{% endif %}
-    <!-- 2. AFFICHAGE DES MESSAGES -->
+{% endif %} <!-- ⚖️ CORRIGÉ : Ferme proprement la condition principale ouverte à la ligne 710 -->
+
+   <!-- 2. AFFICHAGE DES MESSAGES -->
     {% if messages %}
     <div class="container alert-container">
         {% for message in messages %}
@@ -803,9 +858,14 @@
 
     <!-- 3. ZONE DYNAMIQUE D'INJECTION DES PAGES -->
     <div class="flex-grow">
+        <!-- 🔴 NOUVEAU BLOC FORCEUR DE SCROLL HORIZONTAL -->
+        <div style="width: 100% !important; overflow-x: auto !important; display: block !important; clear: both !important; -webkit-overflow-scrolling: touch;">
+            
+            
         {% block content %}
 
         {% endblock %}
+        </div>
         </div>
        
     <!-- ===================================================================== -->
@@ -841,6 +901,7 @@
 
     <!-- 🟢 SCRIPTS JAVASCRIPT NETTOYÉS SANS ERREURS -->
     <script>
+    // 📱 GESTION DU MENU MOBILE
     function basculerMenuMobile(bouton) {
         const navActions = bouton.parentElement.querySelector('.nav-actions');
         if (navActions) {
@@ -849,6 +910,7 @@
         }
     }
 
+    // 🤖 INTERACTION FENÊTRE CHAT IA
     function basculerFenetreChat() {
         const tchat = document.getElementById('fenetre-chat-ia');
         const bouton = document.getElementById('btn-flottant-ia');
@@ -865,6 +927,7 @@
         }
     }
 
+    // ✉️ ENVOI DE MESSAGE DANS LA BOÎTE DE CHAT
     function envoyerMessageGlobalIA() {
         const chatBox = document.getElementById('chat-box-global');
         const inputField = document.getElementById('global-message-input');
@@ -884,6 +947,39 @@
         
         chatBox.scrollTop = chatBox.scrollHeight;
     }
-    </script>
+
+    // 🔗 COPIE SÉCURISÉE DU LIEN DE LA VITRINE PERSONNELLE
+    function copierLienBoutiqueMagique(lienComplet, boutonInstance) {
+        if (!navigator.clipboard) {
+            // Solution de secours pour les anciens smartphones ou navigateurs intégrés (WhatsApp / Facebook)
+            const inputTemp = document.createElement("input");
+            inputTemp.value = lienComplet;
+            document.body.appendChild(inputTemp);
+            inputTemp.select();
+            document.execCommand("copy");
+            document.body.removeChild(inputTemp);
+            appliquerFeedbackVisuelHeader(boutonInstance);
+            return;
+        }
+
+        navigator.clipboard.writeText(lienComplet).then(() => {
+            appliquerFeedbackVisuelHeader(boutonInstance);
+        }).catch(err => {
+            console.error("Erreur de copie : ", err);
+        });
+    }
+
+    // ✨ RENDER VISUEL DE SUCCÈS POUR LE BOUTON COPIER
+    function appliquerFeedbackVisuelHeader(bouton) {
+        const texteDOrigine = bouton.innerHTML;
+        bouton.style.background = "#059669"; // Vert foncé succès
+        bouton.innerHTML = "✅ Copié !";
+        
+        setTimeout(() => {
+            bouton.style.background = "#10b981"; // Restauration du vert standard
+            bouton.innerHTML = texteDOrigine;
+        }, 2000);
+    }
+</script>
 </body>
 </html>

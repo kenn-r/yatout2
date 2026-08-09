@@ -1,17 +1,37 @@
 {% extends 'shop/base.html' %}
 
 {% block content %}
-<div class="container" style="max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; text-align: center; background: white;">
-    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
-        <p style="font-size: 16px; margin: 0;">
-            🤖 <strong>Assistant YaTout :</strong><br><br>
-            Bonjour ! Pour parler à notre conseiller commercial, veuillez cliquer sur le bouton de redirection ci-dessous.
-        </p>
-    </div>
-    
-    <!-- Lien de redirection direct -->
-    <a href="{{ lien_whatsapp }}" target="_blank" style="display: inline-block; background-color: #22c55e; color: white; padding: 14px 28px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 16px;">
-        🟢 Ouvrir la discussion WhatsApp
-    </a>
+<!-- Bulle de discussion flottante (Fixée en bas à droite de l'écran) -->
+<div style="position: fixed; bottom: 24px; right: 24px; max-width: 360px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; padding: 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; z-index: 9999;">
+  
+  <!-- En-tête de la bulle avec l'identité du conseiller -->
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+    <!-- Avatar de l'assistant -->
+    <div style="position: relative; width: 40px; height: 40px; background-color: #f3e8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+      👨‍💼
+      <!-- Pastille verte de statut connecté -->
+      <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background-color: #22c55e; border: 2px solid #ffffff; border-radius: 50%;"></span>
+    </div>
+    <div style="text-align: left;">
+      <h4 style="margin: 0; color: #1e293b; font-size: 15px; font-weight: 600;">Assistant YaTout</h4>
+      <span style="color: #64748b; font-size: 12px;">Conseiller commercial</span>
+    </div>
+  </div>
+
+  <!-- Contenu du message -->
+  <div style="background-color: #f8fafc; border-radius: 12px; padding: 12px; margin-bottom: 16px; text-align: left;">
+    <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.5;">
+      Bonjour ! Pour parler à notre conseiller commercial, veuillez cliquer sur le bouton de redirection ci-dessous.
+    </p>
+  </div>
+
+  <!-- Lien de redirection dynamique vers WhatsApp -->
+  <a href="{{ lien_whatsapp }}" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: #25D366; color: #ffffff; text-decoration: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2); transition: all 0.2s ease;">
+    <!-- Icône SVG officielle WhatsApp -->
+    <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.59-4.846c1.66.986 3.284 1.489 4.936 1.492 5.428.002 9.845-4.415 9.849-9.846a9.82 9.82 0 0 0-2.87-6.965A9.836 9.836 0 0 0 11.997 1.3c-5.433 0-9.85 4.417-9.854 9.848-.002 1.773.465 3.5 1.353 5.009L2.5 21.5l5.147-1.346z"/>
+    </svg>
+    Ouvrir la discussion WhatsApp
+  </a>
 </div>
 {% endblock %}

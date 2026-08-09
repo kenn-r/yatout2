@@ -10,6 +10,7 @@ urlpatterns = [
     # Vos articles migrent vers l'adresse '/boutique/' pour libérer la racine.
     path('boutique/', views.accueil, name='accueil'),
     path('produit/<int:pk>/', views.detail_produit, name='detail_produit'),
+    path('boutique/<str:username>/', views.boutique_personnelle_vendeur, name='boutique_vendeur'),
     
     # 🖨️ --- ESPACE SERVICES D'IMPRESSION ---
     path('impressions/', views.page_impressions, name='page_impressions'),
@@ -61,4 +62,12 @@ urlpatterns = [
     # ASSUREZ-VOUS D'AJOUTER CETTE LIGNE EXACTE DANS VOS URLPATTERNS
     path('gestion-devis/pdf/<int:devis_id>/', views.telecharger_devis_pdf, name='telecharger_devis_pdf'),
     path('gestion-devis/bl/<int:devis_id>/pdf/', views.telecharger_bl_pdf, name='telecharger_bl_pdf'),
+    path('impression/facture/generer/', views.generer_facture_depuis_bl, name='generer_facture_bl'),
+    path('impression/facture/<int:facture_id>/', views.detail_facture, name='detail_facture'),
+
+    path(
+    "impression/facture/supprimer/<int:facture_id>/",
+    views.supprimer_facture_securisee,
+    name="supprimer_facture",
+),
 ]

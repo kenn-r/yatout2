@@ -366,6 +366,7 @@ class Devis(models.Model):
     
     # Suivi & Droits
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='brouillon')
+    livre_par = models.CharField(max_length=150, default="Nous-mêmes", verbose_name="Mode de livraison")
     cree_par = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={'is_staff': True})
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -373,6 +374,10 @@ class Devis(models.Model):
     # Référence vers le Bon de Livraison une fois converti
     numero_bl = models.CharField(max_length=50, blank=True, null=True, verbose_name="Numéro de BL associé")
     numero_devis_personnalise = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    # Suivi & Droits
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='brouillon')
+    livre_par = models.CharField(max_length=150, default="Nous-mêmes", verbose_name="Mode de livraison")
+    
 
     def __str__(self):
         return f"Devis #{self.id} - {self.nom_client} ({self.get_statut_display()})"
@@ -380,3 +385,58 @@ class Devis(models.Model):
     class Meta:
         verbose_name = "Devis"
         ordering = ['-date_creation']
+
+
+
+class DevisAuditLog(models.Model):
+    ACTIONS_CHOICES = [
+        ('SUPPRESSION', 'Suppression validée'),
+        ('TENTATIVE', 'Tentative de suppression'),
+    ]
+    
+    devis_ref = models.CharField("Référence Devis", max_length=20)
+    client = models.CharField("Nom du Client", max_length=150)
+    montant = models.DecimalField("Montant Total", max_digits=10, decimal_places=2)
+    statut_devis = models.CharField("État du devis", max_length=50)
+    action = models.CharField(max_length=20, choices=ACTIONS_CHOICES)
+    resultat = models.CharField(max_length=255) # Ex: "Échec : Code secret incorrect saisi ('1234')"
+    execute_par = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Opérateur")
+    date_action = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Log d'Audit Devis"
+        ordering = ['-date_action']
+
+    def __str__(self):
+        return f"{self.devis_ref} - {self.action} - {self.resultat}"
+
+class Facture(models.Model):
+    MODE_PAIEMENT_CHOICES = [
+        ('WAVE', 'Wave 🌊'),
+        ('OM', 'Orange Money 🍊'),
+        ('MTN', 'MTN MoMo 💛'),
+        ('CASH', 'Espèces 💵'),
+        ('VIREMENT', 'Virement bancaire 🏦'),
+    ]
+
+    STATUT_CHOICES = [
+        ('PAYEE', 'Soldée / Payée ✅'),
+        ('PARTIEL', 'Partiellement payée ⚠️'),
+    ]
+
+    # ✅ Lié directement au Devis (qui fait office de BL via son numéro_bl)
+    devis_associe = models.OneToOneField('Devis', on_delete=models.PROTECT, related_name='facture')
+    
+    # ✅ Chiffres décimaux corrigés (sans max_length)
+    montant_total_bl = models.DecimalField(max_digits=12, decimal_places=2) 
+    montant_recu = models.DecimalField(max_digits=12, decimal_places=2)     
+    reste_a_payer = models.DecimalField(max_digits=12, decimal_places=2)    
+    
+    # Paramètres de règlement et légal
+    numero_facture = models.CharField(max_length=50, unique=True)
+    mode_paiement = models.CharField(max_length=20, choices=MODE_PAIEMENT_CHOICES)
+    statut_paiement = models.CharField(max_length=20, choices=STATUT_CHOICES, default='PAYEE')
+    date_paiement = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Facture {self.numero_facture} - Devis/BL #{self.devis_associe.id}"

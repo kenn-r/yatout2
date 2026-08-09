@@ -222,3 +222,13 @@ admin.site.site_header = "Boutique/Print YaTouT"
 
 # Changez le texte d'accueil au milieu de la page
 admin.site.index_title = "Bienvenue dans YaTouT"
+
+
+from django.contrib import admin
+from .models import DevisAuditLog
+
+@admin.register(DevisAuditLog)
+class DevisAuditLogAdmin(admin.ModelAdmin):
+    list_display = ('date_action', 'devis_ref', 'client', 'montant', 'action', 'resultat', 'execute_par')
+    list_filter = ('action', 'date_action')
+    search_fields = ('devis_ref', 'client', 'resultat')

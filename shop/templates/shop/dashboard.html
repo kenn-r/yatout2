@@ -176,8 +176,23 @@
     .status-active-exp { background-color: #e0e7ff; color: #4338ca; border-color: #c7d2fe; }
     .status-active-livr { background-color: #dcfce7; color: #15803d; border-color: #bbf7d0; }
 </style>
-
 <div class="dash-wrapper">
+
+    <!-- ===================================================================== -->
+    <!-- 📣 SECTION 1 : BLOC DE PARTAGE GLOBAL DE LA BOUTIQUE                  -->
+    <!-- ===================================================================== -->
+    <div style="background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div>
+            <h3 style="margin: 0; color: #0f172a; font-size: 1.1rem; font-weight: 700;">📣 Partager ma boutique YaTout</h3>
+            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 0.85rem;">Copiez le lien unique de votre vitrine pour attirer des clients depuis vos réseaux sociaux.</p>
+        </div>
+        <!-- Utilisation sécurisée de l'ID du vendeur connecté pour générer l'adresse absolue -->
+        <button onclick="copierDansPressePapier('{{ request.scheme }}://{{ request.get_host }}/boutique/{{ vendeur.username }}', this)" 
+                style="background: #7c3aed; color: white; border: none; padding: 12px 20px; font-weight: 700; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: background 0.2s;">
+            🔗 Copier le lien de ma boutique
+        </button>
+    </div>
+
     <!-- Grille des statistiques -->
     <div class="dash-stats-grid">
         <div class="dash-stat-card revenue-card">
@@ -196,7 +211,9 @@
         </div>
     </div>
 
-    <!-- Gestion du catalogue -->
+    <!-- ===================================================================== -->
+    <!-- 📦 GESTION DU CATALOGUE (AVEC BOUTONS DE PARTAGE D'ARTICLES)          -->
+    <!-- ===================================================================== -->
     <div class="dash-table-container">
         <h2 class="dash-table-title">📦 Gestion de votre catalogue</h2>
         <table class="dash-table">
@@ -215,11 +232,21 @@
                     <td class="dash-prod-price">{{ produit.prix }} {{ vendeur.devise }}</td>
                     <td style="text-align: center;"><span class="badge-stock-purple">{{ produit.stock }} unité(s)</span></td>
                     <td style="text-align: center;">
-                        <a href="{% url 'supprimer_produit' pk=produit.pk %}" 
-                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement l\'article : {{ produit.nom }} ?');" 
-                           class="btn-delete-purple">
-                            🗑️ Supprimer
-                        </a>
+                        <div style="display: inline-flex; align-items: center; gap: 8px;">
+                            
+                            <!-- 📣 POSITIONNÉ ICI : Le bouton génère le lien de la fiche produit unique sans planter -->
+                            <button onclick="copierDansPressePapier('{{ request.scheme }}://{{ request.get_host }}{% url 'detail_produit' pk=produit.pk %}', this)" 
+                                    title="Copier le lien de l'article"
+                                    style="background: rgba(124, 58, 237, 0.08); color: #7c3aed; border: none; padding: 6px 12px; font-weight: 700; border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px;">
+                                📢 Partager
+                            </button>
+
+                            <a href="{% url 'supprimer_produit' pk=produit.pk %}" 
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement l\'article : {{ produit.nom }} ?');" 
+                               class="btn-delete-purple" style="margin: 0;">
+                                🗑️ Supprimer
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
@@ -246,7 +273,7 @@
                 {% for vente in ventes %}
                 <tr>
                     <td>
-                        {% for item in vente.items.all %}
+                        {% for item in autocomplete_items|default:vente.items.all %}
                             {% if item.produit.vendeur == vendeur %}
                                 <div class="dash-prod-name" style="margin-bottom: 6px;">🔹 {{ item.produit.nom }}</div>
                             {% endif %}
@@ -261,7 +288,7 @@
                     <td style="color: #475569; text-transform: capitalize;">{{ vente.adresse }}</td>
                     
                     <td style="text-align: center;">
-                        {% for item in vente.items.all %}
+                        {% for item in autocomplete_items|default:vente.items.all %}
                             {% if item.produit.vendeur == vendeur %}
                                 <div style="margin-bottom: 6px;"><span class="dash-qty-item">x{{ item.quantite }}</span></div>
                             {% endif %}
@@ -269,9 +296,6 @@
                     </td>
                     
                     <td>
-                        <div class="status-actions-group">
-                            <a href="{% url 'modifier_statut_commande' pk=vente.pk nouveau_statut='RECU' %}"
-                            <td>
                         <div class="status-actions-group">
                             <a href="{% url 'modifier_statut_commande' pk=vente.pk nouveau_statut='RECU' %}" 
                                class="btn-status-action {% if vente.statut == 'RECU' or not vente.statut %}status-active-recu{% else %}status-inactive{% endif %}">
@@ -301,4 +325,50 @@
         </table>
     </div>
 </div>
+
+<!-- ===================================================================== -->
+<!-- 🎛️ SCRIPT JAVASCRIPT TECHNIQUE DE COPIE SECURISEE                   -->
+<!-- ===================================================================== -->
+<script>
+function copierDansPressePapier(lienConstruit, bouton) {
+    if (!navigator.clipboard) {
+        // Solution de secours pour les navigateurs mobiles plus anciens ou non sécurisés
+        const inputTemporaire = document.createElement("input");
+        inputTemporaire.value = lienConstruit;
+        document.body.appendChild(inputTemporaire);
+        inputTemporaire.select();
+        document.execCommand("copy");
+        document.body.removeChild(inputTemporaire);
+        declencherFeedbackVisuel(bouton);
+        return;
+    }
+
+    navigator.clipboard.writeText(lienConstruit).then(() => {
+        declencherFeedbackVisuel(bouton);
+    }).catch(err => {
+        console.error("Échec de la copie : ", err);
+        alert("Copie impossible automatiquement. Voici le lien : " + lienConstruit);
+    });
+}
+
+function declencherFeedbackVisuel(bouton) {
+    const texteInitial = bouton.innerHTML;
+    
+    // Modification visuelle instantanée pour confirmer l'enregistrement
+    bouton.style.background = "#10b981"; // Vert de validation
+    bouton.style.color = "#ffffff";
+    
+    if (texteInitial.includes("Partager")) {
+        bouton.innerHTML = "✅ Copié !";
+    } else {
+        bouton.innerHTML = "✅ Boutique copiée !";
+    }
+    // Restauration du style d'origine après 2 secondes
+    setTimeout(() => {
+        bouton.style.background = "";
+        bouton.style.color = "";
+        bouton.innerHTML = texteInitial;
+    }, 2000);
+}
+</script>
 {% endblock %}

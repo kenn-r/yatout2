@@ -45,6 +45,17 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from django.db import connection
+from shop.models import Facture
+
+# Script de secours pour forcer la création de la table manquante
+try:
+    with connection.schema_editor() as schema_editor:
+        schema_editor.create_model(Facture)
+    print("✅ Succès : La table shop_facture a été créée physiquement !")
+except Exception as e:
+    # Si la table finit par se créer ou existe déjà, Django ignore l'erreur
+    pass
 
 
 
@@ -257,6 +268,20 @@ def valider_panier(request):
         return redirect('accueil')
         
     return render(request, 'shop/valider_panier.html')
+
+# 🔴 REMPLACEZ LE BLOC DE LA LIGNE 266 À 268 PAR CELUI-CI :
+def boutique_personnelle_vendeur(request, username):
+    """Affiche uniquement les articles appartenant au vendeur spécifié dans l'URL"""
+    # 1. On va chercher l'instance du modèle Vendeur en passant par la liaison user (ou username selon votre modèle)
+    vendeur_profil = get_object_or_404(Vendeur, user__username=username)
+    
+    # 2. Maintenant le filtre fonctionne car vendeur_profil est bien une instance de "Vendeur"
+    produits_vendeur = Produit.objects.filter(vendeur=vendeur_profil)
+    
+    return render(request, 'shop/boutique_privee.html', {
+        'vendeur_vitrine': vendeur_profil,
+        'produits': produits_vendeur
+    })
 
 
 # --- VUES EXISTANTES (CONSERVÉES ET RESTRUCTURÉES) ---
@@ -1966,59 +1991,104 @@ def est_administrateur(user):
 
 
 # =====================================================================
-# 📊 TABLEAU DE BORD DES DEVIS
-# =====================================================================
+from django.db.models import Sum
+from django.utils import timezone
+from .models import Facture, Devis # S'assurer que Facture est importé ici
 @user_passes_test(est_administrateur, login_url='connexion')
 def espace_devis_dashboard(request):
-    """Affiche la liste complète de tous les devis"""
-    devis_list = Devis.objects.all()
+    """Affiche les devis, les statistiques du mois et l'historique complet des paiements."""
+    aujourdhui = timezone.now()
+    factures_du_mois = Facture.objects.filter(
+        date_paiement__year=aujourdhui.year,
+        date_paiement__month=aujourdhui.month
+    )
+    
+    total_du_mois = factures_du_mois.aggregate(Sum('montant_recu'))['montant_recu__sum'] or 0
+    nombre_transactions = factures_du_mois.count()
+
+    # 1. Liste des devis (votre code existant)
+    devis_list = Devis.objects.all().order_by('-id')
+    
+    # 2. 📋 NOUVEAU : Historique de TOUS les paiements (sans limite de mois)
+    historique_paiements = Facture.objects.all().order_by('-date_paiement')
+    
     return render(request, 'shop/admin_devis_dashboard.html', {
         'devis_list': devis_list, 
-        'prestation': True
+        'historique_paiements': historique_paiements, # 👈 Transmis au HTML
+        'prestation': True,
+        'total_du_mois': total_du_mois,          
+        'nombre_transactions': nombre_transactions,  
+        'mois_actuel': aujourdhui.strftime("%B %Y")
     })
 
-
-# =====================================================================
-# 🪄 CRÉATION / MODIFICATION DE DEVIS
-# =====================================================================
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from decimal import Decimal
-
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from decimal import Decimal
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from decimal import Decimal
+from django.conf import settings
+from .models import Devis, Prestation, DevisAuditLog
 
 @user_passes_test(est_administrateur, login_url='connexion')
 def creer_ou_modifier_devis(request, devis_id=None):
-    """Formulaire unique pour créer un nouveau devis ou modifier un devis existant"""
+    """Formulaire pour créer, modifier ou supprimer un devis avec double sécurité"""
     devis = get_object_or_404(Devis, id=devis_id) if devis_id else None
     toutes_les_prestations = Prestation.objects.all()
+    code_attendu = getattr(settings, 'SECRET_ADMIN_DELETE_CODE', '1234')
 
     if request.method == "POST":
+        action_type = request.POST.get('action_type')
+        code_saisi = request.POST.get('code_admin')
+        
+        # 🔒 SÉCURITÉ : VERROUILLAGE ÉDITION & SUPPRESSION (Pour Devis Validés ou BL)
+        if devis and devis.statut in ['valide', 'converti_bl']:
+            # Cas 1 : Tentative de suppression
+            if action_type == "supprimer_devis":
+                if code_saisi != code_attendu:
+                    DevisAuditLog.objects.create(
+                        devis_ref=f"#{devis.id}", client=devis.nom_client, montant=devis.montant_total,
+                        statut_devis=devis.get_statut_display(), action='TENTATIVE',
+                        resultat="Échec suppression : Code secret incorrect.", execute_par=request.user
+                    )
+                    messages.error(request, "❌ Code administrateur incorrect ! Suppression annulée.")
+                    return redirect('espace_devis_dashboard')
+                
+                # Code correct -> Suppression
+                DevisAuditLog.objects.create(
+                    devis_ref=f"#{devis.id}", client=devis.nom_client, montant=devis.montant_total,
+                    statut_devis=devis.get_statut_display(), action='SUPPRESSION',
+                    resultat="Succès : Devis détruit avec code valide.", execute_par=request.user
+                )
+                devis.delete()
+                messages.success(request, f"Le devis #{devis_id} a été supprimé.")
+                return redirect('espace_devis_dashboard')
+            
+            # Cas 2 : Tentative de Modification / Enregistrement
+            elif action_type == "sauvegarder":
+                if code_saisi != code_attendu:
+                    DevisAuditLog.objects.create(
+                        devis_ref=f"#{devis.id}", client=devis.nom_client, montant=devis.montant_total,
+                        statut_devis=devis.get_statut_display(), action='TENTATIVE',
+                        resultat="Échec modification : Tentative d'enregistrement sans code valide.", execute_par=request.user
+                    )
+                    messages.error(request, "🔒 Ce devis est validé/converti en BL. Code administrateur requis pour modifier !")
+                    return redirect(request.path) # Recharge la page actuelle
+                
+                # Si le code est bon, on l'autorise à continuer vers l'enregistrement ci-dessous
+                DevisAuditLog.objects.create(
+                    devis_ref=f"#{devis.id}", client=devis.nom_client, montant=devis.montant_total,
+                    statut_devis=devis.get_statut_display(), action='MODIFICATION',
+                    resultat="Succès : Modification forcée autorisée par code admin.", execute_par=request.user
+                )
+
+        # === LOGIQUE STANDARD D'ENREGISTREMENT (CRÉATION OU MODIFICATION VALIDÉE) ===
         nom = request.POST.get('nom_client')
         tel = request.POST.get('telephone')
         email = request.POST.get('email')
         desc = request.POST.get('description_prestation')
         statut = request.POST.get('statut', 'brouillon')
-        
-        # 📦 RÉCUPÉRATION STRICTE DU MODE DE LIVRAISON SÉLECTIONNÉ
         livre_par = request.POST.get('livre_par', 'Nous-mêmes')
         
-        # Récupération de la valeur brute du montant total
         montant_brut = request.POST.get('form-montant') or request.POST.get('montant_total') or '0'
-        
-        # Nettoyage complet et sécurisé de la chaîne de caractères du prix
         montant_propre = str(montant_brut).replace('\xa0', '').replace(' ', '').replace(',', '.')
         if 'F' in montant_propre:
             montant_propre = montant_propre.split('F')[0].strip()
@@ -2035,19 +2105,14 @@ def creer_ou_modifier_devis(request, devis_id=None):
             devis.description_prestation = desc
             devis.montant_total = montant_decimal  
             devis.statut = statut
-            devis.livre_par = livre_par  # Enregistrement en base de données pour la modification
+            devis.livre_par = livre_par  
             devis.save()
-            messages.success(request, f"Le devis #{devis.id} a été modifié avec succès.")
+            messages.success(request, f"Le devis #{devis.id} a été mis à jour.")
         else:
             devis = Devis.objects.create(
-                nom_client=nom, 
-                telephone=tel, 
-                email=email,
-                description_prestation=desc, 
-                montant_total=montant_decimal,  
-                statut=statut,
-                livre_par=livre_par,  # Enregistrement en base de données pour la création
-                cree_par=request.user
+                nom_client=nom, telephone=tel, email=email,
+                description_prestation=desc, montant_total=montant_decimal,  
+                statut=statut, livre_par=livre_par, cree_par=request.user
             )
             messages.success(request, f"Nouveau devis #{devis.id} créé.")
         
@@ -2058,6 +2123,7 @@ def creer_ou_modifier_devis(request, devis_id=None):
         'prestation': True,
         'liste_prestations': toutes_les_prestations
     })
+
 
 # =====================================================================
 # 🚚 CONVERSION SÉCURISÉE EN BON DE LIVRAISON (BL)
@@ -2092,13 +2158,13 @@ def telecharger_devis_pdf(request, devis_id):
     p = canvas.Canvas(buffer, pagesize=(595, 842)) # Format de page standard A4
     
     # --- EN-TÊTE DE L'ENTREPRISE (YaTout imprim) ---
-    p.setFont("Helvetica-Bold", 22)
+    p.setFont("Helvetica-Bold", 18)
     p.setFillColorRGB(0.43, 0.16, 0.92) # Violet signature
     p.drawString(50, 760, "YaTout imprim")
     
-    p.setFont("Helvetica", 10)
+    p.setFont("Helvetica", 8)
     p.setFillColorRGB(0.3, 0.3, 0.3)
-    p.drawString(50, 740, "Atelier d'Impression Numérique & Publicitaire")
+    p.drawString(50, 740, "Le Savant de l'imprimerie")
     p.drawString(50, 725, "Contact : +225 05 74 70 20 92 | Abidjan, Côte d'Ivoire")
     
     # --- DETAILS DU BLOC COMPTABLE ALIGNÉS À DROITE ---
@@ -2109,7 +2175,7 @@ def telecharger_devis_pdf(request, devis_id):
     p.setFillColorRGB(0, 0, 0)
     p.drawRightString(X_ALIGNE_DROITE, 760, "DEVIS")
     
-    p.setFont("Helvetica", 11)
+    p.setFont("Helvetica", 9)
     # De: Nom du client
     p.drawRightString(X_ALIGNE_DROITE, 742, f"De: {devis.nom_client}")
     
@@ -2117,10 +2183,19 @@ def telecharger_devis_pdf(request, devis_id):
     if hasattr(devis, 'numero_devis_personnalise') and devis.numero_devis_personnalise:
         num_affiche = devis.numero_devis_personnalise
     else:
-        # Solution de secours si la base n'est pas encore migrée : utilise l'ID réel pour incrémenter (001, 002, etc.)
+      # Solution de secours : réinitialisation automatique du rang à chaque nouveau mois
         annee = devis.date_creation.strftime('%y')
-        mois = devis.date_creation.strftime('%m')
-        num_affiche = f"{annee}/Dv{mois}-{devis.id:03d}"
+        mois = devis.date_creation.month # Donne 8 pour août au lieu de 08
+        
+        # On compte les devis créés avant celui-ci dans le même mois et la même année
+        devis_du_mois = Devis.objects.filter(
+            date_creation__year=devis.date_creation.year,
+            date_creation__month=devis.date_creation.month,
+            id__lt=devis.id
+        ).count()
+        
+        rang_mensuel = devis_du_mois + 1
+        num_affiche = f"{annee}/Dv{mois}-{rang_mensuel:03d}"
         
     p.drawRightString(X_ALIGNE_DROITE, 725, f"n° : {num_affiche}")
     
@@ -2248,7 +2323,7 @@ def telecharger_devis_pdf(request, devis_id):
     p.drawCentredString(297, 50, "Ce devis est valable pour une durée de 30 jours à compter de sa date d'émission.")
     p.setFont("Helvetica-BoldOblique", 9)
     p.setFillColorRGB(0.43, 0.16, 0.92)
-    p.drawCentredString(297, 35, "YaTout imprim - L'excellence graphique à votre service. ✨")
+    p.drawCentredString(297, 35, "YaTout imprim - Votre image mérite la perfection ✨")
 
     p.showPage()
     p.save()
@@ -2292,7 +2367,7 @@ def telecharger_bl_pdf(request, devis_id):
     
     p.setFont("Helvetica-Oblique", 9)
     p.setFillColor(colors.HexColor("#64748b"))
-    p.drawString(X_GAUCHE, 726, "Votre image mérite la perfection")
+    p.drawString(X_GAUCHE, 726, "Le Savant de l'imprimerie")
 
     # --- 2. BLOC CLIENT ---
     p.setFillColor(colors.HexColor("#f1f5f9")) 
@@ -2369,7 +2444,8 @@ def telecharger_bl_pdf(request, devis_id):
     
     num_origine = devis.numero_devis_personnalise or f"{annee_court}/Dv{devis.date_creation.strftime('%m')}-{devis.id:03d}"
     p.drawString(303, y_bloc + 10, num_origine)
-    p.drawString(433, y_bloc + 10, "Nous-mêmes")
+    valeur_livraison = devis.livre_par if devis.livre_par else "Nous-mêmes"
+    p.drawString(433, y_bloc + 10, valeur_livraison)
 
     # =====================================================================
     # 6. TABLEAU DES PRESTATIONS RECALIBRÉ (Espaces élargis)
@@ -2472,9 +2548,14 @@ def telecharger_bl_pdf(request, devis_id):
     p.setFont("Helvetica-Bold", 8)
     p.setFillColor(colors.HexColor("#64748b"))
     p.drawString(X_GAUCHE, y_total - 100, f"Merci d'utiliser la communication suivante pour votre paiement : {num_bl_final}")
-    
+
     p.setFont("Helvetica", 8)
     p.drawString(X_GAUCHE, y_total - 114, "Arrêter la facture à la somme de : Conforme au montant net indiqué ci-dessus.")
+
+    # 🔴 RAJOUTER CES TROIS LIGNES ICI POUR LE SLOGAN EN BAS DE PAGE
+    p.setFont("Helvetica-BoldOblique", 10)
+    p.setFillColor(colors.HexColor("#7c3aed")) # Utilise votre violet signature
+    p.drawCentredString(297, 40, "Avec YaTout imprim, « Votre image mérite la perfection »")
 
     p.showPage()
     p.save()
@@ -2482,3 +2563,130 @@ def telecharger_bl_pdf(request, devis_id):
     
     nom_fichier = f"BL_{num_bl_final.replace('/', '_')}.pdf"
     return FileResponse(buffer, as_attachment=True, filename=nom_fichier)
+
+
+
+
+def generer_facture_depuis_bl(request):
+    from shop.models import Facture, Devis
+    from decimal import Decimal
+    from django.utils import timezone
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    if request.method == 'POST':
+        numero_bl_saisi = request.POST.get('numero_bl').strip()
+        montant_paye_saisi = request.POST.get('montant_paye')
+        mode_paiement = request.POST.get('mode_paiement')
+
+       # 🔍 CORRECTION : On utilise filter().first() pour éviter le plantage MultipleObjectsReturned
+        devis_bl = Devis.objects.filter(numero_bl=numero_bl_saisi).first()
+
+        if not devis_bl:
+            messages.error(request, f"Aucun Bon de Livraison trouvé avec le numéro {numero_bl_saisi}.")
+            return redirect('page_prestations')
+
+        # Vérification si ce document possède déjà une facture associée
+        if Facture.objects.filter(devis_associe=devis_bl).exists():
+            messages.warning(request, f"Une facture a déjà été émise pour ce BL.")
+            return redirect('page_prestations')
+
+        # Récupération et calcul des montants
+        montant_total_bl = Decimal(str(devis_bl.montant_total))
+        if montant_paye_saisi and montant_paye_saisi.strip():
+            montant_recu = Decimal(str(montant_paye_saisi))
+        else:
+            montant_recu = montant_total_bl
+
+        reste_a_payer = montant_total_bl - montant_recu
+        statut = 'PAYEE' if reste_a_payer <= 0 else 'PARTIEL'
+
+        # Numéro de facture automatique
+        annee_courante = timezone.now().year
+        nombre_factures = Facture.objects.count() + 1
+        numero_facture = f"FAC-{annee_courante}-{nombre_factures:04d}"
+
+        # Sauvegarde définitive
+        facture = Facture.objects.create(
+            devis_associe=devis_bl,
+            montant_total_bl=montant_total_bl,
+            montant_recu=montant_recu,
+            reste_a_payer=max(Decimal('0.00'), reste_a_payer),
+            numero_facture=numero_facture,
+            mode_paiement=mode_paiement,
+            statut_paiement=statut
+        )
+
+        messages.success(request, f"Facture {numero_facture} générée avec succès !")
+        return redirect('detail_facture', facture_id=facture.id)
+
+    return redirect('page_prestations')
+
+
+
+import qrcode
+import io
+import base64
+from django.shortcuts import get_object_or_404, render
+from .models import Facture
+
+def detail_facture(request, facture_id):
+    facture = get_object_or_404(Facture, id=facture_id)
+    
+    # 1. Contenu textuel à intégrer dans le QR Code
+    qr_data = (
+        f"FACTURE YATOUT IMPlM\n"
+        f"N°: {facture.numero_facture}\n"
+        f"Client: {facture.devis_associe.nom_client}\n"
+        f"Total: {facture.montant_total_bl} FCFA\n"
+        f"Statut: {facture.get_statut_paiement_display()}"
+    )
+    
+    # 2. Génération du QR Code sous forme d'image en mémoire
+    qr = qrcode.QRCode(version=1, box_size=3, border=1)
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="#0f172a", back_color="#ffffff")
+    
+    # 3. Conversion de l'image en texte Base64 lisible par le HTML
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return render(request, 'shop/facture_detail.html', {
+        'facture': facture,
+        'qr_code_image': qr_base64  # On envoie l'image locale ici
+    })
+
+
+
+
+from django.contrib import messages
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from .models import Facture
+
+@user_passes_test(est_administrateur, login_url='connexion')
+def supprimer_facture_securisee(request, facture_id):
+    """Suppression d'un paiement / facture après validation du code secret admin."""
+    if request.method == "POST":
+        code_saisi = request.POST.get("code_secret")
+        code_attendu = getattr(settings, 'SECRET_ADMIN_DELETE_CODE', '1234')
+
+        if code_saisi == code_attendu:
+            facture = get_object_or_404(Facture, id=facture_id)
+            numero_fac = facture.numero_facture
+            
+            # Facultatif : Vous pouvez réinitialiser le statut du devis associé ici si nécessaire
+            # devis = facture.devis_associe
+            # devis.statut = 'valide'
+            # devis.save()
+            
+            facture.delete()
+            messages.success(request, f"🗑️ La facture {numero_fac} a été définitivement effacée des registres.")
+        else:
+            messages.error(request, "❌ Code administrateur incorrect ! Action de suppression révoquée.")
+
+    return redirect('espace_devis_dashboard')
+

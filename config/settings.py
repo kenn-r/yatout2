@@ -146,6 +146,8 @@ ANYMAIL = {
 
 
 }
+# Dans votre fichier settings.py
+SECRET_ADMIN_DELETE_CODE = "1997"  # 👈 Remplacez "1234" par votre mot de passe secret admin unique
 
 
 
