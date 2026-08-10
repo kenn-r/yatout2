@@ -1,6 +1,16 @@
-venv/node_modules/.Ds_Store__pycache__*.pyc.env
+# Environnement virtuel et dépendances
 venv/
 node_modules/
-s__pycache__/
+
+# Fichiers de cache Python
 __pycache__/
+*.pyc
+
+# Fichiers système et configuration
 .Ds_Store
+.env
+
+# 🔴 AJOUTS POUR NETTOYER VOS DOSSIERS ROUGES
+media/
+staticfiles/
+db.sqlite3
