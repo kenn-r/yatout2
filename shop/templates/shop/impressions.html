@@ -492,8 +492,8 @@
             valeur += fluctuation;
 
             // Garde le nombre dans une fourchette logique (ex: entre 65 et 105)
-            if (valeur < 65) valeur = 65;
-            if (valeur > 105) valeur = 105;
+            if (valeur < 10) valeur = 10;
+            if (valeur > 60) valeur = 60;
 
             // Ajoute une transition visuelle fluide lors du changement
             el.style.transition = 'opacity 0.2s ease-in-out';

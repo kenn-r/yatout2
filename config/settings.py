@@ -21,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g8wr(37(o=(s*etln^v+g7vv&r$$86mp_%t9)dnhj#we$=_+@^'
+SECRET_KEY = 'g8wr(37(o=(s*etln^v+g7vv&r$$86mp_%t9)dnhj#we$=_+@^kenxsezrrfg'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'yatout2-production.up.railway.app', 
@@ -165,8 +165,15 @@ LOGIN_URL = '/vendeur/connexion/'
 LOGIN_REDIRECT_URL = '/vendeur/dashboard/'
 
 # Force l'utilisation sécurisée si votre site est en HTTPS sur Render
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+# Force la redirection automatique de HTTP vers HTTPS
+SECURE_SSL_REDIRECT = True
+
+# Configuration de la protection HSTS (Valide le point security.W004)
+SECURE_HSTS_SECONDS = 31536000  # Valable 1 an
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # Indique à Django où stocker les fichiers statiques collectés pour Render
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
