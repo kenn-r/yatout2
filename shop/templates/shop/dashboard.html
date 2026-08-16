@@ -186,11 +186,10 @@
             <h3 style="margin: 0; color: #0f172a; font-size: 1.1rem; font-weight: 700;">📣 Partager ma boutique YaTout</h3>
             <p style="margin: 5px 0 0 0; color: #64748b; font-size: 0.85rem;">Copiez le lien unique de votre vitrine pour attirer des clients depuis vos réseaux sociaux.</p>
         </div>
-        <!-- Utilisation sécurisée de l'ID du vendeur connecté pour générer l'adresse absolue -->
-        <button onclick="copierDansPressePapier('{{ request.scheme }}://{{ request.get_host }}/boutique/{{ vendeur.username }}', this)" 
-                style="background: #7c3aed; color: white; border: none; padding: 12px 20px; font-weight: 700; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: background 0.2s;">
-            🔗 Copier le lien de ma boutique
-        </button>
+         <button onclick="copierLienBoutiqueMagique('{{ request.scheme }}://{{ request.get_host }}{% url 'boutique_vendeur' username=user.username %}', this)" 
+                                style="background: #10b981; color: white; border: none; padding: 10px 14px; font-weight: 700; border-radius: 20px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
+                            🔗 Copier mon lien
+                        </button>
     </div>
 
     <!-- Grille des statistiques -->

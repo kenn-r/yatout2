@@ -799,8 +799,8 @@
         </div> 
     </nav>
 
-<!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
-{% elif request.path != "/" %}
+<!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS (Masqué si route = boutique_vendeur) -->
+{% elif request.path != "/" and request.resolver_match.url_name != 'boutique_vendeur' %}
     
     <nav class="navbar">
         <div class="container">
@@ -817,16 +817,10 @@
                 {% if user.is_authenticated %}
                     <span class="nav-welcome">Bonjour, <strong>{{ user.username }}</strong></span>
                     
-                    <!-- 🔒 CONDITION DE SÉCURITÉ : N'apparaît que si le vendeur connecté visite sa propre page -->
                     {% if user.username == vendeur_vitrine.user.username or not vendeur_vitrine %}
                         <a href="{% url 'boutique_vendeur' username=user.username %}" class="btn-nav" style="background: #0284c7 !important; border: none; color: white !important;">
                             👁️ Ma Vitrine
                         </a>
-
-                        <button onclick="copierLienBoutiqueMagique('{{ request.scheme }}://{{ request.get_host }}{% url 'boutique_vendeur' username=user.username %}', this)" 
-                                style="background: #10b981; color: white; border: none; padding: 10px 14px; font-weight: 700; border-radius: 20px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s;">
-                            🔗 Copier mon lien
-                        </button>
 
                         <a href="{% url 'dashboard_vendeur' %}" class="btn-nav btn-nav-purple">Tableau de bord</a>
                         <a href="{% url 'ajouter_produit' %}" class="btn-nav btn-nav-purple">＋ Ajouter produit</a>
@@ -845,7 +839,7 @@
             </div>
         </div>
     </nav>
-{% endif %} <!-- ⚖️ CORRIGÉ : Ferme proprement la condition principale ouverte à la ligne 710 -->
+{% endif %} 
 
    <!-- 2. AFFICHAGE DES MESSAGES -->
     {% if messages %}
@@ -858,15 +852,13 @@
 
     <!-- 3. ZONE DYNAMIQUE D'INJECTION DES PAGES -->
     <div class="flex-grow">
-        <!-- 🔴 NOUVEAU BLOC FORCEUR DE SCROLL HORIZONTAL -->
         <div style="width: 100% !important; overflow-x: auto !important; display: block !important; clear: both !important; -webkit-overflow-scrolling: touch;">
             
-            
         {% block content %}
-
         {% endblock %}
+
         </div>
-        </div>
+    </div>
        
     <!-- ===================================================================== -->
     <!-- 🤖 ASSISTANT CHATBOT FLOTTANT GEMINI IA                              -->

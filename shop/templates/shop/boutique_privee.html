@@ -37,19 +37,22 @@
                 </div>
 
                 <!-- Actions client (Ajout direct sécurisé + Fiche produit) -->
+                <!-- Actions client connectées à l'action d'ajout du panier -->
                 <div style="padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; border-top: 1px solid #f1f5f9;">
                     
-                    <!-- Formulaire d'ajout au panier sécurisé contre l'erreur CSRF 403 -->
-                    <form method="POST" action="{% url 'panier_detail' %}" style="margin: 0; width: 100%;">
+                    <!-- Formulaire connecté à la vue d'ajout (Mettez 'panier_ajouter' ou le nom exact de votre vue Python) -->
+                    <form method="POST" action="{% url 'panier_ajouter' produit.id %}" style="margin: 0; width: 100%;">
                         {% csrf_token %}
-                        <input type="hidden" name="produit_id" value="{{ produit.id }}">
-                        <input type="hidden" name="quantite" value="1">
+                        <!-- On passe la quantité par défaut à 1 si votre fonction Python la requiert en POST -->
+                        <input type="hidden" name="quantity" value="1">
+                        <input type="hidden" name="override_quantity" value="False">
+                        
                         <button type="submit" style="width: 100%; text-align: center; background: #10b981; color: white; padding: 10px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
                             🛒 Ajouter au panier
                         </button>
                     </form>
 
-                    <!-- Lien secondaire pour consulter la fiche produit descriptive -->
+                    <!-- Lien vers la fiche produit -->
                     <a href="{% url 'detail_produit' pk=produit.pk %}" style="text-align: center; background: #7c3aed; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">
                         Voir la description
                     </a>

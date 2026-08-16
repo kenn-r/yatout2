@@ -1,98 +1,156 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Espace Miroir - YaTout Imprim</title>
     <link rel="stylesheet" href="https://cloudflare.com">
-</head>
-<body style="background: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; color: #1e293b;">
+    <style>
+        /* --- Structure Adaptative Globale --- */
+        .miroir-layout-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
 
-    <div style="max-width: 1100px; margin: 0 auto;">
+        .stats-grid {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            margin-bottom: 40px;
+        }
+
+        .stats-grid { order: 1; }
+        .table-container { order: 2; }
+
+        /* Structure des fiches mobiles (cachées sur PC) */
+        .mobile-card {
+            display: none;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* --- MODE RESPONSIVE MOBILE FORCÉ --- */
+        @media (max-width: 768px) {
+            .stats-grid { 
+                order: -1; 
+                grid-template-columns: 1fr; 
+                margin-bottom: 25px;
+            }
+
+            .responsive-table {
+                display: none !important;
+            }
+            
+            .mobile-card {
+                display: block !important;
+            }
+
+            .table-container {
+                padding: 15px !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body style="background: #f1f5f9; margin: 0; padding: 20px; font-family: 'Segoe UI', Roboto, sans-serif; color: #334155;">
+
+    <div style="max-width: 1100px; margin: 0 auto; width: 100%;">
         
         <!-- EN-TÊTE -->
         <div style="margin-bottom: 30px;">
-            <h1 style="font-weight: 800; color: #0f172a; margin: 0; font-size: 2rem;">📊 Espace Miroir</h1>
-            <p style="color: #64748b; margin: 5px 0 0 0;">Suivi global des encaissements et audits de sécurité.</p>
+            <h1 style="font-weight: 800; color: #0f172a; margin: 0; font-size: 2rem; letter-spacing: -0.5px;">📊 Espace Miroir</h1>
+            <p style="color: #64748b; margin: 5px 0 0 0; font-size: 0.95rem;">Suivi global des encaissements et audits de sécurité YaTout Imprim.</p>
         </div>
 
-        <!-- BLOCS DE STATISTIQUES MENSUELLES -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px;">
-            <div style="background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #10b981;">
-                <span style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Chiffre d'Affaire ({{ mois_actuel }})</span>
-                <h2 style="margin: 10px 0 0 0; color: #0f172a; font-size: 1.8rem; font-weight: 800;">{{ total_du_mois }} FCFA</h2>
-            </div>
-            <div style="background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #6366f1;">
-                <span style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Volume de Règlements</span>
-                <h2 style="margin: 10px 0 0 0; color: #0f172a; font-size: 1.8rem; font-weight: 800;">{{ nombre_transactions }} Encaissements</h2>
-            </div>
-        </div>
+        <div class="miroir-layout-container">
 
-        <!-- TABLEAU DES PAIEMENTS -->
-        <div style="background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
-            <h3 style="margin: 0 0 20px 0; color: #0f172a;">📋 Historique des Transactions</h3>
-            
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #f1f5f9; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">
-                        <th style="padding: 12px;">Facture</th>
-                        <th>Client</th>
-                        <th>Date</th>
-                        <th>Mode</th>
-                        <th>Montant</th>
-                        <th style="text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for paiement in tous_les_paiements %}
-                    <tr style="border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">
-                        <td style="padding: 16px 12px; font-weight: 700; color: #0284c7;">{{ paiement.numero_facture }}</td>
-                        <td><strong>{{ paiement.devis_associe.nom_client }}</strong></td>
-                        <td style="color: #64748b;">{{ paiement.date_paiement|date:"d/m/Y H:i" }}</td>
-                        <td><span style="padding: 4px 8px; background: #f1f5f9; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">{{ paimement.get_mode_paiement_display }}</span></td>
-                        <td style="font-weight: 700; color: #16a34a;">{{ paiement.montant_recu }} FCFA</td>
-                        <td style="text-align: right;">
-                            <button onclick="ouvrirVerrou('{{ paiement.id }}')" style="background: #fee2e2; color: #b91c1c; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                                <i class="fa-solid fa-trash"></i> Supprimer
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" style="padding: 30px; text-align: center; color: #94a3b8;">Aucun paiement enregistré.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- MODALE DE VERROUILLAGE DE SÉCURITÉ -->
-    <div id="modaleVerrou" style="display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); align-items: center; justify-content: center;">
-        <div style="background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center;">
-            <i class="fa-solid fa-shield-halo" style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"></i>
-            <h4 style="margin: 0 0 10px 0; font-size: 1.2rem;">Validation requise</h4>
-            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Saisissez le code secret pour confirmer la suppression.</p>
-            
-            <form id="formSuppression" method="POST" action="">
-                {% csrf_token %}
-                <input type="password" name="code_secret" placeholder="••••••••" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; text-align: center; font-size: 1.1rem; letter-spacing: 4px; box-sizing: border-box; margin-bottom: 20px;">
-                <div style="display: flex; gap: 10px; justify-content: content;">
-                    <button type="button" onclick="fermerVerrou()" style="flex: 1; padding: 12px; background: #f1f5f9; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Annuler</button>
-                    <button type="submit" style="flex: 1; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Confirmer</button>
+            <!-- BLOCS DE STATISTIQUES MENSUELLES -->
+            <div class="stats-grid">
+                <div style="background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #10b981;">
+                    <span style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Chiffre d'Affaire ({{ mois_actuel }})</span>
+                    <h2 style="margin: 10px 0 0 0; color: #0f172a; font-size: 1.8rem; font-weight: 800;">{{ total_du_mois }} FCFA</h2>
                 </div>
-            </form>
+                <div style="background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #6366f1;">
+                    <span style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Volume de Règlements</span>
+                    <h2 style="margin: 10px 0 0 0; color: #0f172a; font-size: 1.8rem; font-weight: 800;">{{ nombre_transactions }} Encaissements</h2>
+                </div>
+            </div>
+
+            <!-- CONTENEUR PRINCIPAL DES TRANSACTIONS -->
+            <div class="table-container" style="background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
+                <h3 style="margin: 0 0 20px 0; color: #0f172a; font-weight: 700;">📋 Historique des Transactions</h3>
+                
+                <!-- 🖥️ VERSION TABLEAU (PC) -->
+                <table class="responsive-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #f1f5f9; color: #64748b; font-size: 0.85rem; text-transform: uppercase; font-weight: 700;">
+                            <th style="padding: 12px;">Facture</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Mode</th>
+                            <th>Montant</th>
+                            <th style="text-align: right; padding-right: 12px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paiement in tous_les_paiements %}
+                        <tr style="border-bottom: 1px solid #f1f5f9; font-size: 0.95rem;">
+                            <td style="padding: 16px 12px; font-weight: 700; color: #0284c7;">{{ paiement.numero_facture }}</td>
+                            <td><strong>{{ paiement.devis_associe.nom_client }}</strong></td>
+                            <td style="color: #64748b;">{{ paiement.date_paiement|date:"d/m/Y H:i" }}</td>
+                            <td><span style="padding: 4px 8px; background: #f1f5f9; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">{{ paiement.get_mode_paiement_display }}</span></td>
+                            <td style="font-weight: 700; color: #16a34a;">{{ paiement.montant_recu }} FCFA</td>
+                            <td style="text-align: right; padding-right: 12px;">
+                                <div style="display: inline-flex; gap: 8px;">
+                                    <a href="/impression/facture/{{ paiement.id }}/" style="background: #3b82f6; color: white !important; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Voir</a>
+                                    <a href="/impression/facture/supprimer/{{ paiement.id }}/" style="background: #fee2e2; color: #b91c1c !important; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Supprimer</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- 📱 VERSION CARTES (MOBILE) -->
+                {% for paiement in tous_les_paiements %}
+                <div class="mobile-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px;">
+                        <span style="font-weight: 700; color: #0284c7;">{{ paiement.numero_facture }}</span>
+                        <span style="font-weight: 700; color: #16a34a;">{{ paiement.montant_recu }} FCFA</span>
+                    </div>
+                    
+                    <div style="font-size: 0.9rem; margin-bottom: 6px;">
+                        <span style="color: #64748b;">Client :</span> <strong>{{ paiement.devis_associe.nom_client }}</strong>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">
+                        <span>📅 {{ paiement.date_paiement|date:"d/m/Y H:i" }}</span>
+                        <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-weight: 600; color: #334155;">
+                            {{ paiement.get_mode_paiement_display }}
+                        </span>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <a href="/impression/facture/{{ paiement.id }}/" style="flex: 1; text-align: center; background: #3b82f6; color: white !important; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">
+                            Voir
+                        </a>
+                        <a href="/impression/facture/supprimer/{{ paiement.id }}/" style="flex: 1; text-align: center; background: #fee2e2; color: #b91c1c !important; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">
+                            Supprimer
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                    <div class="mobile-card" style="text-align: center; color: #94a3b8; padding: 20px;">Aucun paiement enregistré.</div>
+                {% endfor %}
+
+            </div>
         </div>
     </div>
-
-    <script>
-        function ouvrirVerrou(id) {
-            const form = document.getElementById('formSuppression');
-            form.action = "/impression/facture/supprimer/" + id + "/"; // Cible l'URL de suppression
-            document.getElementById('modaleVerrou').style.display = 'flex';
-        }
-        function fermerVerrou() {
-            document.getElementById('modaleVerrou').style.display = 'none';
-        }
-    </script>
 </body>
 </html>

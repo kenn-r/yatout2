@@ -3,6 +3,208 @@
 {% block title %}YaTout — Votre Panier{% endblock %}
 
 {% block content %}
+<style>
+    /* --- Styles Modernes du Panier --- */
+    .cart-wrapper {
+        max-width: 1100px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .cart-title {
+        font-size: 1.75rem;
+        color: #1a202c;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+
+    .cart-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .cart-table th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .cart-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #edf2f7;
+        vertical-align: middle;
+        color: #2d3748;
+    }
+
+    .cart-item-name {
+        font-weight: 600;
+        color: #1a202c;
+    }
+
+    .price-details {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .old-price {
+        text-decoration: line-through;
+        color: #94a3b8;
+    }
+
+    .promo-badge {
+        background-color: #fee2e2;
+        color: #dc2626;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .cart-shop-name {
+        color: #475569;
+        font-size: 0.95rem;
+    }
+
+    .btn-remove-item {
+        color: #ef4444;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-remove-item:hover {
+        color: #b91c1c;
+        text-decoration: underline;
+    }
+
+    /* --- Footer du Panier (Total & Boutons) --- */
+    .cart-footer-actions {
+        background-color: #f8fafc;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .cart-total-box {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+    }
+
+    .cart-total-label {
+        font-size: 1.1rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .cart-total-amount {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1e293b;
+    }
+
+    .cart-buttons-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .btn-cart-continue {
+        color: #475569;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        transition: background-color 0.2s, color 0.2s;
+    }
+
+    .btn-cart-continue:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .btn-cart-validate {
+        background-color: #6b21a8; /* Mauve YaTout */
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(107, 33, 168, 0.2);
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn-cart-validate:hover {
+        background-color: #581c87;
+        transform: translateY(-1px);
+    }
+
+    /* --- État Panier Vide --- */
+    .cart-empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .cart-empty-state h3 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        margin: 1rem 0 0.5rem 0;
+    }
+
+    .cart-empty-state p {
+        color: #64748b;
+        margin-bottom: 1.5rem;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 640px) {
+        .cart-footer-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .cart-buttons-group {
+            flex-direction: column-reverse;
+            width: 100%;
+        }
+        .btn-cart-continue, .btn-cart-validate {
+            text-align: center;
+            width: 100%;
+        }
+    }
+</style>
+
 <div class="cart-wrapper">
     <h2 class="cart-title">Votre Panier d'achat</h2>
 
@@ -22,30 +224,25 @@
                     {% for item in cart %}
                     {% with produit=item.produit %}
                     <tr>
-                        <td class="cart-item-name">
-                            <div style="font-weight: bold;">{{ produit.nom }}</div>
-                            
-                            <!-- 💡 Affichage du prix unitaire et de la promotion sous le nom -->
-                            <div style="font-size: 0.85rem; color: #4a5568; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                        <td>
+                            <div class="cart-item-name">{{ produit.nom }}</div>
+                            <div class="price-details">
                                 <span>Prix unitaire : {{ item.price }} {{ produit.vendeur.devise }}</span>
-                                
                                 {% if produit.ancien_prix %}
-                                    <span style="text-decoration: line-through; color: #a0aec0;">
-                                        {{ produit.ancien_prix }} {{ produit.vendeur.devise }}
-                                    </span>
-                                    <span style="color: #e53e3e; font-weight: bold; font-size: 0.8rem;">
-                                        (-{{ produit.reduction_pourcentage }}%)
-                                    </span>
+                                    <span class="old-price">{{ produit.ancien_prix }} {{ produit.vendeur.devise }}</span>
+                                    <span class="promo-badge">-{{ produit.reduction_pourcentage }}%</span>
                                 {% endif %}
                             </div>
                         </td>
                         <td class="cart-shop-name">🏪 {{ produit.vendeur.nom_boutique }}</td>
-                        <td class="cart-quantity" style="text-align: center;">{{ item.quantity }}</td>
-                        <td class="cart-item-total" style="text-align: right; font-weight: bold;">
+                        <td style="text-align: center; font-weight: 500;">{{ item.quantity }}</td>
+                        <td style="text-align: right; font-weight: 700; color: #1a202c;">
                             {{ item.total_price }} {{ produit.vendeur.devise }}
                         </td>
-                        <td class="cart-action-cell" style="text-align: center;">
-                            <a href="{% url 'panier_supprimer' produit.id %}" class="btn-remove-item">✕ Retirer</a>
+                        <td style="text-align: center;">
+                            <a href="{% url 'panier_supprimer' produit.id %}" class="btn-remove-item">
+                                ✕ <span style="font-size: 0.85rem;">Retirer</span>
+                            </a>
                         </td>
                     </tr>
                     {% endwith %}
@@ -54,20 +251,18 @@
             </table>
 
             <div class="cart-footer-actions">
-                <div>
+                <div class="cart-total-box">
                     <span class="cart-total-label">Total estimé :</span>
-                    <!-- Note : cart.get_total_price fonctionne parfaitement si tous les articles ont la même devise. 
-                         Si vos vendeurs ont des devises différentes, le total global brut peut mélanger les chiffres. -->
-                    <span class="cart-total-amount">{{ cart.get_total_price }}</span>
+                    <span class="cart-total-amount">
+                        {{ cart.get_total_price }} 
+                        {% if item %}{{ item.produit.vendeur.devise }}{% endif %}
+                    </span>
                 </div>
                 
                 <div class="cart-buttons-group">
-                    <!-- Bouton pour continuer à regarder les produits -->
                     <a href="{% url 'accueil' %}" class="btn-cart-continue">
                         Continuer mes achats
                     </a>
-                    
-                    <!-- Bouton pour passer au formulaire de livraison -->
                     <a href="{% url 'passer_commande_panier' %}" class="btn-cart-validate">
                         🚀 Valider ma commande
                     </a>
@@ -75,7 +270,6 @@
             </div>
         </div>
     {% else %}
-        <!-- État d'affichage lorsque le panier est vide -->
         <div class="cart-empty-state">
             <span style="font-size: 4rem;">🛒</span>
             <h3>Votre panier est actuellement vide.</h3>
