@@ -5,209 +5,191 @@
 
 {% block content %}
 <style>
-    .print-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; font-family: system-ui, sans-serif; }
-    .print-title-box { text-align: center; margin-bottom: 40px; }
-    .print-title-box h1 { color: #2e0854; font-size: 2.2rem; cursor: default; user-select: none; -webkit-user-select: none; }
-    
-    .print-layout { display: flex; gap: 30px; align-items: flex-start; }
-    .products-column { flex: 1.3; } 
-    .cart-column { flex: 1.7; min-width: 450px; display: flex; flex-direction: column; gap: 25px; } 
-    
-    .catalog-list { display: flex; flex-direction: column; gap: 12px; }
-    .item-list-row { 
-        background: white; 
-        border: 1px solid #e8e3f0; 
-        border-radius: 8px; 
-        padding: 14px 20px; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-    }
-    
-    .btn-link-prestation { 
-        background: #f3e8ff; 
-        color: #7b24cc; 
-        border: 1px solid #7b24cc; 
-        padding: 8px 16px; 
-        font-weight: bold; 
-        border-radius: 6px; 
-        text-decoration: none; 
-        font-size: 0.9rem; 
-        transition: all 0.2s; 
-    }
-    .btn-link-prestation:hover { background: #7b24cc; color: white; }
-
-    .cart-sticky { background: white; border: 1px solid #e8e3f0; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
-    .cart-item { background: #faf8ff; border: 1px solid #e8e3f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-    
-    .select-support { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 600; color: #2e0854; margin-bottom: 15px; }
-    .qte-input { width: 65px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-size: 0.95rem; font-weight: bold; }
-    
-    .financial-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 0.95rem; }
-    .financial-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-    .final-total { border-top: 1px solid #cbd5e1; padding-top: 8px; font-weight: 800; color: #166534; font-size: 1.2rem; }
-    
-    .btn-submit-order { width: 100%; padding: 14px; background: #7b24cc; color: white; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
-    .btn-submit-order:hover { background: #2e0854; }
-    .btn-submit-order:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
-
-    /* --- STYLE DE L'ESPACE ADMIN MASQUÉ (MODALE) --- */
+   /* =========================================================================
+      
+    /* =========================================================================
+       🔒 CORRECTIF : MASQUAGE DE L'ESPACE ADMIN (FENÊTRE MODALE)
+   /* =========================================================================
+       🔒 MASQUAGE DE L'ADMIN : LIBÈRE L'ÉCRAN POUR LES CLICS ET REDIRECTIONS
+       ========================================================================= */
     .admin-modal {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
+        display: none !important; 
+        position: fixed !important;
+        top: 0 !important; 
+        left: 0 !important; 
+        width: 0 !important;   /* Force la largeur à 0 pour libérer l'écran */
+        height: 0 !important;  /* Force la hauteur à 0 pour libérer l'écran */
+        overflow: hidden !important;
+        z-index: -1 !important; /* Passe l'élément en arrière-plan complet */
     }
-    .admin-content {
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        width: 90%;
-        max-width: 900px;
-        max-height: 85vh;
-        overflow-y: auto;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    .admin-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 2px solid #f1f5f9;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-    }
-    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .admin-table th, .admin-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
-    .admin-table th { background: #f8fafc; color: #334155; }
     
-    .badge-status { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-    .badge-attente { background: #fef3c7; color: #d97706; }
-    .badge-valide { background: #dcfce7; color: #15803d; }
-    
-    .btn-admin-action { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; margin-right: 5px; }
-    .btn-valider { background: #166534; color: white; }
-    .btn-transfert { background: #0284c7; color: white; }
-    .btn-close-modal { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-/* Configuration globale en Flexbox */
-    .custom-responsive-layout {
+    /* Code déclenché uniquement quand l'admin est explicitement ouvert en JS */
+    .admin-modal.open, .admin-modal[style*="display: flex"], .admin-modal[style*="display: block"] {
         display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 30px !important;
         width: 100% !important;
+        height: 100% !important;
+        z-index: 99999 !important;
     }
-
-    /* Sur grand écran : deux colonnes distinctes */
-    @media (min-width: 992px) {
-        .custom-responsive-layout .products-column {
-            flex: 1 !important;
-            min-width: 400px !important;
-        }
-        .custom-responsive-layout .cart-column {
-            width: 380px !important;
-        }
+    
+    .admin-content {
+        background: #ffffff !important;
+        padding: 30px !important;
+        border-radius: 12px !important;
+        width: 90% !important;
+        max-width: 900px !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+        color: #1e293b !important;
+        margin: auto !important;
     }
+    .admin-table { width: 100% !important; border-collapse: collapse !important; }
+    .admin-table th, .admin-table td { padding: 12px !important; border-bottom: 1px solid #e2e8f0 !important; color: #1e293b !important; }
 
-    /* Sur petit écran / fenêtre réduite : forcer l'empilement vertical strict */
+    /* =========================================================================
+       📱 CONFIGURATION ÉCRAN RÉDUIT (MOBILES & TABLETTES) - ORDRE RESPONSIVE
+       ========================================================================= */
     @media (max-width: 991px) {
-        .custom-responsive-layout {
-            flex-direction: column !important;
+        .print-layout, 
+        .reviews-section, 
+        .reviews-layout-container {
+            display: block !important; 
         }
-        .custom-responsive-layout .products-column {
+
+        .products-column, 
+        .cart-column,
+        .reviews-container,
+        .form-review-column {
             width: 100% !important;
-            order: 1 !important; /* Le catalogue reste obligatoirement tout en haut */
+            max-width: 100% !important;
+            min-width: 100% !important;
+            margin-bottom: 30px !important;
         }
-        .custom-responsive-layout .cart-column {
-            width: 100% !important;
-            order: 2 !important; /* La galerie et le simulateur passent en dessous */
-        }
+
+        /* --- NAVIGATION MOBILE (MENU BURGER) --- */
+        .navbar, .navbar-impression { height: 64px !important; }
+        .burger-menu { display: flex !important; flex-direction: column !important; justify-content: space-between !important; width: 24px !important; height: 16px !important; background: transparent !important; border: none !important; padding: 0 !important; z-index: 100002 !important; }
+        .burger-menu span { display: block !important; width: 100% !important; height: 2.5px !important; background-color: #ffffff !important; border-radius: 2px !important; }
+        .nav-actions { display: none !important; }
+        .nav-actions.active { display: flex !important; flex-direction: column !important; position: absolute !important; top: 100% !important; left: 0 !important; right: 0 !important; width: 100% !important; background-color: #1e293b !important; padding: 24px !important; gap: 8px !important; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3) !important; z-index: 100001 !important; border-top: 1px solid rgba(255, 255, 255, 0.05) !important; }
+        .nav-actions.active .link-nav, .nav-actions.active .btn-nav { width: 100% !important; text-align: left !important; }
     }
-
-
-@keyframes pulseVisual {
-    0% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); }
-    100% { transform: scale(1.05); box-shadow: 0 6px 22px rgba(255, 78, 80, 0.6); }
-}
 </style>
+
 <div class="print-container">
     <div class="print-title-box" style="text-align: center; padding: 20px 10px;">
-    <!-- 🌟 TITRE EN BLEU DÉGRADÉ ULTRA ATTIRANT -->
-    <h1 id="titre-secret-admin" style="font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #2563eb, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; font-family: sans-serif; letter-spacing: -0.5px;">
-        🖨️ Espace Impression Professionnel YaTout
-    </h1>
-    <p style="color: #64748b; font-size: 0.95rem; margin: 0;">Découvrez nos offres à gauche et configurez votre estimation en temps réel à droite.</p>
+        <!-- 🌟 TITRE EN BLEU DÉGRADÉ ULTRA ATTIRANT -->
+        <h1 id="titre-secret-admin" style="font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #2563eb, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; font-family: sans-serif; letter-spacing: -0.5px;">
+            🖨️ Espace Impression Professionnel YaTout
+        </h1>
+        <p style="color: #64748b; font-size: 0.95rem; margin: 0;">Découvrez nos offres à gauche et configurez votre estimation en temps réel à droite.</p>
+    </div>
 </div>
-    </div>
- <!-- 📋 COLONNE GAUCHE : CATALOGUE DES SUPPORTS -->
-<div class="products-column">
-    <!-- 🟢 BLOC ENVELOPPE POUR LE TEXTE À PLACER ICI -->
-    <div class="catalog-header">
-        <h2>📋 Nos Prestations</h2>
-        <p>Cliquez sur le support de votre choix pour découvrir ses caractéristiques techniques, ses finitions et ses tarifs.</p>
-    </div>
- <!-- 🎁 NOUVEAU BLOC PROMOTIONNEL ATTIRANT -->
-    <div class="promo-banner-container" style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #fdf4ff, #f3e8ff); border: 2px dashed #a855f7; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.05);">
-        <p style="margin: 0 0 10px 0; color: #2e0854; font-size: 1.15rem; font-weight: 800; font-family: sans-serif; letter-spacing: -0.3px;">
-            🛒 Commandez directement sur notre site et obtenez :
-        </p>
-        <div class="promo-badge" style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #ff4e50, #f9d423); color: white; font-size: 1.6rem; font-weight: 900; border-radius: 50px; box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); text-transform: uppercase; font-family: sans-serif; animation: pulseVisual 2s infinite alternate;">
-            🔥 10% DE RÉDUCTION
+
+<!-- Modifié : Ajout d'une classe spécifique pour appliquer le Flexbox responsive -->
+<div class="print-layout custom-responsive-layout" style="display: flex; gap: 20px; flex-wrap: wrap; width: 100%;">
+    
+    <!-- 📋 COLONNE GAUCHE : CATALOGUE DES SUPPORTS -->
+    <div class="products-column" style="flex: 1; min-width: 300px;">
+        <!-- 🟢 BLOC ENVELOPPE POUR LE TEXTE À PLACER ICI -->
+        <div class="catalog-header">
+            <h2>📋 Nos Prestations</h2>
+            <p>Cliquez sur le support de votre choix pour découvrir ses caractéristiques techniques, ses finitions et ses tarifs.</p>
         </div>
-        <p style="margin: 10px 0 0 0; color: #6b21a8; font-size: 0.9rem; font-weight: 600; opacity: 0.9;">
-            Offre exclusive en ligne — Configuration instantanée à droite !
-        </p>
-    </div>
-</div>
 
-    <!-- Modifié : Ajout d'une classe spécifique pour appliquer le Flexbox responsive -->
-    <div class="print-layout custom-responsive-layout">
-        
-       
-
-    <div class="catalog-list">
-        {% for prest in prestations %}
-            <div class="item-list-row">
-                <h3>🖨️ {{ prest.titre }}</h3>
-                <a href="{% url 'page_prestations' %}#prestation-{{ prest.id }}" class="btn-link-prestation">
-                    👁️ Voir nos supports
-                </a>
+        <!-- 🎁 NOUVEAU BLOC PROMOTIONNEL ATTIRANT -->
+        <div class="promo-banner-container" style="margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #fdf4ff, #f3e8ff); border: 2px dashed #a855f7; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.05); margin-bottom: 25px;">
+            <p style="margin: 0 0 10px 0; color: #2e0854; font-size: 1.15rem; font-weight: 800; font-family: sans-serif; letter-spacing: -0.3px;">
+                🛒 Commandez directement sur notre site et obtenez :
+            </p>
+            <div class="promo-badge" style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #ff4e50, #f9d423); color: white; font-size: 1.6rem; font-weight: 900; border-radius: 50px; box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); text-transform: uppercase; font-family: sans-serif; animation: pulseVisual 2s infinite alternate;">
+                🔥 10% DE RÉDUCTION
             </div>
-        {% empty %}
-            <p>Aucun support configuré.</p>
-        {% endfor %}
-    </div>
+            <p style="margin: 10px 0 0 0; color: #6b21a8; font-size: 0.9rem; font-weight: 600; opacity: 0.9;">
+                Offre exclusive en ligne — Configuration instantanée à droite !
+            </p>
+ <!-- 🔄 BOUTON DE RÉINITIALISATION -->
+<div style="margin-bottom: 15px;">
+    <a href="{% url 'page_prestations' %}" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 10px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+        🌐 Voir toutes les catégories de supports
+    </a>
+</div>
+<!-- LISTE DYNAMIQUE DES BOUTONS DE PRESTATION (SÉCURITÉ DOUBLE COUCHE) -->
+<div class="catalog-list" style="display: flex; flex-direction: column; gap: 14px;">
+    {% for prest in prestations %}
+        <div style="display: flex !important; justify-content: space-between !important; align-items: center !important; padding: 18px 22px !important; border-radius: 12px !important; border: 1px solid rgba(124, 58, 237, 0.15) !important; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important; background: linear-gradient(135deg, #ffffff 0%, #fdf4ff 100%) !important;">
+            
+            <!-- Titre du support -->
+            <h3 style="margin: 0; font-size: 1.05rem; color: #1e293b; font-weight: 800; font-family: system-ui, sans-serif;">
+                🖨️ {{ prest.titre }}
+            </h3>
+            
+            <!-- 🟢 SÉCURITÉ ABSOLUE : Dégradés forcés en !important via JavaScript pour interdire le blanc -->
+            <a href="{% url 'page_prestations' %}?type_unite={{ prest.type_unite }}" 
+               style="display: inline-block !important; padding: 10px 24px !important; font-size: 0.85rem !important; text-decoration: none !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 0.6px !important; border-radius: 8px !important; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important; color: #ffffff !important; border: none !important; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important; cursor: pointer !important;"
+               onmouseover="this.style.setProperty('background', 'linear-gradient(135deg, #a855f7 0%, #ff4e50 100%)', 'important'); this.style.setProperty('color', '#ffffff', 'important');"
+               onmouseout="this.style.setProperty('background', 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', 'important'); this.style.setProperty('color', '#ffffff', 'important');"
+               onmousedown="this.style.setProperty('background', 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', 'important'); this.style.setProperty('color', '#ffffff', 'important');"
+            >
+                📂 Voir nos supports
+            </a>
+            
+        </div>
+    {% empty %}
+        <p style="text-align: center; color: #94a3b8; padding: 20px;">Aucun support configuré.</p>
+    {% endfor %}
+</div>
+</div> <!-- Fin products-column -->
 
+<!-- (Le code de votre colonne de droite pour le simulateur/calculateur commencera ici) -->
+
+</div> <!-- Fin print-layout -->
    
 
-        <!-- 🧮 COLONNE DROITE : GALERIE ET CALCULATEUR SIMULATEUR -->
-        <div class="cart-column">
+       <!-- 🧮 COLONNE DROITE : GALERIE ET CALCULATEUR SIMULATEUR -->
+<div class="cart-column">
+    
+    <!-- ✨ BLOC GALERIE (HAUTEUR INTERACTIVE AGRANDIE À 500PX) -->
+    <div class="cart-sticky" style="padding: 15px;">
+        <h3 style="color: #2e0854; margin: 5px 0 12px 5px; font-size: 1.15rem; display: flex; align-items: center; gap: 6px; font-weight: bold;">
+            ✨ Galerie Réalisations Réelles
+        </h3>
+        
+        <!-- Conteneur principal fixe (Passage de 320px à 500px de hauteur) -->
+        <div class="carousel-container" style="position: relative; width: 100%; height: 500px; overflow: hidden; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(123, 36, 204, 0.1);">
             
-            <!-- ✨ BLOC GALERIE (HAUTEUR AGRANDIE À 320PX) -->
-            <div class="cart-sticky" style="padding: 15px;">
-                <h3 style="color: #2e0854; margin: 5px 0 12px 5px; font-size: 1.05rem; display: flex; align-items: center; gap: 6px; font-weight: bold;">
-                    ✨ Galerie Réalisations Réelles
-                </h3>
-                <div class="carousel-container" style="position: relative; width: 100%; height: 320px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-                    {% for produit in exemples_realisations %}
-                        <div class="carousel-slide" style="display: {% if forloop.first %}block{% else %}none{% endif %}; width: 100%; height: 100%; position: relative;">
-                            {% if produit.image %}
-                                <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
-                                <div style="width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #4b5563;">📷 Image non disponible</div>
-                            {% endif %}
-                            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.75)); padding: 15px; color: white; font-size: 0.9rem; font-weight: bold;">
-                                🔥 {{ produit.nom }} — Qualité Premium YaTout
-                            </div>
+            <!-- 🔑 LE RAIL HORIZONTAL (Aligne les slides sur une seule ligne fluide) -->
+            <div id="realisationsSlider" style="display: flex; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(0);">
+                
+                {% for produit in exemples_realisations %}
+                    <!-- Chaque slide occupe exactement 100% de la largeur et de la nouvelle hauteur parent -->
+                    <div class="carousel-slide" style="min-width: 100%; flex-shrink: 0; width: 100%; height: 100%; position: relative; display: block;">
+                        {% if produit.image %}
+                            <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #4b5563;">📷 Image non disponible</div>
+                        {% endif %}
+                        
+                        <!-- Bandeau texte assombri pour une lecture premium parfaite -->
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85)); padding: 25px 20px 20px 20px; color: white; font-size: 1rem; font-weight: bold; box-sizing: border-box; font-family: system-ui, sans-serif;">
+                            <span style="display: inline-block; background: #ff4e50; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Premium</span><br>
+                            🔥 {{ produit.nom }} — Qualité Premium YaTout
                         </div>
-                    {% empty %}
-                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #7b24cc, #2e0854); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem; text-align: center; padding: 20px; box-sizing: border-box;">
-                            🎯 YaTout Impression<br><span style="font-size: 0.85rem; font-weight: normal; opacity: 0.9;">Commandes professionnelles & Finitions Premium</span>
-                        </div>
-                    {% endfor %}
-                </div>
+                    </div>
+                {% empty %}
+                    <!-- Version vide si aucune image : Dégradé vibrant assorti à vos boutons -->
+                    <div style="min-width: 100%; width: 100%; height: 100%; background: linear-gradient(135deg, #7c3aed, #2e0854); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.3rem; text-align: center; padding: 30px; box-sizing: border-box; font-family: system-ui, sans-serif;">
+                        <span style="font-size: 3.5rem; margin-bottom: 15px;">🎯</span>
+                        YaTout Impression<br>
+                        <span style="font-size: 0.95rem; font-weight: normal; opacity: 0.85; margin-top: 10px; max-width: 280px; display: inline-block;">Commandes professionnelles & Finitions Haute Définition</span>
+                    </div>
+                {% endfor %}
+                
             </div>
+            
+        </div>
+    </div>
+</div>
+<!-- 🔑 LE SCRIPT JAVASCRIPT DE DÉFILEMENT (Sécurisé avec verbatim pour Django) -->
 
            <!-- 📊 BANDEAU DE POPULARITÉ ET VISITES EN DIRECT -->
 <div style="width: 100%; margin: 30px 0; background: #0f172a; border-radius: 20px; padding: 20px 30px; box-shadow: 0 10px 25px rgba(15,23,42,0.08); box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
@@ -401,6 +383,7 @@
 
 <!-- Logic JavaScript -->
 <script>
+{% verbatim %}
     document.addEventListener('DOMContentLoaded', function() {
         const quantiteInput = document.getElementById('js-quantite');
         const btnCalculateur = document.getElementById('btn-calculateur');
@@ -408,8 +391,9 @@
         const prixUnitaireSpan = document.getElementById('js-prix-unitaire');
         const totalEstimeSpan = document.getElementById('js-total-estime');
         const titreSecretAdmin = document.getElementById('titre-secret-admin');
+        const slider = document.getElementById("realisationsSlider");
 
-        // Calculatrice instantanée déclenchée par le bouton
+        // 1. Calculatrice instantanée déclenchée par le bouton
         if (btnCalculateur && quantiteInput && prixUnitaireSpan) {
             btnCalculateur.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -425,22 +409,31 @@
             });
         }
 
-        // Système d'alternance automatique de la galerie d'images
-        let slides = document.querySelectorAll('.carousel-slide');
-        if (slides.length > 1) {
-            let currentSlide = 0;
-            setInterval(() => {
-                slides[currentSlide].style.display = 'none';
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].style.display = 'block';
-            }, 3500);
+        // 2. ✅ NOUVEAU SYSTÈME DE DÉFILEMENT HORIZONTAL FLUIDE (3 SECONDES)
+        if (slider) {
+            const slides = slider.getElementsByClassName("carousel-slide");
+            const totalSlides = slides.length;
+            
+            // On active l'animation uniquement s'il y a plus d'une image
+            if (totalSlides > 1) {
+                let currentIndex = 0;
+
+                function glisserVersSlideSuivante() {
+                    currentIndex++;
+                    if (currentIndex >= totalSlides) {
+                        currentIndex = 0;
+                    }
+                    slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                }
+                setInterval(glisserVersSlideSuivante, 3000);
+            }
         }
 
-        // Système d'appui long secret (3 secondes) pour demander le code d'accès
+        // 3. Système d'appui long secret (3 secondes) pour demander le code d'accès
         if (titreSecretAdmin) {
             let timerAppui;
             const tempsRequis = 3000; 
-            const codeSecretAttendu = "1997"; // MODIFIEZ CE CODE PAR VOTRE PROPRE CODE SECRET
+            const codeSecretAttendu = "1997"; 
 
             function démarrerAppui(e) {
                 timerAppui = setTimeout(function() {
@@ -473,29 +466,26 @@
         }
     });
 
+    // Fonction globale de fermeture de l'interface d'administration
     function fermerAdmin() {
         const modal = document.getElementById('modalAdminCommandes');
         if (modal) modal.style.display = 'none';
     }
-    <!-- Script d'animation en temps réel pour faire fluctuer le nombre -->
 
+    // 4. Script d'animation en temps réel pour faire fluctuer le nombre d'actifs
     document.addEventListener("DOMContentLoaded", function() {
         const el = document.getElementById('compteur-actifs');
         if (!el) return;
 
-        // On récupère la valeur initiale injectée par Django au chargement de la page
         let valeur = parseInt(el.textContent) || 84;
 
         setInterval(() => {
-            // Génère une fluctuation naturelle : -2, -1, 0, +1 ou +2
             const fluctuation = Math.floor(Math.random() * 5) - 2;
             valeur += fluctuation;
 
-            // Garde le nombre dans une fourchette logique (ex: entre 65 et 105)
             if (valeur < 10) valeur = 10;
             if (valeur > 60) valeur = 60;
 
-            // Ajoute une transition visuelle fluide lors du changement
             el.style.transition = 'opacity 0.2s ease-in-out';
             el.style.opacity = 0;
             
@@ -504,9 +494,10 @@
                 el.style.opacity = 1;
             }, 200);
 
-        }, 4000); // Se déclenche toutes les 4 secondes pour un effet discret
+        }, 4000); 
     });
-
+{% endverbatim %}
+</script>
 
 </script>
 {% endblock %}

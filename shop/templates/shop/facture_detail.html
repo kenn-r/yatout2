@@ -44,7 +44,8 @@
         <!-- BLOC DE DROITE : DETAILS ET QR CODE -->
         <div style="display: flex; gap: 20px; align-items: flex-start; text-align: right;">
             <div>
-                <span style="display: inline-block; padding: 6px 12px; background: {% if facture.statut_paiement == 'PAYEE' %}#dcfce7; color: #166534{% else %}#fef3c7; color: #92400e{% endif %}; border-radius: 20px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px;">
+                <!-- ÉLÉMENT CORRIGÉ : Prise en compte du statut automatique PAYEE -->
+                <span style="display: inline-block; padding: 6px 12px; background: {% if facture.statut_paiement == 'PAYEE' or facture.reste_a_payer <= 0 %}#dcfce7; color: #166534{% else %}#fef3c7; color: #92400e{% endif %}; border-radius: 20px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px;">
                     {{ facture.get_statut_paiement_display }}
                 </span>
                 <h2 style="color: #0284c7; margin: 0; font-size: 1.4rem; font-weight: 700;">FACTURE NORMALISÉE</h2>
@@ -52,13 +53,13 @@
             </div>
             
            <!-- 🔳 CODE QR 100% LOCAL ET AUTONOME -->
-<div style="padding: 6px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; flex-shrink: 0; display: inline-block;">
-    {% if qr_code_image %}
-        <img src="data:image/png;base64,{{ qr_code_image }}" alt="Code QR" style="width: 85px; height: 85px; display: block;">
-    {% else %}
-        <div style="width: 85px; height: 85px; background: #f1f5f9;"></div>
-    {% endif %}
-</div>
+            <div style="padding: 6px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; flex-shrink: 0; display: inline-block;">
+                {% if qr_code_image %}
+                    <img src="data:image/png;base64,{{ qr_code_image }}" alt="Code QR" style="width: 85px; height: 85px; display: block;">
+                {% else %}
+                    <div style="width: 85px; height: 85px; background: #f1f5f9;"></div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
@@ -77,7 +78,8 @@
         <!-- DÉTAILS DE PAIEMENT -->
         <div style="background: #f8fafc; padding: 20px; border-radius: 12px; text-align: right; box-sizing: border-box;">
             <h3 style="color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px 0; font-weight: 700;">Détails du paiement :</h3>
-            <p style="margin: 0 0 5px 0; font-size: 0.95rem; color: #475569;"><strong>Date d'émission :</strong> {{ facture.date_paiement|date:"d/m/Y H:i" }}</p>
+            <!-- ÉLÉMENT SÉCURISÉ : Si date_paiement est vide, affiche la date du jour (timezone.now) -->
+            <p style="margin: 0 0 5px 0; font-size: 0.95rem; color: #475569;"><strong>Date d'émission :</strong> {{ facture.date_paiement|default:facture.devis_associe.date_creation|date:"d/m/Y H:i" }}</p>
             <p style="margin: 0 0 5px 0; font-size: 0.95rem; color: #475569;"><strong>Règlement via :</strong> {{ facture.get_mode_paiement_display }}</p>
             <p style="margin: 0 0 5px 0; font-size: 0.95rem; color: #475569;"><strong>Réf. Bon Livraison :</strong> {{ facture.devis_associe.numero_bl|default:"Non renseigné" }}</p>
             <p style="margin: 8px 0 0 0; font-size: 0.95rem; color: #0284c7; font-weight: 700;">
@@ -131,6 +133,7 @@
             </div>
             <div style="display: flex; justify-content: space-between; border-top: 1px solid #334155; padding-top: 12px; font-size: 1.25rem; font-weight: 800;">
                 <span style="color: #94a3b8;">Reste à payer :</span>
+                <!-- ÉLÉMENT CORRIGÉ : Gestion dynamique de la couleur si le solde est nul (vert) -->
                 <span style="color: {% if facture.reste_a_payer > 0 %}#f87171{% else %}#34d399{% endif %};">{{ facture.reste_a_payer }} FCFA</span>
             </div>
         </div>

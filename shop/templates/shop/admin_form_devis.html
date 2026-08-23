@@ -154,8 +154,8 @@
 
 <!-- ===================================================================== -->
 <!-- ⚙️ SCRIPT INTÉGRÉ ET SÉCURISÉ POUR GESTION DES DEVIS YATOUT             -->
-<!-- ===================================================================== -->
 <script>
+    // 1️⃣ INITIALISATION DES VARIABLES ET CONSTANTES BASE
     const corpsTableau = document.getElementById('corps-tableau');
     const labelTotal = document.getElementById('montant-total-affiche') || document.getElementById('label-total-calculer');
     const inputTotalHidden = document.getElementById('form-montant');
@@ -163,13 +163,46 @@
     const hiddenDesc = document.getElementById('description_prestation_hidden');
     const formulaire = document.getElementById('formulaire-devis');
 
-    // Récupération sécurisée de l'ancien contenu (safe évite les bugs d'affichage de caractères)
+    // Récupération sécurisée du contenu textuel depuis Django
     const ancienContenu = `{% if devis %}{{ devis.description_prestation|safe }}{% endif %}`;
-    
-    // Détection de l'état de verrouillage comptable depuis Django
     const documentEstVerrouille = {% if devis.statut == "valide" or devis.statut == "converti_bl" %}true{% else %}false{% endif %};
 
-    // ➕ FONCTION POUR INJECTER UNE LIGNE DANS LA GRILLE
+    // 2️⃣ CHARGEMENT DES ARTICLES AU DEMARRAGE (MODE MODIFICATION)
+    document.addEventListener("DOMContentLoaded", function() {
+        if (ancienContenu && ancienContenu.trim() !== "") {
+            const lignesEnregistrees = ancienContenu.split('\n');
+            
+            lignesEnregistrees.forEach(ligneBrute => {
+                if (ligneBrute.trim() === "") return;
+                
+                const elements = ligneBrute.split('|');
+                
+                if (elements.length >= 4) {
+                    const ref = elements[0];
+                    const des = elements[1];
+                    const qte = parseInt(elements[2]) || 1;
+                    const pxu = parseFloat(elements[3]) || 0;
+                    const rem = parseFloat(elements[4]) || 0;
+                    const larg = elements[5] ? parseFloat(elements[5]) : 1.0;
+                    const haut = elements[6] ? parseFloat(elements[6]) : 1.0;
+
+                    ajouterNouvelleLigneVide(ref, des, qte, pxu, rem, larg, haut);
+                }
+            });
+        } else {
+            // Si c'est un nouveau devis, on crée une ligne vierge par défaut
+            ajouterNouvelleLigneVide();
+        }
+        
+        // Initialisation de l'affichage dynamique pour le mode de livraison
+        gererAffichageChampAutre();
+        const selectLivraison = document.getElementById('select-livraison');
+        if (selectLivraison) {
+            selectLivraison.addEventListener('change', gererAffichageChampAutre);
+        }
+    });
+
+    // 3️⃣ INJECTION ET CREATION D'UNE LIGNE DYNAMIQUE
     function ajouterNouvelleLigneVide(ref="", des="", qte=1, pxu=0, rem=0, largeur=1, hauteur=1) {
         const idUnique = 'ligne-' + Date.now() + Math.floor(Math.random() * 100);
         if(!ref) ref = "YAT-" + Math.floor(100 + Math.random() * 900);
@@ -190,15 +223,15 @@
                 <input type="text" class="cell-des" value="${des}" placeholder="Ex: Impression de Flyers" required style="padding: 6px !important; font-size:0.85rem !important; margin-bottom: ${estMetreCarre ? '6px' : '0'};">
                 <div class="zone-dimensions" style="display: ${estMetreCarre ? 'flex' : 'none'}; align-items: center; gap: 5px; font-size: 0.75rem; color: #64748b; margin-top: 4px;">
                     📐 Dim : 
-                    <input type="number" class="cell-largeur" value="${largeur}" step="0.1" min="0.1" style="width: 55px !important; padding: 2px 4px !important; text-align: center; background: rgba(255,255,255,0.9) !important; color:#000 !important;" title="Largeur en mètres"> m x 
-                    <input type="number" class="cell-hauteur" value="${hauteur}" step="0.1" min="0.1" style="width: 55px !important; padding: 2px 4px !important; text-align: center; background: rgba(255,255,255,0.9) !important; color:#000 !important;" title="Hauteur en mètres"> m
+                    <input type="number" class="cell-largeur" value="${largeur}" step="0.1" min="0.1" style="width: 55px !important; padding: 2px 4px !important; text-align: center; background: rgba(255,255,255,0.9) !important; color:#000 !important;"> m x 
+                    <input type="number" class="cell-hauteur" value="${hauteur}" step="0.1" min="0.1" style="width: 55px !important; padding: 2px 4px !important; text-align: center; background: rgba(255,255,255,0.9) !important; color:#000 !important;"> m
                     <span class="label-m2" style="font-weight: 700; color: #7c3aed; margin-left: 5px;">(${(largeur * hauteur).toFixed(2)} m²)</span>
                 </div>
             </td>
             <td style="padding: 10px;"><input type="number" class="cell-qte" value="${qte}" min="1" required style="padding: 6px !important; text-align:center !important; font-size:0.85rem !important;"></td>
             <td style="padding: 10px;">
                 <input type="number" class="cell-pxu" value="${pxu}" min="0" required style="padding: 6px !important; text-align:right !important; font-size:0.85rem !important;">
-                <small class="label-type-prix" style="display: block; text-align: right; color: #64748b; font-size: 0.7 crumbs; margin-top: 2px;">${estMetreCarre ? 'par m²' : 'l\'unité'}</small>
+                <small class="label-type-prix" style="display: block; text-align: right; color: #64748b; font-size: 0.75rem; margin-top: 2px;">${estMetreCarre ? 'par m²' : 'l\'unité'}</small>
             </td>
             <td style="padding: 10px;"><input type="number" class="cell-rem" value="${rem}" min="0" max="100" style="padding: 6px !important; text-align:center !important; font-size:0.85rem !important;"></td>
             <td style="padding: 10px; text-align: right; font-weight: 700; color:#0f172a; font-size:0.9rem;" class="cell-total-ligne">0 F</td>
@@ -207,7 +240,6 @@
 
         corpsTableau.appendChild(tr);
 
-        // Écouteurs d'événements pour la gestion de la ligne
         tr.querySelector('.cell-des').addEventListener('input', function() {
             const nom = this.value.toLowerCase();
             const zone = tr.querySelector('.zone-dimensions');
@@ -233,7 +265,7 @@
         calculerTotauxTableau();
     }
 
-    // ✕ SUPPRESSION D'UNE LIGNE
+    // 4️⃣ SUPPRESSION D'UNE LIGNE DU FORMULAIRE
     function supprimerLigne(id) {
         const cible = document.getElementById(id);
         if(cible) {
@@ -242,7 +274,7 @@
         }
     }
 
-    // ⚡ CALCUL DU TOTAL GÉNÉRAL ET DES MULTIPLICATIONS AU M²
+    // 5️⃣ CALCULS DES TOTAUX HT/TTC EN TEMPS REEL
     function calculerTotauxTableau() {
         if(!corpsTableau) return;
         let totalGeneral = 0;
@@ -278,7 +310,7 @@
         }
     }
 
-    // Assistant catalogue
+    // 6️⃣ ASSISTANT CATALOGUE DE PRIX RAPIDE
     if (selectAssistant) {
         selectAssistant.addEventListener('change', function() {
             if(this.value === "") return;
@@ -291,14 +323,14 @@
         });
     }
 
-    // 🔒 DOUBLE FILTRE DE SÉCURITÉ ADMINISTRATEUR (SUPPRESSION & ÉDITION)
+   // 7️⃣ SÉCURITÉS ET VERROUILLAGE COMMERCIAUX ADMINISTRATEUR
     function gererSoumissionSecurisee(typeAction) {
         let clientNom = document.getElementById('nom_client_input').value || "ce client";
         document.getElementById('hidden_action_type').value = typeAction;
 
         if (typeAction === "supprimer_devis") {
             if (confirm("⚠️ Souhaitez-vous détruire définitivement le devis de " + clientNom + " ?")) {
-                let code = prompt("🔒 ACCÈS ADMISTRATEUR EXIGÉ :\nEntrez le code secret pour détruire ce devis :");
+                let code = prompt("🔒 ACCÈS ADMINISTRATEUR EXIGÉ :\nEntrez le code secret pour détruire ce devis :");
                 if (code !== null && code.trim() !== "") {
                     document.getElementById('hidden_code_admin').value = code;
                     document.getElementById('formulaire-devis').submit();
@@ -306,7 +338,6 @@
             }
         } 
         else if (typeAction === "sauvegarder") {
-            // Verrouillage à la modification si BL créé ou validé
             if (documentEstVerrouille) {
                 let code = prompt("🔒 DEVIS LIÉ À UN BL / VALIDÉ PAR LE CLIENT.\nEntrez le code secret administrateur pour forcer l'enregistrement des modifications :");
                 if (code === null) return; 
@@ -316,18 +347,17 @@
                 }
                 document.getElementById('hidden_code_admin').value = code;
             }
-            
-            // Lancement de la compilation obligatoire de la grille
             procederCompilationEtEnvoi();
         }
     }
 
-    // Compilation technique de la table vers Django
+    // 8️⃣ COMPILATION ET ENVOI SÉCURISÉ DES DONNÉES À DJANGO
     function procederCompilationEtEnvoi() {
         let chaineCompilation = [];
         const lignes = corpsTableau.querySelectorAll('tr');
 
         lignes.forEach((tr) => {
+            // ✅ CORRIGÉ : Échappement obligatoire du caractère pipe (\|)
             const ref = tr.querySelector('.cell-ref').value.replace(/\|/g, "-") || "YAT";
             const des = tr.querySelector('.cell-des').value.replace(/\|/g, "-") || "Prestation";
             const qte = tr.querySelector('.cell-qte').value || "1";
@@ -336,7 +366,6 @@
             const larg = tr.querySelector('.cell-largeur').value || "1";
             const haut = tr.querySelector('.cell-hauteur').value || "1";
 
-            // 🛠️ CORRIGÉ : Ajout des backticks (`) indispensables pour l'interpolation JavaScript
             chaineCompilation.push(`${ref}|${des}|${qte}|${pxu}|${rem}|${larg}|${haut}`);
         });
 
@@ -345,46 +374,31 @@
             return;
         }
 
-        hiddenDesc.value = chaineCompilation.join("\n\n");
+        hiddenDesc.value = chaineCompilation.join("\n");
         formulaire.submit();
     }
-            function gererAffichageChampAutre() {
-                const select = document.getElementById('select-livraison');
-                const inputAutre = document.getElementById('input-livraison-autre');
-                
-                if (!select || !inputAutre) return;
 
-                if (select.value === 'Autre') {
-                    // On affiche le champ de texte libre
-                    inputAutre.style.display = 'block';
-                    inputAutre.style.background = '#ffffff';
-                    
-                    // Si le champ contient une valeur standard de la liste, on le nettoie pour laisser l'utilisateur écrire
-                    const valeursStandards = ['Nous-mêmes', 'Lui-même', 'Livreur Yango', 'Car', 'Livreur compagnie'];
-                    if (valeursStandards.includes(inputAutre.value.trim())) {
-                        inputAutre.value = '';
-                    }
-                    inputAutre.required = true;
-                } else {
-                    // On masque le champ et on lui injecte la valeur textuelle sélectionnée dans le menu pour Django
-                    inputAutre.style.display = 'none';
-                    inputAutre.value = select.value;
-                    inputAutre.required = false;
-                }
+    // 9️⃣ AFFICHAGE DE LA ZONE TEXTE "AUTRE" POUR LES LIVRAISONS
+    function gererAffichageChampAutre() {
+        const select = document.getElementById('select-livraison');
+        const inputAutre = document.getElementById('input-livraison-autre');
+        
+        if (!select || !inputAutre) return;
+
+        if (select.value === 'Autre') {
+            inputAutre.style.display = 'block';
+            inputAutre.style.background = '#ffffff';
+            
+            const valeursStandards = ['Nous-mêmes', 'Lui-même', 'Livreur Yango', 'Car', 'Livreur compagnie'];
+            if (valeursStandards.includes(inputAutre.value.trim())) {
+                inputAutre.value = '';
             }
-
-            // Lancement immédiat au chargement de la page pour le mode Édition
-            document.addEventListener("DOMContentLoaded", function() {
-                gererAffichageChampAutre();
-                
-                // On attache un écouteur sur le formulaire pour s'assurer que si "Autre" est sélectionné,
-                // la valeur textuelle écrite à la main soit bien celle expédiée.
-                const select = document.getElementById('select-livraison');
-                const inputAutre = document.getElementById('input-livraison-autre');
-                if (select && inputAutre) {
-                    select.addEventListener('change', gererAffichageChampAutre);
-                }
-            });
+            inputAutre.required = true;
+        } else {
+            inputAutre.style.display = 'none';
+            inputAutre.value = select.value;
+            inputAutre.required = false;
+        }
+    }
     </script>
-
 {% endblock %}

@@ -41,20 +41,15 @@
    📱 CONFIGURATION ÉCRAN RÉDUIT (Mobiles et Tablettes) - VERSION CORRIGÉE
    ========================================================================= */
 @media (max-width: 991px) {
-    /* 1. Force l'empilement vertical classique (le premier bloc HTML reste en haut) */
     div.container {
         display: flex !important;
         flex-direction: column !important; 
         gap: 25px !important;
     }
-
-    /* 2. S'assure que chaque bloc prend toute la largeur de l'écran mobile */
     div.container > div {
         width: 100% !important;
         max-width: 100% !important;
     }
-    
-    /* 3. Ajuste les espacements de la grille pour mobile */
     .product-grid {
         margin-bottom: 20px !important;
     }
@@ -64,41 +59,37 @@
     100% { transform: scale(1.05); box-shadow: 0 6px 22px rgba(255, 78, 80, 0.6); }
 }
 </style>
-
 <div class="container-catalogue-header" style="position: relative; max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif;">
-    
-   
 
-    <!-- En-tête -->
+    <!-- En-tête Dynamique -->
     <div style="text-align: center; margin-bottom: 45px; padding-right: 80px;">
         <h1 style="color: #2e0854; font-size: 2.3rem; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #7c3aed; padding-bottom: 15px; display: inline-block;">
-            📋 Notre Catalogue de Supports
+            {% if type_unite_clique %}
+                📋 Nos supports : {{ nom_categorie_active }}
+            {% else %}
+                📋 Notre Catalogue de Supports
+            {% endif %}
         </h1>
-        <p style="color: #64748b; font-size: 1.05rem; margin-top: 10px; max-width: 750px; margin-left: auto; margin-right: auto;">
-            Cliquez sur le support de votre choix pour découvrir ses caractéristiques techniques, ses finitions et ses tarifs.
-        </p>
+        {% if type_unite_clique %}
+            <p style="margin-top: 15px;">
+                <a href="?" style="text-decoration: none; color: #7c3aed; font-weight: bold; font-size: 0.95rem;">⬅️ Retour à toutes les catégories</a>
+            </p>
+        {% endif %}
     </div>
-   <!-- 🎁 BANDEAU PROMOTIONNEL HORIZONTAL IDENTIQUE -->
-<div class="promo-banner-container" style="max-width: 100%; margin: 20px auto 30px auto; padding: 20px; background: linear-gradient(135deg, #fdf4ff, #f3e8ff); border: 2px dashed #a855f7; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.05);">
-    <p style="margin: 0 0 10px 0; color: #2e0854; font-size: 1.15rem; font-weight: 800; font-family: sans-serif; letter-spacing: -0.3px;">
-        🛒 Commandez directement sur notre site et obtenez :
-    </p>
-    <div class="promo-badge" style="display: inline-block; padding: 10px 24px; background: linear-gradient(135deg, #ff4e50, #f9d423); color: white; font-size: 1.6rem; font-weight: 900; border-radius: 50px; box-shadow: 0 4px 15px rgba(255, 78, 80, 0.4); text-transform: uppercase; font-family: sans-serif; animation: pulseVisual 2s infinite alternate;">
-        🔥 10% DE RÉDUCTION
-    </div>
-    <p style="margin: 10px 0 0 0; color: #6b21a8; font-size: 0.9rem; font-weight: 600; opacity: 0.9;">
-        Offre exclusive en ligne — Configuration instantanée à droite !
-    </p>
-</div>
-    
-    <!-- Grille des cartes prestations -->
+
+    <!-- Grille des cartes -->
     <div class="product-grid">
-        {% for prestation in prestations %}
-            <a href="{% url 'detail_prestation' prestation.id %}" class="lien-carte">
+        
+        {% if type_unite_clique %}
+           
+            <!-- 🟢 VUE 2 : Liste des modèles de la catégorie sélectionnée -->
+        {% for prestation in prestations_a_afficher %}
+            <!-- 🎯 CORRECTION ICI : On conserve le type_unite dans l'URL pour ne pas perdre l'affichage -->
+            <a href="?prestation_id={{ prestation.id }}&type_unite={{ type_unite_clique }}" class="lien-carte">
                 <div class="product-card">
                     
-                    <!-- Zone Image -->
-                    <div style="background-color: #f8fafc; height: 190px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border-bottom: 1px solid #f0edf5;">
+                    <!-- 1. Zone Image -->
+                    <div style="background-color: #f8fafc; height: 190px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid #f0edf5;">
                         {% if prestation.image %}
                             <img src="{{ prestation.image.url }}" alt="{{ prestation.titre }}" style="width: 100%; height: 100%; object-fit: cover;">
                         {% else %}
@@ -106,21 +97,23 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Textes et Bouton d'action -->
+                    <!-- 2. Textes (Titre et Description) -->
                     <div style="padding: 22px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 15px;">
                         <div>
-                            <h3 style="margin: 0 0 8px 0; color: #2e0854; font-size: 1.15rem; font-weight: 700;">{{ prestation.titre }}</h3>
-                            <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5; margin: 0;">
+                            <h3 style="margin: 0 0 8px 0; color: #2e0854; font-size: 1.15rem; font-weight: 700;">
+                                {{ prestation.titre }}
+                            </h3>
+                            <p style="color: #64748b; font-size: 0.9rem; margin: 0;">
                                 {% if prestation.description %}
                                     {{ prestation.description|truncatewords:12 }}
                                 {% else %}
-                                    Aucune spécification technique renseignée pour ce support.
+                                    Aucune spécification technique renseignée.
                                 {% endif %}
                             </p>
                         </div>
                         
-                        <!-- 🟢 MODIFICATION : Remplacement du prix par le bouton VOIR LES TARIFS -->
-                        <span style="display: block; text-align: center; background-color: #f3e8ff; color: #7c3aed; border: 1px solid #7c3aed; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; transition: background 0.2s;"
+                        <!-- 3. Bouton unique menant vers les tarifs réels -->
+                        <span style="display: block; text-align: center; background-color: #f3e8ff; color: #7c3aed; border: 1px solid #7c3aed; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; transition: all 0.2s;"
                               onmouseover="this.style.backgroundColor='#7c3aed'; this.style.color='#ffffff';"
                               onmouseout="this.style.backgroundColor='#f3e8ff'; this.style.color='#7c3aed';">
                             🔎 Voir les tarifs
@@ -131,9 +124,41 @@
             </a>
         {% empty %}
             <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #64748b; background: white; border: 1px dashed #cbd5e1; border-radius: 12px;">
-                💡 Aucun support d'impression n'est disponible dans le catalogue pour le moment.
+                💡 Aucun modèle disponible dans cette catégorie pour le moment.
             </div>
         {% endfor %}
+
+        {% else %}
+            <!-- 🔵 VUE 1 : ÉCRAN D'ACCUEIL GÉNÉRAL (Boucle 100% dynamique sur l'admin) -->
+            {% for cat in categories_accueil %}
+                <a href="?type_unite={{ cat.code }}" class="lien-carte">
+                    <div class="product-card">
+                        
+                        <div style="background-color: #f8fafc; height: 190px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 1px solid #f0edf5;">
+                            {% if cat.image %}
+                                <img src="{{ cat.image.url }}" alt="{{ cat.nom }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <span style="font-size: 52px; color: #cbd5e1;">📁</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="padding: 22px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 15px;">
+                            <div>
+                                <h3 style="margin: 0 0 8px 0; color: #2e0854; font-size: 1.15rem; font-weight: 700;">{{ cat.nom }}</h3>
+                                <p style="color: #64748b; font-size: 0.9rem; margin: 0;">{{ cat.details }}</p>
+                            </div>
+                            
+                            <!-- Bouton d'entrée dans la catégorie -->
+                            <span style="display: block; text-align: center; background-color: #ffffff; color: #7c3aed; border: 1px solid #7c3aed; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.95rem;">
+                                📂 Voir les modèles
+                            </span>
+                        </div>
+
+                    </div>
+                </a>
+            {% endfor %}
+        {% endif %}
+
     </div>
 </div>
 {% endblock %}

@@ -1225,13 +1225,6 @@ def page_impressions(request):
 
 
 
-def page_prestations(request):
-    """ Affiche la page catalogue contenant tous les tarifs et caractéristiques techniques """
-    prestations = Prestation.objects.all()
-    return render(request, 'shop/prestations.html', {'prestations': prestations})
-
-
-
 
 
 # API AJAX : Ajoute ou modifie la quantité sans recharger la page
@@ -1285,13 +1278,65 @@ def page_conseiller(request):
     
     return render(request, 'shop/conseiller.html', {'lien_whatsapp': lien_whatsapp})
 
+from django.shortcuts import render, get_object_or_404
+from .models import Prestation, FormatFlyer
+from django.shortcuts import render, get_object_or_404
+from itertools import groupby
+from .models import Prestation, FormatFlyer
 
-# 2. Vue pour lister vos vraies prestations d'impression
 def page_prestations(request):
-    # Récupère toutes les prestations enregistrées dans l'admin Django
-    prestations = Prestation.objects.all()
-    return render(request, 'shop/prestations.html', {'prestations': prestations})
+    """ Vue catalogue gérant l'arborescence dynamique par type d'unité """
+    
+    # 1. Récupération des filtres dans l'URL
+    type_unite_clique = request.GET.get('type_unite')
+    id_prestation = request.GET.get('prestation_id')
+    
+    prestation_selectionnee = None
+    formats_disponibles = []
+    prestations_a_afficher = []
+    nom_categorie_active = ""
+    
+    # ÉTAPE A : Détail des tarifs d'un modèle précis (ex: Flyer A5)
+    if id_prestation:
+        prestation_selectionnee = get_object_or_404(Prestation, id=id_prestation)
+        formats_disponibles = prestation_selectionnee.formats_flyer.all()
+        
+    # ÉTAPE B : L'utilisateur a cliqué sur une catégorie (Flyer, Surface, Unité, Pages...)
+    elif type_unite_clique:
+        prestations_a_afficher = Prestation.objects.filter(type_unite=type_unite_clique)
+        
+        # On récupère le nom propre de la catégorie pour l'afficher dans le titre h1
+        dict_choix = dict(Prestation.CHOIX_UNITE)
+        nom_categorie_active = dict_choix.get(type_unite_clique, "Supports")
 
+    # 🟢 DYNAMIQUE : On extrait la liste des types actuellement configurés en base
+    # pour ne pas afficher de catégories vides sur l'écran d'accueil
+    types_utilises = Prestation.objects.values_list('type_unite', flat=True).distinct()
+    
+    categories_accueil = []
+    for code, nom in Prestation.CHOIX_UNITE:
+        if code in types_utilises:
+            # Pour chaque catégorie, on récupère le premier produit pour illustrer la carte
+            premier_produit = Prestation.objects.filter(type_unite=code).first()
+            categories_accueil.append({
+                'code': code,
+                'nom': nom.split('(')[0].strip(), # Nettoie le nom (ex: "Lots & Paliers par Format")
+                'details': nom,
+                'image': premier_produit.image if premier_produit else None
+            })
+
+    # Galerie photo automatique
+    exemples_realisations = ProduitRealise.objects.all() if 'ProduitRealise' in globals() else []
+
+    return render(request, 'shop/prestations.html', {
+        'type_unite_clique': type_unite_clique,
+        'nom_categorie_active': nom_categorie_active,
+        'prestations_a_afficher': prestations_a_afficher,
+        'categories_accueil': categories_accueil, # 🟢 Liste dynamique pour l'accueil
+        'prestation_selectionnee': prestation_selectionnee,
+        'formats_disponibles': formats_disponibles,
+        'exemples_realisations': exemples_realisations,
+    })
 import json
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Prestation
@@ -1766,7 +1811,6 @@ def voir_bon_commande(request, commande_id):
         'pourcentage_actuel': pourcentage_actuel
     })
 
-
 def voir_bon_livraison(request, commande_id):
     """ Génère la page du Bon de Livraison officiel sans centimes """
     commande = get_object_or_404(CommandeImpression, id=commande_id)
@@ -1774,6 +1818,13 @@ def voir_bon_livraison(request, commande_id):
     
     # Injection des données entières formatées pour le template du BL avec séparateur par points
     for art in articles_liste:
+        # 🔑 SÉCURITÉ CRITIQUE : Si l'élément est une chaîne de caractères, on la convertit en dictionnaire
+        if isinstance(art, str):
+            try:
+                art = json.loads(art)
+            except json.JSONDecodeError:
+                art = {}
+
         quantite_securisee = int(art.get('qte', art.get('quantite', 1)))
         prix_unitaire = int(float(art.get('prix', 0)))
         brut_ligne = quantite_securisee * prix_unitaire
@@ -1803,13 +1854,6 @@ def voir_bon_livraison(request, commande_id):
         'commande': commande,
         'articles_liste': articles_liste
     })
-
-import urllib.parse
-import json
-from django.shortcuts import render, get_object_or_404, redirect
-from django.core.exceptions import PermissionDenied
-# Assurez-vous d'importer la fonction si vous l'utilisez ailleurs, 
-# mais NE mettez PAS le décorateur @login_required au-dessus de cette fonction.
 
 def voir_bon_commande_public(request, commande_id):
     """ 
@@ -2646,54 +2690,64 @@ def telecharger_bl_pdf(request, devis_id):
     nom_fichier = f"BL_{num_bl_final.replace('/', '_')}.pdf"
     return FileResponse(buffer, as_attachment=True, filename=nom_fichier)
 
-
-
+import io
+import base64
+import qrcode
+from decimal import Decimal
+from django.utils import timezone
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
+from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
+from shop.models import Facture, Devis  # Vérifiez que le chemin vers vos modèles est correct
 
 def generer_facture_depuis_bl(request):
-    from shop.models import Facture, Devis
-    from decimal import Decimal
-    from django.utils import timezone
-    from django.contrib import messages
-    from django.shortcuts import redirect
-
     if request.method == 'POST':
-        numero_bl_saisi = request.POST.get('numero_bl').strip()
-        montant_paye_saisi = request.POST.get('montant_paye')
+        # 1. Récupération de l'unique information requise : le numéro de BL
+        numero_bl_saisi = request.POST.get('numero_bl', '').strip()
         mode_paiement = request.POST.get('mode_paiement')
 
-       # 🔍 CORRECTION : On utilise filter().first() pour éviter le plantage MultipleObjectsReturned
+        if not numero_bl_saisi:
+            messages.error(request, "Veuillez saisir une référence de BL.")
+            return redirect('espace_devis_dashboard')
+
+        # 2. Recherche automatique robuste (Saisie complète ou partielle)
         devis_bl = Devis.objects.filter(numero_bl=numero_bl_saisi).first()
+        
+        if not devis_bl:
+            devis_bl = Devis.objects.filter(numero_bl__icontains=numero_bl_saisi).first()
 
         if not devis_bl:
             messages.error(request, f"Aucun Bon de Livraison trouvé avec le numéro {numero_bl_saisi}.")
-            return redirect('page_prestations')
+            return redirect('espace_devis_dashboard')
 
-        # Vérification si ce document possède déjà une facture associée
+        # 3. Vérification de sécurité (éviter les doublons de facturation)
         if Facture.objects.filter(devis_associe=devis_bl).exists():
             messages.warning(request, f"Une facture a déjà été émise pour ce BL.")
-            return redirect('page_prestations')
+            return redirect('espace_devis_dashboard')
 
-        # Récupération et calcul des montants
+        # 4. Automatisation des calculs financiers (Payé à 100% par défaut)
         montant_total_bl = Decimal(str(devis_bl.montant_total))
-        if montant_paye_saisi and montant_paye_saisi.strip():
-            montant_recu = Decimal(str(montant_paye_saisi))
-        else:
-            montant_recu = montant_total_bl
+        montant_recu = montant_total_bl  
+        reste_a_payer = Decimal('0.00')
+        statut = 'PAYEE'
 
-        reste_a_payer = montant_total_bl - montant_recu
-        statut = 'PAYEE' if reste_a_payer <= 0 else 'PARTIEL'
-
-        # Numéro de facture automatique
+        # 5. Génération du numéro de facture dynamique aligné sur le préfixe du BL
         annee_courante = timezone.now().year
         nombre_factures = Facture.objects.count() + 1
-        numero_facture = f"FAC-{annee_courante}-{nombre_factures:04d}"
+        
+        if devis_bl.numero_bl and "/" in devis_bl.numero_bl:
+            prefixe_id = devis_bl.numero_bl.split('/')[0]
+            numero_facture = f"{prefixe_id}/FAC-{annee_courante}-{nombre_factures:04d}"
+        else:
+            numero_facture = f"FAC-{annee_courante}-{nombre_factures:04d}"
 
-        # Sauvegarde définitive
+        # 6. Sauvegarde définitive en base de données
         facture = Facture.objects.create(
             devis_associe=devis_bl,
             montant_total_bl=montant_total_bl,
             montant_recu=montant_recu,
-            reste_a_payer=max(Decimal('0.00'), reste_a_payer),
+            reste_a_payer=reste_a_payer,
             numero_facture=numero_facture,
             mode_paiement=mode_paiement,
             statut_paiement=statut
@@ -2702,22 +2756,15 @@ def generer_facture_depuis_bl(request):
         messages.success(request, f"Facture {numero_facture} générée avec succès !")
         return redirect('detail_facture', facture_id=facture.id)
 
-    return redirect('page_prestations')
+    return redirect('espace_devis_dashboard')
 
-
-
-import qrcode
-import io
-import base64
-from django.shortcuts import get_object_or_404, render
-from .models import Facture
 
 def detail_facture(request, facture_id):
     facture = get_object_or_404(Facture, id=facture_id)
     
     # 1. Contenu textuel à intégrer dans le QR Code
     qr_data = (
-        f"FACTURE YATOUT IMPlM\n"
+        f"FACTURE YATOUT IMPRIM\n"
         f"N°: {facture.numero_facture}\n"
         f"Client: {facture.devis_associe.nom_client}\n"
         f"Total: {facture.montant_total_bl} FCFA\n"
@@ -2737,19 +2784,12 @@ def detail_facture(request, facture_id):
     
     return render(request, 'shop/facture_detail.html', {
         'facture': facture,
-        'qr_code_image': qr_base64  # On envoie l'image locale ici
+        'qr_code_image': qr_base64
     })
 
 
-
-
-from django.contrib import messages
-from django.db.models import Sum
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
-from .models import Facture
-
-@user_passes_test(est_administrateur, login_url='connexion')
+# ✅ RECORRIGÉ : Utilisation d'une vérification staff directe pour éviter l'erreur de variable manquante
+@user_passes_test(lambda u: u.is_authenticated and u.is_staff, login_url='connexion')
 def supprimer_facture_securisee(request, facture_id):
     """Suppression d'un paiement / facture après validation du code secret admin."""
     if request.method == "POST":
@@ -2760,15 +2800,9 @@ def supprimer_facture_securisee(request, facture_id):
             facture = get_object_or_404(Facture, id=facture_id)
             numero_fac = facture.numero_facture
             
-            # Facultatif : Vous pouvez réinitialiser le statut du devis associé ici si nécessaire
-            # devis = facture.devis_associe
-            # devis.statut = 'valide'
-            # devis.save()
-            
             facture.delete()
             messages.success(request, f"🗑️ La facture {numero_fac} a été définitivement effacée des registres.")
         else:
             messages.error(request, "❌ Code administrateur incorrect ! Action de suppression révoquée.")
 
     return redirect('espace_devis_dashboard')
-
