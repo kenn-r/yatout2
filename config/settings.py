@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'g8wr(37(o=(s*etln^v+g7vv&r$$86mp_%t9)dnhj#we$=_+@^kenxsezrrfg'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'yatout2-production.up.railway.app', 
@@ -165,10 +165,10 @@ LOGIN_URL = '/vendeur/connexion/'
 LOGIN_REDIRECT_URL = '/vendeur/dashboard/'
 
 # Force l'utilisation sécurisée si votre site est en HTTPS sur Render
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 # Force la redirection automatique de HTTP vers HTTPS
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 # Configuration de la protection HSTS (Valide le point security.W004)
 SECURE_HSTS_SECONDS = 31536000  # Valable 1 an

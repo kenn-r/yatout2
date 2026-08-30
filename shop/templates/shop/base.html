@@ -756,7 +756,7 @@
     <!-- 🖨️ HEADER SPÉCIFIQUE POUR L'IMPRESSION -->
     <nav class="navbar navbar-impression">
         <div class="container">
-            <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Impression</a>
+            <a href="{% url 'page_prestations' %}" class="nav-logo">🖨️ YaTout Imprim</a>
             
             <button class="burger-menu" onclick="this.nextElementSibling.classList.toggle('active');">
                 <span></span>
@@ -771,7 +771,7 @@
                 </a>
                 {% if user.is_authenticated and user.is_staff %}
                     <a href="{% url 'espace_devis_dashboard' %}" class="btn-nav" style="border: 1px dashed #7c3aed;">
-                        📊 Administration Devis
+                        📊 Faire Devis
                     </a>
                 {% endif %}
                 <div class="supports-mobile-only">
@@ -798,9 +798,9 @@
             </div> 
         </div> 
     </nav>
-
-<!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS (Masqué si route = boutique_vendeur) -->
-{% elif request.path != "/" and request.resolver_match.url_name != 'boutique_vendeur' %}
+<!-- 🛍️ HEADER STANDARD DE LA BOUTIQUE MULTI-VENDEURS -->
+<!-- Modifié : Masqué si route = boutique_vendeur OU si le paramètre 'shared=true' est présent dans l'URL -->
+{% elif request.path != "/" and request.resolver_match.url_name != 'boutique_vendeur' and not request.GET.shared %}
     
     <nav class="navbar">
         <div class="container">
@@ -813,7 +813,8 @@
             </button>
 
             <div class="nav-actions">
-                <a href="{% url 'panier_detail' %}" class="link-nav">🛒 Mon Panier</a>
+                <!-- Ajout automatique de ?shared=true au panier pour que la navbar y reste masquée -->
+                <a href="{% url 'panier_detail' %}{% if request.GET.shared %}?shared=true{% endif %}" class="link-nav">🛒 Mon Panier</a>
                 {% if user.is_authenticated %}
                     <span class="nav-welcome">Bonjour, <strong>{{ user.username }}</strong></span>
                     
@@ -839,7 +840,7 @@
             </div>
         </div>
     </nav>
-{% endif %} 
+{% endif %}
 
    <!-- 2. AFFICHAGE DES MESSAGES -->
     {% if messages %}

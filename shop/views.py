@@ -1346,6 +1346,12 @@ def detail_prestation(request, prestation_id):
     realisations = prestation.realisations.all()
     titre_inf = prestation.titre.lower()
     
+    # 🟢 SÉCURITÉ CATALOGUE : On récupère l'identifiant du format cliqué sur l'écran précédent
+    format_id_clique = request.GET.get('format_id')
+    
+    # Alimentation de la liste complète des formats associés pour votre sélecteur HTML
+    formats_flyer = prestation.formats_flyer.all()
+    
     # 🎯 1. Gestion dynamique ou fallback des émojis et prix de base
     if 'tasse' in titre_inf or 'mug' in titre_inf: define_prix_u, define_emoji = 2500, "☕"
     elif 'casquette' in titre_inf or 'casque' in titre_inf: define_prix_u, define_emoji = 3500, "🪖"
@@ -1385,20 +1391,17 @@ def detail_prestation(request, prestation_id):
                 remise_texte_whatsapp = f"{remise_pct}% (Sur-mesure)"
                 unite_texte = f"Sur-mesure ({largeur}x{hauteur}m - {surface:.2f} m²)"
             else:
-                # 🟢 FIX : On convertit l'ID reçu en nombre entier (int) pour la base de données
                 try:
                     surface_id = int(choix_dimensions)
                 except (ValueError, TypeError):
-                    surface_id = choix_dimensions # Fallback au cas où
+                    surface_id = choix_dimensions
                 
                 try:
                     qte = int(request.POST.get('quantite_lot', 1))
                 except ValueError:
                     qte = 1
 
-                # Appel du calculateur qui va maintenant trouver la ligne exacte en BDD
                 res = prestation.calculer_prix(quantite=qte, surface_id=surface_id)
-                
                 prix_brut = res['prix_brut']
                 montant_remise = res['montant_remise']
                 total_final = res['prix_final']
@@ -1406,20 +1409,23 @@ def detail_prestation(request, prestation_id):
                 remise_pct = res['remise_appliquee_pourcent']
                 remise_texte_whatsapp = f"{remise_pct}%" if remise_pct > 0 else "Inclus (Tarif catalogue)"
                 
-                # Récupération propre du format
                 grille_obj = prestation.grilles_surface.filter(id=surface_id).first()
                 unite_texte = f"Format {grille_obj.dimensions}" if grille_obj else f"Format Catalogue"
 
             item_panier.update({'dimensions': choix_dimensions, 'prix': prix_brut, 'total': total_final})
 
-       # --- LOGIQUE 2 : TYPE FLYER / LOTS (Calcul automatique au pro-rata de 100 ex) ---
+       # --- LOGIQUE 2 : TYPE FLYER / LOTS ---
         elif type_unite_clean == 'FLYER':
             format_id = request.POST.get('format_choisi')
             quantite_saisie = request.POST.get('quantite_lot')
             
             if quantite_saisie == 'custom':
-                qte = int(request.POST.get('quantite_custom', 600))
-                
+                # 🟢 FIX UNIQUE : On récupère en priorité la valeur tapée par le client dans l'input numérique
+                try:
+                    qte = int(request.POST.get('quantite_custom', 600))
+                except (ValueError, TypeError):
+                    qte = 600 # Fallback de secours si le champ est vide
+
                 try:
                     # 1. On récupère dynamiquement le prix d'un lot de 100 depuis votre catalogue BDD
                     base_lot = prestation.calculer_prix(quantite=100, format_id=format_id)
@@ -1428,10 +1434,10 @@ def detail_prestation(request, prestation_id):
                     # 2. On calcule le prix réel d'un seul flyer (ex: 10000 / 100 = 100 Frs)
                     prix_unitaire_reel = prix_lot_100 / 100.0
                 except Exception:
-                    # Fallback de sécurité si le lot de 100 n'existe pas
+                    # Fallback de sécurité si le lot de 100 n'existe pas en BDD
                     prix_unitaire_reel = 100.0 
 
-                # 3. Le prix brut s'adapte parfaitement à la quantité libre (ex: 600 * 100 = 60 000 Frs)
+                # 3. Le prix brut s'adapte parfaitement à la quantité libre (ex: 100 * 100 = 10 000 Frs)
                 prix_brut = int(qte * prix_unitaire_reel)
 
                 remise_pct = prestation.remise_custom
@@ -1457,7 +1463,7 @@ def detail_prestation(request, prestation_id):
             unite_texte = f"{qte} ex. ({nom_technique})"
             item_panier.update({'qte': qte})
 
-        # --- LOGIQUE 3 : TYPE UNITE (Dégressif automatique) ---
+        # --- LOGIQUE 3 : TYPE UNITE ---
         elif type_unite_clean == 'UNITE':
             quantite_choisie = request.POST.get('quantite_unite_radio')
             qte = int(request.POST.get('quantite_custom_unite', 1)) if not quantite_choisie or quantite_choisie == 'custom' else int(quantite_choisie)
@@ -1475,7 +1481,7 @@ def detail_prestation(request, prestation_id):
             unite_texte = f"{qte} unité(s)"
             item_panier.update({'qte': qte})
 
-        # --- LOGIQUE 4 : TYPE PAGES (Documents/Brochures) ---
+       # --- LOGIQUE 4 : TYPE PAGES (Documents/Brochures) ---
         elif type_unite_clean in ['PAGES', 'PAGE', 'DOCUMENT']:
             nb_pages = int(request.POST.get('nb_pages', 8))
             qte = int(request.POST.get('quantite_lot', 10))
@@ -1516,7 +1522,9 @@ def detail_prestation(request, prestation_id):
 
         return redirect('confirmer_commande_client')
 
-    # --- 🟢 RESTAURÉ : ROUTAGE VERS LE BON TEMPLATE HTML EN FIN DE REQUÊTE GET ---
+    # ─── 🟢 INTERCEPTION & CONTEXTE : ENVOI DU PARAMÈTRE FORMAT DU CATALOGUE ───
+    format_id_clique = request.GET.get('format_id') # Capte l'ID cliqué depuis l'URL
+
     context = {
         'prestation': prestation,
         'realisations': realisations,
@@ -1526,6 +1534,7 @@ def detail_prestation(request, prestation_id):
         'formats_flyer': prestation.formats_flyer.all(),
         'paliers_unite': prestation.paliers_unite.all(),
         'paliers_pages': prestation.paliers_pages.all(),
+        'format_id_clique': format_id_clique, # 🌟 AJOUTÉ ICI pour alimenter prestation_flyer.html
     }
 
     type_unite_lower = prestation.type_unite.lower().strip()
@@ -1543,8 +1552,6 @@ def detail_prestation(request, prestation_id):
         return render(request, 'shop/prestation_document.html', context)
     else:
         return render(request, 'shop/prestation_unite.html', context)
-
-
 
 
 def calculer_tarif_ajax(request, prestation_id):

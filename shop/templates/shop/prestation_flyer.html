@@ -30,37 +30,43 @@
             <form method="POST" action="">
                 {% csrf_token %}
 
-                <!-- Sélection du Format -->
+                <!-- Sélection du Format (Désormais affiché en dur et verrouillé) -->
+<!-- Sélection du Format (Affiché en DUR verrouillé) -->
+<div style="margin-bottom: 20px;">
+    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
+        Format du flyer :
+    </label>
+    
+    <div style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #1e1b4b; background-color: #f8fafc; font-weight: 700; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between;">
+        <span id="label-format-fixe">📐 Chargement...</span>
+        <span style="color: #00a896; font-size: 0.8rem; font-weight: 600;">🔒 Sélectionné</span>
+    </div>
+
+    <!-- Sélecteur masqué -->
+    <select name="format_choisi" id="format_choisi" style="display: none;" required>
+        {% for format in formats_flyer %}
+            <option value="{{ format.id }}" data-img="{% if format.image %}{{ format.image.url }}{% endif %}">
+                {{ format.nom_format }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+<!-- Sélection du volume (Lots et Tarifs) -->
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
-                        Format du flyer :
+                        Lots et tarifs (FCFA) :
                     </label>
-                    <select name="format_choisi" id="format_choisi" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;" required>
-                        <option value="" disabled selected>-- Choisir un format --</option>
-                        {% for format in formats_flyer %}
-                            <option value="{{ format.id }}" data-img="{% if format.image %}{{ format.image.url }}{% endif %}">
-                                {{ format.nom_format }}
-                            </option>
-                        {% endfor %}
+                    <select name="quantite_lot" id="quantite_lot" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;" required>
+                        <option value="" disabled selected>-- Choisir la quantité (Exemplaires) --</option>
                     </select>
                 </div>
 
-                <!-- Sélection du volume (Alimenté dynamiquement selon le format choisi) -->
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
-                        Quantité :
-                    </label>
-                    <select name="quantite_lot" id="quantite_lot" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #f8fafc; box-sizing: border-box;" disabled required>
-                        <option value="">Sélectionnez d'abord un format</option>
-                    </select>
-                </div>
-
-                <!-- Case de saisie numérique masquée pour quantité libre -->
+                <!-- 🟢 UN UNIQUE BLOC NUMÉRIQUE NETTOYÉ (SANS VALUE EN DUR) -->
                 <div id="wrapper-custom-flyer" style="display: none; margin-bottom: 24px;">
-                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 8px;">
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #7c3aed; margin-bottom: 8px;">
                         Saisissez la quantité libre souhaitée :
                     </label>
-                    <input type="number" min="1" name="quantite_custom" id="quantite_custom" value="600" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+                    <input type="number" min="1" name="quantite_custom" id="quantite_custom" placeholder="600" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #7c3aed; color: #0f172a; box-sizing: border-box; font-weight: bold;">
                 </div>
 
                 <!-- Gros Bouton d'action violet -->
@@ -68,55 +74,54 @@
                     🛒 Valider et voir le prix final
                 </button>
             </form>
-
-        </div>
-    </div>
-</div>
-
 <script>
-// Gestion complète du changement de format (Image + Quantités associées)
-document.getElementById('format_choisi').addEventListener('change', function() {
-    const formatId = this.value;
+// Fonction maîtresse pour injecter l'affichage en dur, l'image et reconstruire les paliers de prix
+function appliquerChangementFormat(selectElement) {
+    const formatId = selectElement.value;
     const qteSelect = document.getElementById('quantite_lot');
+    if (!formatId) return;
     
-    // 1. MISE À JOUR DYNAMIQUE DE L'IMAGE À GAUCHE
-    const optionSelectionnee = this.options[this.selectedIndex];
-    const urlImageFormat = optionSelectionnee.getAttribute('data-img');
-    const grandeImage = document.getElementById('image-prestation');
-    
-    if (urlImageFormat && grandeImage) {
-        grandeImage.src = urlImageFormat;
-    } else if (grandeImage) {
-        grandeImage.src = "{{ prestation.image.url }}";
+    // Met à jour le texte affiché en dur à l'utilisateur
+    const optionSelectionnee = selectElement.options[selectElement.selectedIndex];
+    const texteFormat = optionSelectionnee.text;
+    const labelFixe = document.getElementById('label-format-fixe');
+    if (labelFixe) {
+        labelFixe.innerHTML = "📐 " + texteFormat.trim();
     }
     
-    // 2. RECONSTRUCTION DES OPTIONS DE QUANTITÉS LIÉES
-    qteSelect.innerHTML = '<option value="" disabled selected>-- Choisir la quantité --</option>';
+    // 1. Mise à jour dynamique de l'image à gauche
+    const urlImageFormat = optionSelectionnee.getAttribute('data-img');
+    const grandeImage = document.getElementById('image-prestation');
+    if (urlImageFormat && grandeImage) {
+        grandeImage.src = urlImageFormat;
+    }
     
-    // Injection dynamique des lots liés au format via Django
+    // 2. Reconstruction des options de quantités liées
+    qteSelect.innerHTML = '<option value="" disabled selected>-- Choisir la quantité (Exemplaires) --</option>';
+    
     {% for format in formats_flyer %}
         if (formatId == "{{ format.id }}") {
             {% for option in format.options_quantite.all %}
-                qteSelect.innerHTML += '<option value="{{ option.quantite }}">{{ option.quantite }} exemplaires</option>';
+                qteSelect.innerHTML += '<option value="{{ option.quantite }}">Lot de {{ option.quantite }} ex. — {{ option.prix_total }} FCFA</option>';
             {% endfor %}
         }
     {% endfor %}
     
-    // Option sur-mesure permanente
     qteSelect.innerHTML += '<option value="custom">Saisir une quantité libre (Sur-mesure)</option>';
-    
-    // Déblocage visuel du champ quantité
     qteSelect.disabled = false;
-    qteSelect.style.backgroundColor = '#ffffff';
+}
+
+// Écouteur d'événement au changement manuel du sélecteur masqué
+document.getElementById('format_choisi').addEventListener('change', function() {
+    appliquerChangementFormat(this);
 });
 
-// Affiche ou masque la case numérique si choix "Saisir une quantité libre"
+// Gère le déploiement de la case numérique sur-mesure et l'activation du bouton de validation
 document.getElementById('quantite_lot').addEventListener('change', function() {
     const customField = document.getElementById('wrapper-custom-flyer');
     const customInput = document.getElementById('quantite_custom');
     const btnSubmit = document.getElementById('btn-submit');
     
-    /* 🟢 CORRECTION DE LA SYNTAXE ICI (.style.style.display supprimé) */
     if (this.value === 'custom') {
         customField.style.display = 'block';
         customInput.required = true;
@@ -126,9 +131,40 @@ document.getElementById('quantite_lot').addEventListener('change', function() {
         customInput.required = false;
     }
     
-    // Débloque le gros bouton violet dès qu'une quantité est fixée
     if (this.value) {
         btnSubmit.disabled = false;
+    }
+});
+
+// Initialisation automatique et robuste au chargement de la page
+document.addEventListener("DOMContentLoaded", function() {
+    const selectFormat = document.getElementById('format_choisi');
+    const qteSelect = document.getElementById('quantite_lot');
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const formatIdDepuisUrl = urlParams.get('format_id');
+    const actionDepuisUrl = urlParams.get('action'); 
+    
+    if (selectFormat && selectFormat.options.length > 0) {
+        // 🟢 FIX CRUCIAL : Si format_id est présent dans l'URL on l'utilise, sinon on force l'index 1 (le premier vrai format après l'option vide)
+        if (formatIdDepuisUrl) {
+            selectFormat.value = formatIdDepuisUrl;
+        } else {
+            selectFormat.selectedIndex = 1; 
+        }
+        
+        // On exécute immédiatement le rafraîchissement des données pour caler le format_id dans le formulaire
+        appliquerChangementFormat(selectFormat);
+        
+        // Si l'utilisateur vient du gros bouton transparent "SUR-MESURE"
+        if (actionDepuisUrl === "sur_mesure") {
+            setTimeout(function() {
+                if (qteSelect) {
+                    qteSelect.value = "custom";
+                    qteSelect.dispatchEvent(new Event('change'));
+                }
+            }, 150);
+        }
     }
 });
 </script>

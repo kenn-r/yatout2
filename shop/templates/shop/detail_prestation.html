@@ -66,45 +66,53 @@
                     </div>
 
                 <!-- ========================================================================= -->
-                <!-- 2️⃣ CAS B : PRESTATIONS PAR LOTS (Ex: Flyers, Dépliants, Cartes)           -->
-                <!-- ========================================================================= -->
-                {% elif examen_lot or prestation.type_unite == 'LOT' %}
-                    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">📦 Sélectionnez votre volume de lot :</h5>
-                    
-                    <div class="lots-grid-unified">
-                        {% for option in prestation.options_quantite.all %}
-                        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('lot', '{{ option.quantite }}', this)">
-                            <div class="lot-card-visual-wrapper">
-                                {% if option.image %}
-                                    <img src="{{ option.image.url }}" alt="Lot {{ option.quantite }}">
-                                {% else %}
-                                    <span>📇</span>
-                                {% endif %}
-                            </div>
-                            <div class="lot-card-body">
-                                <input type="radio" name="quantite_lot" value="{{ option.quantite }}" {% if forloop.first %}checked{% endif %} style="display: none;">
-                                <strong class="lot-title-text">Lot {{ option.quantite }} ex.</strong>
-                                {% if option.remise_pourcentage > 0 %}
-                                    <span class="lot-discount-badge badge-style-discount">Remise -{{ option.remise_pourcentage }}%</span>
-                                {% else %}
-                                    <span class="lot-discount-badge badge-style-catalogue">Tarif Catalogue</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
+               <!-- ========================================================================= -->
+<!-- 2️⃣ CAS B : PRESTATIONS PAR LOTS (Ex: Flyers, Dépliants, Cartes)           -->
+<!-- ========================================================================= -->
+{% elif examen_lot or prestation.type_unite == 'LOT' %}
+    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">📦 Sélectionnez votre volume de lot :</h5>
+    
+    <div class="lots-grid-unified" style="margin-bottom: 20px;">
+        {% for option in prestation.options_quantite.all %}
+        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('lot', '{{ option.quantite }}', this)">
+            <div class="lot-card-visual-wrapper">
+                {% if option.image %}
+                    <img src="{{ option.image.url }}" alt="Lot {{ option.quantite }}">
+                {% else %}
+                    <span>📇</span>
+                {% endif %}
+            </div>
+            <div class="lot-card-body">
+                <input type="radio" name="quantite_lot" value="{{ option.quantite }}" {% if forloop.first %}checked{% endif %} style="display: none;">
+                <strong class="lot-title-text">Lot {{ option.quantite }} ex.</strong>
+                {% if option.remise_pourcentage > 0 %}
+                    <span class="lot-discount-badge badge-style-discount">Remise -{{ option.remise_pourcentage }}%</span>
+                {% else %}
+                    <span class="lot-discount-badge badge-style-catalogue">Tarif Catalogue</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
 
-                        <!-- Option Sur-mesure pour les lots -->
-                        <div class="card-lot-modern" id="custom-option-card" onclick="selectionnerOptionUniverselle('custom-lot', 'custom', this)">
-                            <div class="lot-card-visual-wrapper">
-                                <span>✏️</span>
-                            </div>
-                            <div class="lot-card-body">
-                                <strong class="d-block mb-1" style="color: #1e293b;">Quantité libre</strong>
-                                <input type="number" id="input_custom_qty" placeholder="Ex: 1500" class="form-input text-center" style="padding: 6px; width: 90%;">
-                            </div>
-                        </div>
-                    </div>
+        <!-- Option Sur-mesure pour les lots -->
+        <div class="card-lot-modern" id="custom-option-card" onclick="selectionnerOptionUniverselle('custom-lot', 'custom', this)">
+            <div class="lot-card-visual-wrapper">
+                <span>✏️</span>
+            </div>
+            <div class="lot-card-body">
+                <strong class="d-block mb-1" style="color: #1e293b;">Quantité libre</strong>
+                <input type="number" id="input_custom_qty" placeholder="Ex: 1500" class="form-input text-center" style="padding: 6px; width: 90%;">
+            </div>
+        </div>
+    </div>
 
+    <!-- 🟢 BOUTON TURQUOISE INSÉRÉ ET BRANCHÉ SUR LA LOGIQUE DE SÉCURITÉ -->
+    <button type="button" onclick="declencherSaisieQuantiteLibre()" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background-color: #00a896; color: #ffffff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; box-shadow: 0 4px 14px rgba(0, 168, 150, 0.3); margin-top: 15px; margin-bottom: 25px;">
+        🎛️ TAPEZ VOTRE QUANTITE
+    </button>
+
+   
+{% endif %}
                 <!-- ========================================================================= -->
                 <!-- 3️⃣ CAS C : PRESTATIONS À L'UNITÉ (Ex: T-shirts, Tasses, Casquettes)        -->
                 <!-- ========================================================================= -->
@@ -222,6 +230,56 @@
             if (hiddenType) hiddenType.value = 'surface';
             if (hiddenW) hiddenW.value = document.getElementById('custom_w').value || 1;
             if (hiddenH) hiddenH.value = document.getElementById('custom_h').value || 1;
+        }
+    }
+     <!-- 🟢 SCRIPT DE PROTECTION ET D'FOCUS INTERACTIF -->
+    function declencherSaisieQuantiteLibre() {
+        // 1️⃣ RECHERCHE UNIVERSELLE : On teste toutes les variantes d'ID possibles pour votre sélecteur de format
+        var selectFormat = document.getElementById('dimensions_m2') 
+                        || document.getElementById('dimensions') 
+                        || document.getElementById('format_id')
+                        || document.querySelector('select[name*="dimension"]')
+                        || document.querySelector('select[name*="format"]');
+        
+        // Si le sélecteur est trouvé et qu'aucune option n'est cochée (valeur vide, ou première option désactivée)
+        if (selectFormat && (selectFormat.value === "" || selectFormat.value === null || selectFormat.selectedIndex === 0 && selectFormat.options[0].disabled)) {
+            // Indication d'erreur visuelle : le sélecteur passe en rouge
+            selectFormat.style.setProperty('border', '2.5px solid #ef4444', 'important');
+            selectFormat.style.setProperty('background-color', '#fef2f2', 'important');
+            
+            // Pop-up d'alerte explicite
+            alert("⚠️ Veuillez d'abord choisir un format (A5, A6...) avant de taper votre quantité.");
+            
+            // On renvoie le focus de l'écran vers le choix du format
+            selectFormat.focus();
+            return; // On bloque l'accès tant que le format n'est pas choisi
+        }
+
+        // 2️⃣ ACTIVATION DE LA QUANTITÉ LIBRE (Si le format est bien sélectionné)
+        var carteCustom = document.getElementById('custom-option-card');
+        var inputCustom = document.getElementById('input_custom_qty');
+        
+        if (carteCustom && inputCustom) {
+            // Nettoyage des bordures rouges d'erreur si elles étaient visibles
+            if (selectFormat) {
+                selectFormat.style.border = "1.5px solid #cbd5e1";
+                selectFormat.style.backgroundColor = "#ffffff";
+            }
+
+            // On décoche visuellement les styles actifs des autres grilles de lots classiques
+            document.querySelectorAll('.card-lot-modern').forEach(function(card) {
+                card.classList.remove('active-lot');
+                card.style.borderColor = 'rgba(124, 58, 237, 0.15)';
+            });
+            
+            // On simule le clic physique sur votre option de quantité libre
+            carteCustom.click(); 
+            carteCustom.classList.add('active-lot');
+            carteCustom.style.borderColor = '#00a896';
+            
+            // On force l'ouverture et le focus du clavier sur l'input numérique
+            inputCustom.focus();
+            inputCustom.style.border = "2px solid #00a896";
         }
     }
 </script>

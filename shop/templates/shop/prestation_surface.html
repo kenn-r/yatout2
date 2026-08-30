@@ -36,17 +36,39 @@
                     <label style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 8px;">
                         Dimensions disponibles :
                     </label>
-                    <!-- 🟢 Unifié et nettoyé : Embarque correctement l'attribut data-img pour chaque option -->
-                    <select name="dimensions_m2" id="dimensions_m2" style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;" required>
-                        <option value="" disabled selected>-- Choisir une dimension --</option>
-                        {% for grille in grilles_surface %}
-                            <option value="{{ grille.id }}" data-img="{% if grille.image %}{{ grille.image.url }}{% endif %}">
-                                {{ grille.dimensions }} ({{ grille.prix_total }} FCFA)
-                            </option>
-                        {% endfor %}
-                        <option value="custom">📐 Dimensions sur-mesure (Calcul libre)</option>
+                    
+                    <!-- Le select devient bloqué (disabled) et change de style visuel si un choix direct a été fait depuis le catalogue -->
+                    <select name="dimensions_m2" id="dimensions_m2" 
+                            {% if request.GET.surface_id %}disabled style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #475569; background-color: #f1f5f9; cursor: not-allowed; box-sizing: border-box; font-weight: 600;"{% else %}style="width: 100%; border-radius: 12px; font-size: 0.95rem; padding: 14px 16px; border: 1.5px solid #cbd5e1; color: #0f172a; background-color: #ffffff; box-sizing: border-box;"{% endif %} required>
+                        
+                        {% if request.GET.surface_id %}
+                            <!-- MODE BLOCAGE : On force l'affichage et la sélection UNIQUEMENT de la ligne cliquée -->
+                            {% for grille in grilles_surface %}
+                                {% if request.GET.surface_id|add:"0" == grille.id %}
+                                    <option value="{{ grille.id }}" data-img="{% if grille.image %}{{ grille.image.url }}{% endif %}" selected>
+                                        {{ grille.dimensions }} ({{ grille.prix_total }} FCFA)
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <!-- MODE LIBRE : Comportement normal si l'utilisateur arrive sans sélection préalable -->
+                            <option value="" disabled selected>-- Choisir une dimension --</option>
+                            {% for grille in grilles_surface %}
+                                <option value="{{ grille.id }}" data-img="{% if grille.image %}{{ grille.image.url }}{% endif %}">
+                                    {{ grille.dimensions }} ({{ grille.prix_total }} FCFA)
+                                </option>
+                            {% endfor %}
+                            <option value="custom">📐 Dimensions sur-mesure (Calcul libre)</option>
+                        {% endif %}
                     </select>
                 </div>
+
+                <!-- ⚠️ SÉCURITÉ FORMULAIRE DJANGO -->
+                <!-- L'attribut 'disabled' empêche le navigateur d'envoyer la valeur du select. -->
+                <!-- Ce champ caché prend le relais de manière invisible pour transmettre le bon ID lors du clic sur le bouton violet -->
+                {% if request.GET.surface_id %}
+                    <input type="hidden" name="dimensions_m2" value="{{ request.GET.surface_id }}">
+                {% endif %}
 
                 <!-- BLOC LONGUEUR / LARGEUR : Masqué proprement, passe en flex au besoin -->
                 <div id="champs-custom" style="display: none; gap: 15px; margin-bottom: 20px;">
@@ -77,7 +99,6 @@
         </div>
     </div>
 </div>
-
 <script>
 // 🟢 Unique écouteur d'événement fusionné et propre (Image + Saisie Libre)
 document.getElementById('dimensions_m2').addEventListener('change', function() {
