@@ -12,8 +12,7 @@ urlpatterns = [
     path('produit/<int:pk>/', views.detail_produit, name='detail_produit'),
     path('boutique/<str:username>/', views.boutique_personnelle_vendeur, name='boutique_vendeur'),
     
-    # 🖨️ --- ESPACE SERVICES D'IMPRESSION ---
-    path('impressions/', views.page_impressions, name='page_impressions'),
+       # 🖨️ --- ESPACE SERVICES D'IMPRESSION --- path('impressions/', views.page_impressions, name='page_impressions'),
     path('impressions/admin/commandes/', views.liste_commandes_admin, name='liste_commandes_admin'),
     path('impressions/admin/basculer-remise/<int:commande_id>/', views.basculer_remise, name='basculer_remise'),
     path('impressions/admin/generer-bon/<int:commande_id>/', views.generer_bon_pdf, name='generer_bon_pdf'),
@@ -43,11 +42,17 @@ urlpatterns = [
     path('impressions/admin/valider/<int:commande_id>/', views.valider_commande_impression, name='valider_commande_impression'),
     path('impressions/admin/livraison/<int:commande_id>/', views.voir_bon_livraison, name='voir_bon_livraison_admin'),
     path('impressions/public/pdf/<int:commande_id>/', views.generer_bon_pdf, name='generer_bon_pdf'),
-    path('impressions/', views.page_impressions, name='page_impressions'),
+    # path('impressions/', views.page_impressions, name='page_impressions'),
     path('impressions/api/panier/', views.modifier_panier_print_api, name='modifier_panier_print_api'),
     path('impression/conseiller/', views.page_conseiller, name='page_conseiller'),
-    path('impression/prestations/', views.page_prestations, name='page_prestations'),
-    path('impression/prestations/<int:prestation_id>/', views.detail_prestation, name='detail_prestation'),
+    path('impressions/', views.page_public_prestations, name='page_prestations'),
+    #path('impressions/prestations/', views.page_public_prestations, name='page_prestations'),
+    #path('impression/prestations/', views.page_prestations, name='page_prestations'),
+    path(
+    'impression/prestations/<str:type_unite>/<int:prestation_id>/',
+    views.detail_prestation,
+    name='detail_prestation'
+),
     path('impression/bon-commande/<int:commande_id>/', views.voir_bon_commande, name='voir_bon_commande'),
     path('impression/bon-livraison/<int:commande_id>/', views.voir_bon_livraison, name='voir_bon_livraison'),
     path('impressions/commande/<int:commande_id>/public/', views.voir_bon_commande_public, name='voir_bon_commande_public'),
@@ -69,5 +74,16 @@ urlpatterns = [
     "impression/facture/supprimer/<int:facture_id>/",
     views.supprimer_facture_securisee,
     name="supprimer_facture",
+),
+    path('admin-atelier/', views.backoffice_print_manager, name='backoffice_print_manager'),
+    path(
+    'impression/commande/confirmee/',
+    views.confirmation_commande,
+    name='confirmation_commande'
+),
+    path(
+    'impression/demande/resume/',
+    views.resume_demande,
+    name='resume_demande'
 ),
 ]

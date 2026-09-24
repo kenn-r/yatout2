@@ -1,0 +1,577 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+
+<style>
+
+.confirmation-page {
+    min-height: 75vh;
+    padding: 45px 20px;
+    background: #f6f7f9;
+}
+
+.confirmation-card {
+    max-width: 700px;
+    margin: auto;
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 15px 45px rgba(0,0,0,.08);
+}
+
+/* =========================
+   EN-TÊTE
+========================= */
+
+.confirmation-header {
+    text-align: center;
+}
+
+.confirmation-icon {
+    width: 70px;
+    height: 70px;
+    margin: auto;
+    border-radius: 50%;
+    background: #e9f8ef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    color: #168447;
+}
+
+.confirmation-header h1 {
+    margin: 20px 0 8px;
+    font-size: 29px;
+}
+
+.confirmation-header p {
+    color: #777;
+    margin: 0;
+}
+
+/* =========================
+   REFERENCE
+========================= */
+
+.reference {
+    text-align: center;
+    margin: 18px 0 30px;
+}
+
+.reference span {
+    display: inline-block;
+    padding: 8px 15px;
+    background: #f1f1f1;
+    border-radius: 30px;
+    font-size: 13px;
+    color: #555;
+}
+
+/* =========================
+   DETAILS
+========================= */
+
+.details-card {
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.details-title {
+    padding: 17px 20px;
+    background: #fafafa;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.details-body {
+    padding: 20px;
+}
+
+.detail-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.detail-line:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #777;
+}
+
+.detail-value {
+    font-weight: 600;
+    text-align: right;
+}
+
+/* =========================
+   TARIFICATION
+========================= */
+
+.pricing {
+    margin-top: 22px;
+}
+
+.pricing-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.discount {
+    color: #c62828;
+}
+
+.net-box {
+    margin-top: 12px;
+    padding: 20px;
+    background: #111;
+    color: white;
+    border-radius: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.net-label {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.net-price {
+    font-size: 25px;
+    font-weight: 800;
+}
+
+/* =========================
+   SUR DEVIS
+========================= */
+
+.quote-box {
+    margin-top: 22px;
+    padding: 20px;
+    background: #fff7e6;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.quote-box h3 {
+    margin-top: 0;
+}
+
+.quote-box p {
+    margin-bottom: 0;
+    color: #6b5a2a;
+}
+
+/* =========================
+   LIVRAISON
+========================= */
+
+.delivery-box {
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px dashed #ccc;
+    border-radius: 14px;
+    background: #fafafa;
+}
+
+.delivery-box strong {
+    display: block;
+    margin-bottom: 7px;
+}
+
+.delivery-box p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* =========================
+   MESSAGE
+========================= */
+
+.confirmation-note {
+    margin-top: 22px;
+    text-align: center;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* =========================
+   BOUTON
+========================= */
+
+.confirmation-actions {
+    margin-top: 30px;
+}
+
+.btn-home {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    background: #111;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+    .confirmation-page {
+        padding: 25px 12px;
+    }
+
+    .confirmation-card {
+        padding: 25px 18px;
+        border-radius: 18px;
+    }
+
+    .confirmation-header h1 {
+        font-size: 25px;
+    }
+
+    .detail-line,
+    .net-box {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .detail-value {
+        text-align: left;
+    }
+
+    .net-price {
+        font-size: 24px;
+    }
+}
+
+</style>
+
+
+<div class="confirmation-page">
+
+    <div class="confirmation-card">
+
+
+        <!-- =========================
+             CONFIRMATION
+        ========================== -->
+
+        <div class="confirmation-header">
+
+            <div class="confirmation-icon">
+                ✓
+            </div>
+
+            <h1>
+                Commande confirmée !
+            </h1>
+
+            <p>
+                Votre demande a bien été enregistrée.
+            </p>
+
+        </div>
+
+
+        <!-- =========================
+             REFERENCE
+        ========================== -->
+
+        <div class="reference">
+
+            <span>
+                Référence :
+                #YT-{{ commande.prestation_id }}
+            </span>
+
+        </div>
+
+
+        <!-- =========================
+             DÉTAILS
+        ========================== -->
+
+        <div class="details-card">
+
+            <div class="details-title">
+                🧾 Détails de votre commande
+            </div>
+
+
+            <div class="details-body">
+
+
+                <!-- PRODUIT -->
+
+                <div class="detail-line">
+
+                    <span class="detail-label">
+                        Produit
+                    </span>
+
+                    <span class="detail-value">
+                        {{ commande.titre }}
+                    </span>
+
+                </div>
+
+
+                <!-- FORMAT -->
+
+                {% if commande.format %}
+
+                <div class="detail-line">
+
+                    <span class="detail-label">
+                        Format
+                    </span>
+
+                    <span class="detail-value">
+                        {{ commande.format }}
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- QUANTITÉ -->
+
+                {% if commande.quantite %}
+
+                <div class="detail-line">
+
+                    <span class="detail-label">
+                        Quantité
+                    </span>
+
+                    <span class="detail-value">
+                        {{ commande.quantite }}
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- LARGEUR -->
+
+                {% if commande.largeur %}
+
+                <div class="detail-line">
+
+                    <span class="detail-label">
+                        Largeur
+                    </span>
+
+                    <span class="detail-value">
+                        {{ commande.largeur }} m
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- LONGUEUR -->
+
+                {% if commande.longueur %}
+
+                <div class="detail-line">
+
+                    <span class="detail-label">
+                        Longueur
+                    </span>
+
+                    <span class="detail-value">
+                        {{ commande.longueur }} m
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- SURFACE -->
+
+                {% if commande.surface %}
+
+                <div class="detail-line">
+
+                    <span class="detail-label">
+                        Surface
+                    </span>
+
+                    <span class="detail-value">
+                        {{ commande.surface|floatformat:2 }} m²
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- PRÉCISIONS -->
+
+                {% if commande.message %}
+
+                <div class="detail-line">
+
+                    <span class="detail-label">
+                        Précisions
+                    </span>
+
+                    <span class="detail-value">
+                        {{ commande.message }}
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PRIX
+        ========================== -->
+
+        {% if not commande.sur_devis %}
+
+        <div class="pricing">
+
+            <div class="pricing-line">
+
+                <span>
+                    Prix brut
+                </span>
+
+                <strong>
+                    {{ commande.prix_brut|floatformat:0 }}
+                    FCFA
+                </strong>
+
+            </div>
+
+
+            {% if commande.remise_pourcent %}
+
+            <div class="pricing-line discount">
+
+                <span>
+                    Remise
+                    ({{ commande.remise_pourcent }} %)
+                </span>
+
+                <strong>
+                    - {{ commande.montant_remise|floatformat:0 }}
+                    FCFA
+                </strong>
+
+            </div>
+
+            {% endif %}
+
+
+            <div class="net-box">
+
+                <span class="net-label">
+                    NET À PAYER
+                </span>
+
+                <span class="net-price">
+                    {{ commande.net_a_payer|floatformat:0 }}
+                    FCFA
+                </span>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+
+        <div class="quote-box">
+
+            <h3>
+                💬 Prix sur devis
+            </h3>
+
+            <p>
+                Cette demande nécessite une tarification
+                personnalisée. Notre équipe vous contactera
+                pour vous communiquer le montant exact.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- =========================
+             LIVRAISON
+        ========================== -->
+
+        <div class="delivery-box">
+
+            <strong>
+                🚚 Livraison
+            </strong>
+
+            <p>
+                Vous souhaitez être livré ?
+                Les frais de livraison seront confirmés
+                directement par téléphone avec notre équipe.
+            </p>
+
+        </div>
+
+
+        <!-- =========================
+             MESSAGE
+        ========================== -->
+
+        <div class="confirmation-note">
+
+            Notre équipe YaTout vous contactera prochainement
+            par téléphone pour finaliser votre commande.
+
+        </div>
+
+
+        <!-- =========================
+             BOUTON
+        ========================== -->
+
+        <div class="confirmation-actions">
+
+            <a
+                href="/impression/prestations/"
+                class="btn-home"
+            >
+                Retour aux prestations
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

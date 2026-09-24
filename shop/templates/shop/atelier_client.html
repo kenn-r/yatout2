@@ -1,0 +1,2601 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Atelier d'Impression - YaTout{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* =========================================================
+   THÈME
+========================================================= */
+
+:root {
+    --theme-main: #111111;
+    --theme-secondary: #333333;
+    --theme-soft: #f5f5f5;
+    --theme-border: #dddddd;
+    --theme-text: #111111;
+    --theme-muted: #777777;
+    --theme-glow: rgba(17,17,17,.18);
+
+    --theme-transition: 1s ease;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.atelier-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+
+    color: var(--theme-text);
+
+    transition:
+        color var(--theme-transition);
+}
+
+
+/*
+   On ne force PAS le background du body ici.
+   Cela permet au thème du base.html de rester compatible.
+*/
+
+.atelier-container * {
+    transition:
+        border-color var(--theme-transition),
+        background-color var(--theme-transition),
+        color var(--theme-transition),
+        box-shadow .35s ease;
+}
+
+
+/* =========================================================
+   CATÉGORIES
+========================================================= */
+
+.atelier-categories {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(210px, 1fr));
+
+    gap: 16px;
+
+    margin-bottom: 35px;
+}
+
+
+.atelier-category {
+
+    display: block;
+
+    padding: 20px;
+
+    background: var(--theme-soft);
+
+    border:
+        2px solid var(--theme-border);
+
+    border-radius: 14px;
+
+    text-decoration: none;
+
+    color: var(--theme-text);
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.07);
+
+    transition:
+        transform .3s ease,
+        border-color var(--theme-transition),
+        background-color var(--theme-transition),
+        box-shadow .3s ease;
+}
+
+
+.atelier-category:hover,
+.atelier-category.active {
+
+    border-color: var(--theme-main);
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 8px 25px var(--theme-glow);
+}
+
+
+.atelier-category h3 {
+
+    margin:
+        0 0 7px;
+
+    color:
+        var(--theme-text);
+}
+
+
+.atelier-category p {
+
+    margin: 0;
+
+    color:
+        var(--theme-muted);
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   TITRES
+========================================================= */
+
+.atelier-title {
+
+    margin:
+        30px 0 20px;
+}
+
+
+.atelier-title h2 {
+
+    margin:
+        0 0 7px;
+
+    color:
+        var(--theme-text);
+}
+
+
+.atelier-title p {
+
+    margin: 0;
+
+    color:
+        var(--theme-muted);
+}
+
+
+/* =========================================================
+   PRODUITS
+========================================================= */
+
+.atelier-products {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(280px, 1fr));
+
+    gap: 22px;
+}
+
+
+.atelier-card {
+
+    background:
+        var(--theme-soft);
+
+    border:
+        1px solid var(--theme-border);
+
+    border-radius:
+        16px;
+
+    overflow:
+        hidden;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.08);
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+}
+
+
+.atelier-card:hover {
+
+    box-shadow:
+        0 10px 30px var(--theme-glow);
+}
+
+
+/* =========================================================
+   IMAGES PRODUITS
+========================================================= */
+
+.atelier-image-box {
+
+    width: 100%;
+    height: 300px;
+
+    background:
+        #f6f6f6;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding: 12px;
+
+    box-sizing:
+        border-box;
+}
+
+
+.atelier-image-box img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit:
+        contain;
+
+    display:
+        block;
+}
+
+
+.atelier-no-image {
+
+    color:
+        #999;
+
+    font-size:
+        14px;
+}
+
+
+/* =========================================================
+   CORPS CARTE
+========================================================= */
+
+.atelier-card-body {
+
+    padding:
+        20px;
+
+    flex:
+        1;
+}
+
+
+.atelier-card-body h3 {
+
+    margin:
+        0 0 10px;
+
+    font-size:
+        20px;
+
+    color:
+        var(--theme-text);
+}
+
+
+.atelier-description {
+
+    color:
+        var(--theme-muted);
+
+    line-height:
+        1.5;
+
+    font-size:
+        14px;
+
+    margin-bottom:
+        18px;
+}
+
+
+/* =========================================================
+   PRIX
+========================================================= */
+
+.atelier-price {
+
+    font-size:
+        19px;
+
+    font-weight:
+        700;
+
+    margin:
+        15px 0;
+
+    color:
+        var(--theme-main);
+}
+
+
+.atelier-price-highlight {
+
+    font-weight:
+        700;
+
+    white-space:
+        nowrap;
+
+    color:
+        var(--theme-main);
+}
+
+
+/* =========================================================
+   TARIFS
+========================================================= */
+
+.atelier-tarifs {
+
+    margin-top:
+        18px;
+
+    border-top:
+        1px solid var(--theme-border);
+
+    padding-top:
+        15px;
+}
+
+
+.atelier-tarifs h4 {
+
+    margin:
+        0 0 12px;
+}
+
+
+.atelier-tarif {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr 1fr auto;
+
+    gap:
+        10px;
+
+    align-items:
+        center;
+
+    padding:
+        11px 0;
+
+    border-bottom:
+        1px solid var(--theme-border);
+
+    font-size:
+        14px;
+}
+
+
+/* =========================================================
+   OPTIONS FLYERS
+========================================================= */
+
+.flyer-option {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    gap:
+        15px;
+
+    padding:
+        15px;
+
+    margin-bottom:
+        10px;
+
+    background:
+        var(--theme-soft);
+
+    border:
+        2px solid var(--theme-border);
+
+    border-radius:
+        12px;
+
+    text-decoration:
+        none;
+
+    color:
+        var(--theme-text);
+
+    transition:
+        transform .3s ease,
+        border-color var(--theme-transition),
+        box-shadow .3s ease;
+}
+
+
+.flyer-option:hover {
+
+    border-color:
+        var(--theme-main);
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 5px 15px var(--theme-glow);
+}
+
+
+.flyer-option-info {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        5px;
+}
+
+
+.flyer-format {
+
+    font-size:
+        18px;
+}
+
+
+.flyer-option-info span {
+
+    color:
+        var(--theme-muted);
+
+    font-size:
+        14px;
+}
+
+
+.flyer-option-right {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        flex-end;
+
+    gap:
+        5px;
+}
+
+
+.flyer-option-right strong {
+
+    font-size:
+        17px;
+
+    color:
+        var(--theme-main);
+}
+
+
+.flyer-choisir {
+
+    font-size:
+        13px;
+
+    font-weight:
+        600;
+
+    color:
+        var(--theme-main);
+}
+
+
+/* =========================================================
+   BOUTONS
+========================================================= */
+
+.atelier-btn-container {
+
+    padding:
+        0 20px 20px;
+}
+
+
+.atelier-btn {
+
+    display:
+        block;
+
+    width:
+        100%;
+
+    box-sizing:
+        border-box;
+
+    padding:
+        12px 17px;
+
+    border-radius:
+        9px;
+
+    background:
+        var(--theme-main);
+
+    color:
+        white;
+
+    text-decoration:
+        none;
+
+    font-weight:
+        600;
+
+    text-align:
+        center;
+
+    transition:
+        transform .3s ease,
+        background-color var(--theme-transition),
+        box-shadow .3s ease;
+}
+
+
+.atelier-btn:hover {
+
+    background:
+        var(--theme-secondary);
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 6px 20px var(--theme-glow);
+}
+
+
+/* =========================================================
+   MESSAGE VIDE
+========================================================= */
+
+.atelier-empty {
+
+    background:
+        var(--theme-soft);
+
+    padding:
+        25px;
+
+    border-radius:
+        12px;
+
+    color:
+        var(--theme-muted);
+
+    border:
+        1px solid var(--theme-border);
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.05);
+}
+
+
+/* =========================================================
+   RÉALISATIONS
+========================================================= */
+
+.atelier-realisations {
+
+    margin:
+        55px 0;
+
+    padding:
+        30px 0;
+}
+
+
+.realisations-slider {
+
+    display:
+        flex;
+
+    flex-wrap:
+        nowrap;
+
+    gap:
+        20px;
+
+    overflow-x:
+        auto;
+
+    overflow-y:
+        hidden;
+
+    padding:
+        10px 5px 25px;
+
+    scrollbar-width:
+        none;
+
+    scroll-behavior:
+        smooth;
+
+    -webkit-overflow-scrolling:
+        touch;
+
+    cursor:
+        grab;
+}
+
+
+.realisations-slider:active {
+
+    cursor:
+        grabbing;
+}
+
+
+.realisations-slider::-webkit-scrollbar {
+
+    display:
+        none;
+}
+
+
+.realisation-card {
+
+    flex:
+        0 0 280px;
+
+    min-width:
+        280px;
+
+    background:
+        var(--theme-soft);
+
+    border:
+        1px solid var(--theme-border);
+
+    border-radius:
+        16px;
+
+    overflow:
+        hidden;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.08);
+}
+
+
+.realisation-card:hover {
+
+    transform:
+        translateY(-5px);
+
+    box-shadow:
+        0 10px 30px var(--theme-glow);
+}
+
+
+.realisation-image {
+
+    width:
+        100%;
+
+    height:
+        220px;
+
+    overflow:
+        hidden;
+
+    background:
+        #f2f2f2;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+}
+
+
+.realisation-image img {
+
+    width:
+        100%;
+
+    height:
+        100%;
+
+    object-fit:
+        cover;
+
+    display:
+        block;
+}
+
+
+.realisation-card:hover
+.realisation-image img {
+
+    transform:
+        scale(1.05);
+}
+
+
+.realisation-body {
+
+    padding:
+        18px;
+}
+
+
+.realisation-body h3 {
+
+    margin:
+        0 0 8px;
+
+    font-size:
+        18px;
+
+    color:
+        var(--theme-text);
+}
+
+
+.realisation-body p {
+
+    margin:
+        0 0 10px;
+
+    color:
+        var(--theme-muted);
+
+    font-size:
+        14px;
+
+    line-height:
+        1.5;
+}
+
+
+.realisation-body small {
+
+    color:
+        var(--theme-main);
+
+    font-weight:
+        600;
+}
+
+
+/* =========================================================
+   AVIS CLIENTS
+========================================================= */
+
+.atelier-temoignages {
+
+    margin:
+        60px 0;
+
+    padding:
+        35px 0;
+}
+
+
+.temoignages-slider {
+
+    display:
+        flex;
+
+    flex-wrap:
+        nowrap;
+
+    gap:
+        20px;
+
+    overflow-x:
+        auto;
+
+    padding:
+        10px 5px 25px;
+
+    scroll-behavior:
+        smooth;
+
+    scrollbar-width:
+        none;
+
+    -webkit-overflow-scrolling:
+        touch;
+
+    cursor:
+        grab;
+}
+
+
+.temoignages-slider:active {
+
+    cursor:
+        grabbing;
+}
+
+
+.temoignages-slider::-webkit-scrollbar {
+
+    display:
+        none;
+}
+
+
+.temoignage-card {
+
+    flex:
+        0 0 310px;
+
+    min-width:
+        310px;
+
+    background:
+        var(--theme-soft);
+
+    border:
+        1px solid var(--theme-border);
+
+    border-radius:
+        18px;
+
+    padding:
+        25px;
+
+    box-sizing:
+        border-box;
+
+    box-shadow:
+        0 6px 25px rgba(0,0,0,.08);
+}
+
+
+.temoignage-card:hover {
+
+    transform:
+        translateY(-5px);
+
+    box-shadow:
+        0 12px 30px var(--theme-glow);
+}
+
+
+.temoignage-stars {
+
+    font-size:
+        22px;
+
+    letter-spacing:
+        3px;
+
+    margin-bottom:
+        15px;
+
+    color:
+        #f5b301;
+}
+
+
+.temoignage-card p {
+
+    margin:
+        0 0 20px;
+
+    color:
+        var(--theme-muted);
+
+    font-size:
+        15px;
+
+    line-height:
+        1.7;
+
+    font-style:
+        italic;
+}
+
+
+.temoignage-card strong {
+
+    display:
+        block;
+
+    font-size:
+        16px;
+
+    color:
+        var(--theme-main);
+}
+
+
+/* =========================================================
+   FORMULAIRE AVIS
+========================================================= */
+
+.temoignage-form-section {
+
+    margin:
+        40px 0 70px;
+}
+
+
+.temoignage-form-card {
+
+    max-width:
+        700px;
+
+    margin:
+        0 auto;
+
+    padding:
+        30px;
+
+    background:
+        var(--theme-soft);
+
+    border:
+        1px solid var(--theme-border);
+
+    border-radius:
+        20px;
+
+    box-shadow:
+        0 8px 30px rgba(0,0,0,.08);
+}
+
+
+.temoignage-form-card h2 {
+
+    margin-top:
+        0;
+
+    margin-bottom:
+        8px;
+
+    color:
+        var(--theme-text);
+}
+
+
+.temoignage-form-card > p {
+
+    color:
+        var(--theme-muted);
+
+    margin-bottom:
+        25px;
+}
+
+
+.temoignage-field {
+
+    margin-bottom:
+        18px;
+}
+
+
+.temoignage-field label {
+
+    display:
+        block;
+
+    font-weight:
+        600;
+
+    margin-bottom:
+        7px;
+
+    color:
+        var(--theme-text);
+}
+
+
+.temoignage-input,
+.temoignage-field input,
+.temoignage-field textarea,
+.temoignage-field select {
+
+    width:
+        100%;
+
+    box-sizing:
+        border-box;
+
+    padding:
+        13px 14px;
+
+    border:
+        1px solid var(--theme-border);
+
+    border-radius:
+        10px;
+
+    background:
+        white;
+
+    color:
+        #111;
+
+    font-family:
+        inherit;
+
+    font-size:
+        15px;
+
+    outline:
+        none;
+}
+
+
+.temoignage-field textarea {
+
+    min-height:
+        120px;
+
+    resize:
+        vertical;
+}
+
+
+.temoignage-field input:focus,
+.temoignage-field textarea:focus,
+.temoignage-field select:focus {
+
+    border-color:
+        var(--theme-main);
+
+    box-shadow:
+        0 0 0 3px var(--theme-glow);
+}
+
+
+.temoignage-submit {
+
+    width:
+        100%;
+
+    border:
+        none;
+
+    padding:
+        14px 18px;
+
+    border-radius:
+        10px;
+
+    background:
+        var(--theme-main);
+
+    color:
+        white;
+
+    font-size:
+        16px;
+
+    font-weight:
+        700;
+
+    cursor:
+        pointer;
+}
+
+
+.temoignage-submit:hover {
+
+    background:
+        var(--theme-secondary);
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 8px 25px var(--theme-glow);
+}
+
+
+.temoignage-success {
+
+    max-width:
+        700px;
+
+    margin:
+        0 auto 25px;
+
+    padding:
+        16px 20px;
+
+    border-radius:
+        12px;
+
+    background:
+        #dcfce7;
+
+    border:
+        1px solid #86efac;
+
+    color:
+        #166534;
+
+    font-weight:
+        600;
+}
+
+
+.temoignage-errors {
+
+    background:
+        #fef2f2;
+
+    color:
+        #991b1b;
+
+    padding:
+        12px;
+
+    border-radius:
+        10px;
+
+    margin-bottom:
+        20px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .atelier-container {
+        padding:
+            20px 14px;
+    }
+
+
+    .atelier-products {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .atelier-image-box {
+        height:
+            280px;
+    }
+
+
+    .atelier-tarif {
+        grid-template-columns:
+            1fr;
+
+        gap:
+            4px;
+    }
+
+
+    .atelier-price-highlight {
+        margin-top:
+            4px;
+    }
+
+
+    .flyer-option {
+        align-items:
+            flex-start;
+    }
+
+
+    .realisation-card {
+        flex:
+            0 0 250px;
+
+        min-width:
+            250px;
+    }
+
+
+    .realisation-image {
+        height:
+            200px;
+    }
+
+
+    .temoignage-card {
+        flex:
+            0 0 280px;
+
+        min-width:
+            280px;
+
+        padding:
+            20px;
+    }
+
+
+    .temoignage-stars {
+        font-size:
+            20px;
+    }
+
+
+    .temoignage-form-card {
+        padding:
+            22px 18px;
+    }
+
+}
+
+
+/* =========================================================
+   PETIT MOBILE
+========================================================= */
+
+@media (max-width: 500px) {
+
+    .flyer-option {
+        padding:
+            13px;
+
+        gap:
+            10px;
+    }
+
+
+    .flyer-format {
+        font-size:
+            16px;
+    }
+
+
+    .flyer-option-right strong {
+        font-size:
+            15px;
+    }
+
+
+    .flyer-option-info span {
+        font-size:
+            13px;
+    }
+
+}
+
+</style>
+
+
+<div class="atelier-container">
+
+
+<!-- =====================================================
+     CATÉGORIES
+====================================================== -->
+
+<div class="atelier-categories">
+
+    <a href="?type_unite=FLYER"
+       class="atelier-category {% if type_unite_clique == 'FLYER' %}active{% endif %}">
+
+        <h3>Flyers & Cartes</h3>
+
+        <p>
+            Flyers, dépliants et cartes de visite
+        </p>
+
+    </a>
+
+
+    <a href="?type_unite=SURFACE"
+       class="atelier-category {% if type_unite_clique == 'SURFACE' %}active{% endif %}">
+
+        <h3>Grand Format</h3>
+
+        <p>
+            Bâches, vinyles et autres supports
+        </p>
+
+    </a>
+
+
+    <a href="?type_unite=GOODIES"
+       class="atelier-category {% if type_unite_clique == 'GOODIES' %}active{% endif %}">
+
+        <h3>Objets Publicitaires</h3>
+
+        <p>
+            Mugs, T-shirts, casquettes...
+        </p>
+
+    </a>
+
+
+    <a href="?type_unite=FACONNAGE"
+       class="atelier-category {% if type_unite_clique == 'FACONNAGE' %}active{% endif %}">
+
+        <h3>Façonnage</h3>
+
+        <p>
+            Photocopies, reliures et reprographie
+        </p>
+
+    </a>
+
+</div>
+
+
+<!-- =====================================================
+     TOUS LES PRODUITS
+====================================================== -->
+
+{% if not type_unite_clique %}
+
+
+<div class="atelier-title">
+
+    <h2>Nos prestations</h2>
+
+    <p>
+        Découvrez nos produits et leurs tarifs.
+    </p>
+
+</div>
+
+
+<!-- FLYERS -->
+
+{% if flyers %}
+
+<h2 class="atelier-title">
+    Flyers, dépliants & cartes
+</h2>
+
+<div class="atelier-products">
+
+{% for produit in flyers %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="atelier-tarifs">
+
+            <h4>Formats & tarifs</h4>
+
+
+            {% for tarif in produit.tarifs_specifiques.all %}
+
+            <a href="{% url 'detail_prestation' 'FLYER' produit.id %}?offre_id={{ tarif.id }}"
+               class="flyer-option">
+
+                <div class="flyer-option-info">
+
+                    <strong class="flyer-format">
+                        {{ tarif.format_papier }}
+                    </strong>
+
+                    <span>
+                        {{ tarif.quantite }} exemplaires
+                    </span>
+
+                </div>
+
+
+                <div class="flyer-option-right">
+
+                    <strong>
+                        {{ tarif.prix_total_lot|floatformat:0 }}
+                        FCFA
+                    </strong>
+
+                    <span class="flyer-choisir">
+                        Choisir →
+                    </span>
+
+                </div>
+
+            </a>
+
+            {% empty %}
+
+            <p>Aucun tarif configuré.</p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'FLYER' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<!-- GRAND FORMAT -->
+
+{% if grands_formats %}
+
+<h2 class="atelier-title">
+    Grands formats
+</h2>
+
+<div class="atelier-products">
+
+{% for produit in grands_formats %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+        <div class="atelier-price">
+
+            {{ produit.prix_au_metre_carre }}
+            FCFA / m²
+
+        </div>
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'SURFACE' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<!-- GOODIES -->
+
+{% if goodies %}
+
+<h2 class="atelier-title">
+    Objets publicitaires
+</h2>
+
+<div class="atelier-products">
+
+{% for produit in goodies %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="atelier-tarifs">
+
+            <h4>Tarifs selon quantité</h4>
+
+
+            {% for palier in produit.paliers_prix.all %}
+
+            <div class="atelier-tarif">
+
+                <span>
+                    À partir de
+                    {{ palier.quantite_minimale }}
+                    pièces
+                </span>
+
+                <span>
+                    Prix unitaire
+                </span>
+
+                <strong class="atelier-price-highlight">
+
+                    {{ palier.prix_unitaire }}
+                    FCFA
+
+                </strong>
+
+            </div>
+
+            {% empty %}
+
+            <p>Aucun tarif configuré.</p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'GOODIES' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<!-- FAÇONNAGE -->
+
+{% if faconnages %}
+
+<h2 class="atelier-title">
+    Façonnage & reprographie
+</h2>
+
+<div class="atelier-products">
+
+{% for produit in faconnages %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="atelier-price">
+
+            {{ produit.prix_fixe_unitaire }}
+            FCFA / unité
+
+        </div>
+
+
+        {% if produit.remise_globale %}
+
+        <p>
+
+            Remise :
+            <strong>
+                {{ produit.remise_globale }}%
+            </strong>
+
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'FACONNAGE' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+{% endif %}
+
+
+<!-- =====================================================
+     CATÉGORIE FLYERS
+====================================================== -->
+
+{% if type_unite_clique == 'FLYER' %}
+
+<div class="atelier-title">
+
+    <h2>{{ nom_categorie_active }}</h2>
+
+    <p>
+        Choisissez un format et un lot pour continuer.
+    </p>
+
+</div>
+
+
+<div class="atelier-products">
+
+{% for produit in flyers %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="atelier-tarifs">
+
+            <h4>Formats & tarifs</h4>
+
+
+            {% for tarif in produit.tarifs_specifiques.all %}
+
+            <a href="{% url 'detail_prestation' 'FLYER' produit.id %}?offre_id={{ tarif.id }}"
+               class="flyer-option">
+
+                <div class="flyer-option-info">
+
+                    <strong class="flyer-format">
+                        {{ tarif.format_papier }}
+                    </strong>
+
+                    <span>
+                        {{ tarif.quantite }} exemplaires
+                    </span>
+
+                </div>
+
+
+                <div class="flyer-option-right">
+
+                    <strong>
+                        {{ tarif.prix_total_lot|floatformat:0 }}
+                        FCFA
+                    </strong>
+
+                    <span class="flyer-choisir">
+                        Choisir →
+                    </span>
+
+                </div>
+
+            </a>
+
+            {% empty %}
+
+            <p>Aucun tarif configuré.</p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'FLYER' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+{% empty %}
+
+<div class="atelier-empty">
+    Aucun flyer disponible.
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<!-- =====================================================
+     CATÉGORIE GRAND FORMAT
+====================================================== -->
+
+{% if type_unite_clique == 'SURFACE' %}
+
+<div class="atelier-title">
+
+    <h2>{{ nom_categorie_active }}</h2>
+
+    <p>
+        Choisissez votre support.
+    </p>
+
+</div>
+
+
+<div class="atelier-products">
+
+{% for produit in grands_formats %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="atelier-price">
+
+            {{ produit.prix_au_metre_carre }}
+            FCFA / m²
+
+        </div>
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'SURFACE' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+{% empty %}
+
+<div class="atelier-empty">
+    Aucun produit disponible.
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<!-- =====================================================
+     CATÉGORIE GOODIES
+====================================================== -->
+
+{% if type_unite_clique == 'GOODIES' %}
+
+<div class="atelier-title">
+
+    <h2>{{ nom_categorie_active }}</h2>
+
+    <p>
+        Découvrez nos objets personnalisables
+        et leurs tarifs.
+    </p>
+
+</div>
+
+
+<div class="atelier-products">
+
+{% for produit in goodies %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="atelier-tarifs">
+
+            <h4>Tarifs selon quantité</h4>
+
+
+            {% for palier in produit.paliers_prix.all %}
+
+            <div class="atelier-tarif">
+
+                <span>
+                    À partir de
+                    {{ palier.quantite_minimale }}
+                    pièces
+                </span>
+
+                <span>
+                    Prix unitaire
+                </span>
+
+                <strong class="atelier-price-highlight">
+
+                    {{ palier.prix_unitaire }}
+                    FCFA
+
+                </strong>
+
+            </div>
+
+            {% empty %}
+
+            <p>Aucun tarif configuré.</p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'GOODIES' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+
+{% empty %}
+
+<div class="atelier-empty">
+    Aucun objet publicitaire disponible.
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<!-- =====================================================
+     CATÉGORIE FAÇONNAGE
+====================================================== -->
+
+{% if type_unite_clique == 'FACONNAGE' %}
+
+<div class="atelier-title">
+
+    <h2>{{ nom_categorie_active }}</h2>
+
+    <p>
+        Découvrez nos services de façonnage
+        et reprographie.
+    </p>
+
+</div>
+
+
+<div class="atelier-products">
+
+{% for produit in faconnages %}
+
+<div class="atelier-card">
+
+    <div class="atelier-image-box">
+
+        {% if produit.image %}
+
+        <img src="{{ produit.image.url }}"
+             alt="{{ produit.titre }}">
+
+        {% else %}
+
+        <span class="atelier-no-image">
+            Image non disponible
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-card-body">
+
+        <h3>{{ produit.titre }}</h3>
+
+
+        {% if produit.description %}
+
+        <div class="atelier-description">
+            {{ produit.description }}
+        </div>
+
+        {% endif %}
+
+
+        <div class="atelier-price">
+
+            {{ produit.prix_fixe_unitaire }}
+            FCFA / unité
+
+        </div>
+
+
+        {% if produit.remise_globale %}
+
+        <p>
+
+            Remise :
+            <strong>
+                {{ produit.remise_globale }}%
+            </strong>
+
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="atelier-btn-container">
+
+        <a href="{% url 'detail_prestation' 'FACONNAGE' produit.id %}"
+           class="atelier-btn">
+
+            Voir la fiche
+
+        </a>
+
+    </div>
+
+</div>
+
+
+{% empty %}
+
+<div class="atelier-empty">
+    Aucun service disponible.
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     RÉALISATIONS
+====================================================== -->
+
+{% if realisations %}
+
+<section class="atelier-realisations">
+
+    <div class="atelier-title">
+
+        <h2>
+            Nos réalisations
+        </h2>
+
+        <p>
+            Découvrez quelques-uns de nos travaux.
+        </p>
+
+    </div>
+
+
+    <div class="realisations-slider">
+
+        {% for realisation in realisations %}
+
+        <div class="realisation-card">
+
+            <div class="realisation-image">
+
+                {% if realisation.image %}
+
+                <img src="{{ realisation.image.url }}"
+                     alt="{{ realisation.titre }}">
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="realisation-body">
+
+                <h3>
+                    {{ realisation.titre }}
+                </h3>
+
+
+                <p>
+                    {{ realisation.commentaire }}
+                </p>
+
+
+                {% if realisation.prestation %}
+
+                <small>
+                    {{ realisation.prestation }}
+                </small>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
+<!-- =====================================================
+     AVIS CLIENTS
+====================================================== -->
+
+{% if temoignages %}
+
+<section class="atelier-temoignages">
+
+    <div class="atelier-title">
+
+        <h2>
+            Ils nous font confiance
+        </h2>
+
+        <p>
+            Découvrez les avis de nos clients.
+        </p>
+
+    </div>
+
+
+    <div class="temoignages-slider">
+
+        {% for avis in temoignages %}
+
+        <div class="temoignage-card">
+
+            <div class="temoignage-stars">
+
+                {% for i in "12345" %}
+
+                    {% if forloop.counter <= avis.note %}
+                        ★
+                    {% else %}
+                        ☆
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+
+            <p>
+                "{{ avis.commentaire }}"
+            </p>
+
+
+            <strong>
+                {{ avis.nom_client }}
+            </strong>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
+<!-- =====================================================
+     FORMULAIRE AVIS
+====================================================== -->
+
+<section
+    class="temoignage-form-section"
+    id="temoignage"
+>
+
+
+    {% if temoignage_envoye %}
+
+    <div class="temoignage-success">
+
+        ✓ Merci pour votre avis !
+
+        <br>
+
+        Votre témoignage a bien été envoyé.
+        Il sera publié après validation.
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="temoignage-form-card">
+
+        <h2>
+            Donnez votre avis
+        </h2>
+
+
+        <p>
+            Votre expérience nous aide à améliorer
+            les services de YaTout Imprim.
+        </p>
+
+
+        {% if form_temoignage.non_field_errors %}
+
+        <div class="temoignage-errors">
+
+            {{ form_temoignage.non_field_errors }}
+
+        </div>
+
+        {% endif %}
+
+
+        <form
+            method="POST"
+            action="#temoignage"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- NOM -->
+
+            <div class="temoignage-field">
+
+                <label
+                    for="{{ form_temoignage.nom_client.id_for_label }}"
+                >
+
+                    Votre nom ou entreprise
+
+                </label>
+
+
+                {{ form_temoignage.nom_client }}
+
+
+                {% for error in form_temoignage.nom_client.errors %}
+
+                <small style="color:#b91c1c;">
+                    {{ error }}
+                </small>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- COMMENTAIRE -->
+
+            <div class="temoignage-field">
+
+                <label
+                    for="{{ form_temoignage.commentaire.id_for_label }}"
+                >
+
+                    Votre commentaire
+
+                </label>
+
+
+                {{ form_temoignage.commentaire }}
+
+
+                {% for error in form_temoignage.commentaire.errors %}
+
+                <small style="color:#b91c1c;">
+                    {{ error }}
+                </small>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- NOTE -->
+
+            <div class="temoignage-field">
+
+                <label
+                    for="{{ form_temoignage.note.id_for_label }}"
+                >
+
+                    Votre note
+
+                </label>
+
+
+                {{ form_temoignage.note }}
+
+
+                {% for error in form_temoignage.note.errors %}
+
+                <small style="color:#b91c1c;">
+                    {{ error }}
+                </small>
+
+                {% endfor %}
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="temoignage-submit"
+            >
+
+                Envoyer mon avis
+
+            </button>
+
+        </form>
+
+    </div>
+
+</section>
+
+
+
+     JAVASCRIPT
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    function initContinuousSlider(selector, speed) {
+        const slider = document.querySelector(selector);
+        if (!slider) return;
+
+        const cards = Array.from(slider.children);
+
+        if (cards.length < 2) return;
+
+        // On duplique les cartes une seule fois
+        cards.forEach(card => {
+            const clone = card.cloneNode(true);
+            clone.setAttribute("aria-hidden", "true");
+            slider.appendChild(clone);
+        });
+
+        let animationId;
+        let paused = false;
+        let loopWidth = 0;
+
+        function calculateLoopWidth() {
+            const gap = parseFloat(
+                getComputedStyle(slider).gap
+            ) || 0;
+
+            loopWidth = 0;
+
+            cards.forEach((card, index) => {
+                loopWidth += card.getBoundingClientRect().width;
+
+                if (index < cards.length - 1) {
+                    loopWidth += gap;
+                }
+            });
+        }
+
+        calculateLoopWidth();
+
+        function animate() {
+
+            if (!paused) {
+                slider.scrollLeft += speed;
+
+                // Quand on arrive à la fin du premier groupe,
+                // on revient au début sans que l'utilisateur le remarque.
+                if (slider.scrollLeft >= loopWidth) {
+                    slider.scrollLeft -= loopWidth;
+                }
+            }
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Pause quand la souris passe dessus
+        slider.addEventListener("mouseenter", function () {
+            paused = true;
+        });
+
+        slider.addEventListener("mouseleave", function () {
+            paused = false;
+        });
+
+        // Pause pendant le toucher sur téléphone
+        slider.addEventListener("touchstart", function () {
+            paused = true;
+        }, { passive: true });
+
+        slider.addEventListener("touchend", function () {
+            setTimeout(() => {
+                paused = false;
+            }, 1000);
+        }, { passive: true });
+
+        window.addEventListener("resize", function () {
+            calculateLoopWidth();
+        });
+
+        // Démarrage
+        animationId = requestAnimationFrame(animate);
+    }
+
+
+    // Vitesse des réalisations
+    // 0.5 = lent
+    // 1 = normal
+    // 1.5 = rapide
+    initContinuousSlider(".realisations-slider", 0.7);
+
+
+    // Témoignages
+    initContinuousSlider(".temoignages-slider", 0.5);
+
+});
+</script>
+
+{% endblock %}

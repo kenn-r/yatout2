@@ -1025,204 +1025,6 @@ def valider_commande_impression(request, commande_id):
 
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages  # 👈 AJOUTÉ POUR LES MESSAGES DE SUCCÈS
-import json
-from .models import Prestation, CommandeImpression, Temoignage  # 👈 AJOUTÉ 'Temoignage'
-from .models import Temoignage  # Ajustez le nom de l'application si nécessaire
-from django.contrib import messages
-
-def page_impressions(request):
-    """ GÈRE L'ATELIER : Permet de choisir un support unique dans le select et calcule l'estimation """
-    prestations = Prestation.objects.all()
-
-    # Initialisation des variables de session pour mémoriser la simulation en cours
-    if 'simulation_print' not in request.session:
-        request.session['simulation_print'] = {
-            'prestation_id': None,
-            'quantite': 1
-        }
-    
-    sim = request.session['simulation_print']
-
-    if request.method == "POST":
-        # =================================================================
-        # 🆕 AJOUT : CAS DES TÉMOIGNAGES (Soumission d'un avis)
-        # =================================================================
-        if 'soumettre_temoignage' in request.POST:
-            nom = request.POST.get('nom_client_avis')
-            note_recue = request.POST.get('note_service', 5)
-            texte = request.POST.get('commentaire_avis')
-
-            if nom and texte:
-                Temoignage.objects.create(
-                    nom_client=nom,
-                    note=int(note_recue),
-                    commentaire=texte,
-                    est_approuve=False  # Reste caché jusqu'à validation admin
-                )
-                messages.success(request, "Merci ! Votre avis a été transmis.")
-            else:
-                messages.error(request, "Erreur : Tous les champs du formulaire doivent être remplis.")
-            
-            return redirect('page_impressions')
-
-        # CAS A : L'utilisateur change de produit dans le menu déroulant à droite
-        if 'prestation_id' in request.POST and 'maj_quantite' not in request.POST and 'nom_client' not in request.POST:
-            id_choisi = request.POST.get('prestation_id')
-            if id_choisi:
-                sim['prestation_id'] = int(id_choisi)
-                sim['quantite'] = 1 
-            else:
-                sim['prestation_id'] = None
-                sim['quantite'] = 1
-            
-            request.session['simulation_print'] = sim
-            request.session.modified = True
-            return redirect('page_impressions')
-
-        # CAS B : L'utilisateur met à jour la quantité (Clic sur "Recalculer")
-        elif 'maj_quantite' in request.POST:
-            id_choisi = request.POST.get('prestation_id')
-            try:
-                nouvelle_qte = int(request.POST.get('quantite', 1))
-                if nouvelle_qte < 1:
-                    nouvelle_qte = 1
-            except ValueError:
-                nouvelle_qte = 1
-                
-            sim['prestation_id'] = int(id_choisi) if id_choisi else None
-            sim['quantite'] = nouvelle_qte
-            
-            request.session['simulation_print'] = sim
-            request.session.modified = True
-            return redirect('page_impressions')
-
-        # CAS C : Validation finale et création du Bon de Commande
-        elif 'nom_client' in request.POST:
-            nom = request.POST.get('nom_client')
-            email = request.POST.get('email_client')
-            tel = request.POST.get('telephone_client')
-            id_choisi = request.POST.get('prestation_id')
-            quantite = int(request.POST.get('quantite', 1))
-
-            if id_choisi:
-                prest = get_object_or_404(Prestation, id=id_choisi)
-                total_brut = prest.prix_unitaire * quantite
-                montant_remise = int(total_brut * 0.05)
-                total_final = total_brut - montant_remise
-
-                structure_json = [{
-                    'titre': prest.titre, 
-                    'qte': quantite, 
-                    'prix': prest.prix_unitaire, 
-                    'total': total_brut
-                }]
-
-                commande = CommandeImpression.objects.create(
-                    nom_client=nom, 
-                    email_client=email, 
-                    telephone=tel,
-                    details_json=json.dumps(structure_json), 
-                    total_brut=total_brut,
-                    montant_remise=montant_remise, 
-                    total_final=total_final
-                )
-
-                request.session['simulation_print'] = {'prestation_id': None, 'quantite': 1}
-                request.session.modified = True
-                return render(request, 'shop/impression_succes.html', {'commande': commande})
-
-    # Traitement de la zone d'affichage (GET)
-    item_selectionne = None
-    quantite_actuelle = sim.get('quantite', 1)
-    total_brut = 0
-
-    if sim.get('prestation_id'):
-        try:
-            item_selectionne = Prestation.objects.get(id=sim['prestation_id'])
-            
-            # Extraction sécurisée des options pour vos grilles dégressives
-            format_id = request.POST.get('format_flyer_id') or request.GET.get('format_flyer_id')
-            surface_id = request.POST.get('surface_id') or request.GET.get('surface_id')
-            nb_pages = request.POST.get('nombre_pages') or request.GET.get('nombre_pages')
-
-            # 🟢 DÉCLENCHEMENT DE VOTRE MÉTHODE DE CALCUL SUR-MESURE
-            calcul_tarif = item_selectionne.calculer_prix(
-                quantite=int(quantite_actuelle),
-                format_id=format_id,
-                surface_id=surface_id,
-                nb_pages=nb_pages
-            )
-            
-            # Affectation des vraies valeurs pour votre template
-            total_brut = calcul_tarif['prix_brut']
-            remise_panier = calcul_tarif['montant_remise']
-            total_final = calcul_tarif['prix_final']
-
-        except Prestation.DoesNotExist:
-            sim['prestation_id'] = None
-    remise_panier = int(total_brut * 0.05)
-    total_final = total_brut - remise_panier
-
-    # 1. On récupère les prestations qui servent d'exemples de réalisations
-    exemples_realisations = Prestation.objects.all()
-
-    # 🌟 AJOUT : On récupère toutes les commandes d'impression du site
-    toutes_les_commandes = CommandeImpression.objects.all().order_by('-date_commande')
-
-    # =================================================================
-    # 📊 CALCULS DE POPULARITÉ EN DIRECT (MIROIR VISITES)
-    # =================================================================
-    from django.conf import settings
-    import datetime
-    import math
-
-    # 1. Récupération de la base définie dans vos paramètres
-    base_marketing = getattr(settings, 'COMPTEUR_VISITES_BASE', 14320)
-    
-    # 2. On compte le nombre de commandes réelles passées en base de données
-    nombre_commandes_reelles = toutes_les_commandes.count()
-    
-    # 3. Simulation d'activité fluide (ajoute de petites variations selon la minute actuelle)
-    maintenant = datetime.datetime.now()
-    minute_actuelle = maintenant.minute
-    seconde_actuelle = maintenant.second
-    
-    # 📈 Le total global combine : Votre Base + Vos vraies commandes + La simulation minute
-    total_visites_affiche = base_marketing + nombre_commandes_reelles + (minute_actuelle * 2)
-
-    # =================================================================
-    # 🔥 GENERATION DU NOMBRE DE PROFESSIONNELS ACTIFS (AUTOUR DE 84)
-    # =================================================================
-    base_actifs = 84
-    amplitude_variation = 10
-    variation_sinus = math.sin((minute_actuelle * 60 + seconde_actuelle) / 30.0)
-    professionnels_actifs = base_actifs + int(variation_sinus * amplitude_variation)
-
-    # =================================================================
-    # 🆕 AJOUT : RÉCUPÉRATION DES TÉMOIGNAGES APPROUVÉS
-    # =================================================================
-    temoignages_valides = Temoignage.objects.filter(est_approuve=True).order_by('-date_publication')[:6]
-
-    # 2. Votre bloc de retour mis à jour avec les statistiques dynamiques
-    return render(request, 'shop/impressions.html', {
-        'prestations': prestations,
-        'item_selectionne': item_selectionne,
-        'quantite_actuelle': quantite_actuelle,
-        'total_brut': total_brut,
-        'remise_panier': remise_panier,
-        'total_final': total_final,
-        'exemples_realisations': exemples_realisations,
-        'toutes_les_commandes': toutes_les_commandes, 
-        
-        # Variables transmises au fichier HTML :
-        'total_visites': total_visites_affiche,
-        'nombre_commandes': nombre_commandes_reelles,
-        'professionnels_actifs': professionnels_actifs,
-        'temoignages_valides': temoignages_valides,  # 👈 AJOUTÉ ICI
-    })
-
 
 
 
@@ -1283,6 +1085,159 @@ from .models import Prestation, FormatFlyer
 from django.shortcuts import render, get_object_or_404
 from itertools import groupby
 from .models import Prestation, FormatFlyer
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
+from .models import (
+    SupportFlyer, TarifOptionFlyer,
+    SupportGrandFormat,
+    SupportObjetPublicitaire, PalierPrixObjet,
+    ServiceFaconnage
+)
+
+@staff_member_required
+def backoffice_print_manager(request):
+    """
+    Contrôleur d'administration individualisé de l'atelier d'impression.
+    Gère l'ajout, l'édition des remises et la suppression pour chaque type d'article.
+    """
+    
+    # 📋 CHARGEMENT DES COMPOSANTS PAR MODULE DE SÉCURITÉ
+    flyers = SupportFlyer.objects.all().prefetch_related('tarifs_specifiques')
+    grands_formats = SupportGrandFormat.objects.all()
+    goodies = SupportObjetPublicitaire.objects.all().prefetch_related('paliers_prix')
+    faconnages = ServiceFaconnage.objects.all()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        # =====================================================================
+        # 🖨️ TRAITEMENT INDIVIDUEL : MODULE 1 (FLYERS, CARTES, DÉPLIANTS)
+        # =====================================================================
+        if action == 'creer_flyer':
+            SupportFlyer.objects.create(
+                titre=request.POST.get('titre'),
+                description=request.POST.get('description', ''),
+                remise_globale=int(request.POST.get('remise', 0)),
+                image=request.FILES.get('image')
+            )
+            messages.success(request, "Nouveau support de type Flyer/Carte activé.")
+
+        elif action == 'prix_flyer':
+            flyer_obj = get_object_or_404(SupportFlyer, id=request.POST.get('article_id'))
+            TarifOptionFlyer.objects.create(
+                flyer=flyer_obj,
+                format_papier=request.POST.get('format_papier'),
+                quantite=int(request.POST.get('quantite')),
+                prix_total_lot=float(request.POST.get('prix_total_lot'))
+            )
+            messages.success(request, f"Nouveau lot de tarifs ajouté sur {flyer_obj.titre}.")
+
+        elif action == 'supprimer_option_flyer':
+            tarif = get_object_or_404(TarifOptionFlyer, id=request.POST.get('option_id'))
+            tarif.delete()
+            messages.success(request, "Ligne tarifaire du flyer supprimée.")
+
+        elif action == 'supprimer_flyer_total':
+            support = get_object_or_404(SupportFlyer, id=request.POST.get('article_id'))
+            support.delete()
+            messages.success(request, f"Le catalogue '{support.titre}' et ses tarifs ont été supprimés.")
+
+
+        # =====================================================================
+        # 🖼️ TRAITEMENT INDIVIDUEL : MODULE 2 (BÂCHES, VINYLES, AFFICHES)
+        # =====================================================================
+        elif action == 'creer_grand_format':
+            SupportGrandFormat.objects.create(
+                titre=request.POST.get('titre'),
+                description=request.POST.get('description', ''),
+                prix_au_metre_carre=float(request.POST.get('prix_m2')),
+                remise_globale=int(request.POST.get('remise', 0)),
+                image=request.FILES.get('image')
+            )
+            messages.success(request, "Nouveau support Grand Format (Bâche/Vinyle) configuré.")
+
+        elif action == 'maj_prix_grand_format':
+            gf_obj = get_object_or_404(SupportGrandFormat, id=request.POST.get('article_id'))
+            gf_obj.prix_au_metre_carre = float(request.POST.get('prix_m2'))
+            gf_obj.remise_globale = int(request.POST.get('remise', 0))
+            gf_obj.save()
+            messages.success(request, f"Tarif au M² et remises mis à jour pour {gf_obj.titre}.")
+
+        elif action == 'supprimer_grand_format':
+            support = get_object_or_404(SupportGrandFormat, id=request.POST.get('article_id'))
+            support.delete()
+            messages.success(request, f"Le support '{support.titre}' a été retiré de la boutique.")
+
+
+        # =====================================================================
+        # ☕ TRAITEMENT INDIVIDUEL : MODULE 3 (MUGS, T-SHIRTS, KÉPIS, CHAPEAUX)
+        # =====================================================================
+        elif action == 'creer_goodies':
+            SupportObjetPublicitaire.objects.create(
+                titre=request.POST.get('titre'),
+                description=request.POST.get('description', ''),
+                remise_globale=int(request.POST.get('remise', 0)),
+                image=request.FILES.get('image')
+            )
+            messages.success(request, "Nouvel objet publicitaire (Mug/T-shirt/Képi) initialisé.")
+
+        elif action == 'palier_goodies':
+            objet_obj = get_object_or_404(SupportObjetPublicitaire, id=request.POST.get('article_id'))
+            PalierPrixObjet.objects.create(
+                objet=objet_obj,
+                quantite_minimale=int(request.POST.get('quantite_minimale')),
+                prix_unitaire=float(request.POST.get('prix_unitaire'))
+            )
+            messages.success(request, f"Palier dégressif enregistré sur l'objet {objet_obj.titre}.")
+
+        elif action == 'supprimer_palier_goodies':
+            palier = get_object_or_404(PalierPrixObjet, id=request.POST.get('palier_id'))
+            palier.delete()
+            messages.success(request, "Palier volumétrique supprimé.")
+
+        elif action == 'supprimer_goodies_total':
+            support = get_object_or_404(SupportObjetPublicitaire, id=request.POST.get('article_id'))
+            support.delete()
+            messages.success(request, f"L'objet '{support.titre}' a été entièrement retiré.")
+
+
+        # =====================================================================
+        # 📚 TRAITEMENT INDIVIDUEL : MODULE 4 (PHOTOCOPIES, RELIURES)
+        # =====================================================================
+        elif action == 'creer_faconnage':
+            ServiceFaconnage.objects.create(
+                titre=request.POST.get('titre'),
+                description=request.POST.get('description', ''),
+                prix_fixe_unitaire=float(request.POST.get('prix_unitaire')),
+                remise_globale=int(request.POST.get('remise', 0))
+            )
+            messages.success(request, "Nouveau service de façonnage/reprographie ajouté.")
+
+        elif action == 'maj_faconnage':
+            service = get_object_or_404(ServiceFaconnage, id=request.POST.get('article_id'))
+            service.prix_fixe_unitaire = float(request.POST.get('prix_unitaire'))
+            service.remise_globale = int(request.POST.get('remise', 0))
+            service.save()
+            messages.success(request, f"Tarification mise à jour pour le façonnage : {service.titre}.")
+
+        elif action == 'supprimer_faconnage':
+            service = get_object_or_404(ServiceFaconnage, id=request.POST.get('article_id'))
+            service.delete()
+            messages.success(request, f"Le service '{service.titre}' a été supprimé.")
+
+        # Rechargement propre de la page pour vider les formulaires soumis
+        return redirect('backoffice_print_manager')
+
+    context = {
+        'flyers': flyers,
+        'grands_formats': grands_formats,
+        'goodies': goodies,
+        'faconnages': faconnages,
+    }
+    return render(request, 'shop/print_manager.html', context)
+
+
 
 def page_prestations(request):
     """ Vue catalogue gérant l'arborescence dynamique par type d'unité """
@@ -1337,222 +1292,929 @@ def page_prestations(request):
         'formats_disponibles': formats_disponibles,
         'exemples_realisations': exemples_realisations,
     })
-import json
+
+from django.shortcuts import render, get_object_or_404
+
+from .models import (
+    SupportFlyer,
+    SupportGrandFormat,
+    SupportObjetPublicitaire,
+    ServiceFaconnage,
+)
+
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Prestation
 
-def detail_prestation(request, prestation_id):
-    prestation = get_object_or_404(Prestation, id=prestation_id)
-    realisations = prestation.realisations.all()
-    titre_inf = prestation.titre.lower()
-    
-    # 🟢 SÉCURITÉ CATALOGUE : On récupère l'identifiant du format cliqué sur l'écran précédent
-    format_id_clique = request.GET.get('format_id')
-    
-    # Alimentation de la liste complète des formats associés pour votre sélecteur HTML
-    formats_flyer = prestation.formats_flyer.all()
-    
-    # 🎯 1. Gestion dynamique ou fallback des émojis et prix de base
-    if 'tasse' in titre_inf or 'mug' in titre_inf: define_prix_u, define_emoji = 2500, "☕"
-    elif 'casquette' in titre_inf or 'casque' in titre_inf: define_prix_u, define_emoji = 3500, "🪖"
-    elif 't-shirt' in titre_inf or 'tshirt' in titre_inf: define_prix_u, define_emoji = 6500, "👕"
-    elif 'sac' in titre_inf: define_prix_u, define_emoji = 800, "🛍️"
-    elif 'rollup' in titre_inf or 'roll-up' in titre_inf: define_prix_u, define_emoji = 25000, "🧍"
-    elif 'impression' in titre_inf: define_prix_u, define_emoji = 100, "🖨️"
-    elif 'reliure' in titre_inf: define_prix_u, define_emoji = 1500, "📚"
-    else: define_prix_u, define_emoji = 1000, "📦"
+def detail_prestation(request, type_unite, prestation_id):
 
-    type_unite_clean = prestation.type_unite.upper().strip()
+    prestation = None
+    offres = []
+    offre_selectionnee = None
 
-    if request.method == "POST":
-        unite_texte = ""
-        item_panier = {
-            'id': prestation.id,
-            'titre': prestation.titre,
-            'type_unite': prestation.type_unite,
-        }
+    # ============================
+    # RÉCUPÉRATION DU PRODUIT
+    # ============================
 
-        # --- LOGIQUE 1 : TYPE SURFACE ---
-        if type_unite_clean in ['SURFACE', 'M2']:
-            choix_dimensions = request.POST.get('dimensions_m2')
-            
-            if choix_dimensions == 'custom':
-                try:
-                    largeur = float(request.POST.get('largeur_custom', 1.0))
-                    hauteur = float(request.POST.get('hauteur_custom', 1.0))
-                except ValueError:
-                    largeur, hauteur = 1.0, 1.0
-                surface = largeur * hauteur
-                
-                prix_brut = int(surface * 4750)
-                remise_pct = prestation.remise_custom
-                montant_remise = int(prix_brut * (remise_pct / 100.0))
-                total_final = prix_brut - montant_remise
-                remise_texte_whatsapp = f"{remise_pct}% (Sur-mesure)"
-                unite_texte = f"Sur-mesure ({largeur}x{hauteur}m - {surface:.2f} m²)"
-            else:
-                try:
-                    surface_id = int(choix_dimensions)
-                except (ValueError, TypeError):
-                    surface_id = choix_dimensions
-                
-                try:
-                    qte = int(request.POST.get('quantite_lot', 1))
-                except ValueError:
-                    qte = 1
+    if type_unite == 'FLYER':
 
-                res = prestation.calculer_prix(quantite=qte, surface_id=surface_id)
-                prix_brut = res['prix_brut']
-                montant_remise = res['montant_remise']
-                total_final = res['prix_final']
-                
-                remise_pct = res['remise_appliquee_pourcent']
-                remise_texte_whatsapp = f"{remise_pct}%" if remise_pct > 0 else "Inclus (Tarif catalogue)"
-                
-                grille_obj = prestation.grilles_surface.filter(id=surface_id).first()
-                unite_texte = f"Format {grille_obj.dimensions}" if grille_obj else f"Format Catalogue"
+        prestation = get_object_or_404(
+            SupportFlyer,
+            id=prestation_id
+        )
 
-            item_panier.update({'dimensions': choix_dimensions, 'prix': prix_brut, 'total': total_final})
+        offres = prestation.tarifs_specifiques.all()
 
-       # --- LOGIQUE 2 : TYPE FLYER / LOTS ---
-        elif type_unite_clean == 'FLYER':
-            format_id = request.POST.get('format_choisi')
-            quantite_saisie = request.POST.get('quantite_lot')
-            
-            if quantite_saisie == 'custom':
-                # 🟢 FIX UNIQUE : On récupère en priorité la valeur tapée par le client dans l'input numérique
-                try:
-                    qte = int(request.POST.get('quantite_custom', 600))
-                except (ValueError, TypeError):
-                    qte = 600 # Fallback de secours si le champ est vide
+    elif type_unite == 'SURFACE':
 
-                try:
-                    # 1. On récupère dynamiquement le prix d'un lot de 100 depuis votre catalogue BDD
-                    base_lot = prestation.calculer_prix(quantite=100, format_id=format_id)
-                    prix_lot_100 = base_lot['prix_brut']
-                    
-                    # 2. On calcule le prix réel d'un seul flyer (ex: 10000 / 100 = 100 Frs)
-                    prix_unitaire_reel = prix_lot_100 / 100.0
-                except Exception:
-                    # Fallback de sécurité si le lot de 100 n'existe pas en BDD
-                    prix_unitaire_reel = 100.0 
+        prestation = get_object_or_404(
+            SupportGrandFormat,
+            id=prestation_id
+        )
 
-                # 3. Le prix brut s'adapte parfaitement à la quantité libre (ex: 100 * 100 = 10 000 Frs)
-                prix_brut = int(qte * prix_unitaire_reel)
+    elif type_unite == 'GOODIES':
 
-                remise_pct = prestation.remise_custom
-                montant_remise = int(prix_brut * (remise_pct / 100.0))
-                total_final = prix_brut - montant_remise
-                remise_texte_whatsapp = f"{remise_pct}% (Qté Libre)"
-            else:
-                try:
-                    qte = int(quantite_saisie) if quantite_saisie else 100
-                except ValueError:
-                    qte = 100
-                res = prestation.calculer_prix(quantite=qte, format_id=format_id)
-                prix_brut = res['prix_brut']
-                montant_remise = res['montant_remise']
-                total_final = res['prix_final']
-                remise_texte_whatsapp = f"{res['remise_appliquee_pourcent']}%" if res['remise_appliquee_pourcent'] > 0 else "Aucune"
+        prestation = get_object_or_404(
+            SupportObjetPublicitaire,
+            id=prestation_id
+        )
 
-            nom_technique = "Standard"
-            if format_id and format_id.isdigit():
-                fmt = prestation.formats_flyer.filter(id=int(format_id)).first()
-                if fmt: nom_technique = fmt.nom_format
+        offres = prestation.paliers_prix.all()
 
-            unite_texte = f"{qte} ex. ({nom_technique})"
-            item_panier.update({'qte': qte})
+    elif type_unite == 'FACONNAGE':
 
-        # --- LOGIQUE 3 : TYPE UNITE ---
-        elif type_unite_clean == 'UNITE':
-            quantite_choisie = request.POST.get('quantite_unite_radio')
-            qte = int(request.POST.get('quantite_custom_unite', 1)) if not quantite_choisie or quantite_choisie == 'custom' else int(quantite_choisie)
+        prestation = get_object_or_404(
+            ServiceFaconnage,
+            id=prestation_id
+        )
 
-            res = prestation.calculer_prix(quantite=qte)
-            prix_brut = res['prix_brut']
-            montant_remise = res['montant_remise']
-            total_final = res['prix_final']
-            
-            palier = prestation.paliers_unite.filter(quantite_minimale__lte=qte).order_by('-quantite_minimale').first()
-            remise_texte_whatsapp = f"Tarif dégressif ({palier.quantite_minimale}+)" if palier else "Tarif de base"
-            if res['remise_appliquee_pourcent'] > 0:
-                remise_texte_whatsapp += f" + Remise {res['remise_appliquee_pourcent']}%"
+    else:
+        return redirect('/impression/prestations/')
 
-            unite_texte = f"{qte} unité(s)"
-            item_panier.update({'qte': qte})
 
-       # --- LOGIQUE 4 : TYPE PAGES (Documents/Brochures) ---
-        elif type_unite_clean in ['PAGES', 'PAGE', 'DOCUMENT']:
-            nb_pages = int(request.POST.get('nb_pages', 8))
-            qte = int(request.POST.get('quantite_lot', 10))
-            
-            res = prestation.calculer_prix(quantite=qte, nb_pages=nb_pages)
-            prix_brut = res['prix_brut']
-            montant_remise = res['montant_remise']
-            total_final = res['prix_final']
-            remise_texte_whatsapp = f"{res['remise_appliquee_pourcent']}%" if res['remise_appliquee_pourcent'] > 0 else "Aucune"
-            
-            unite_texte = f"Brochure {nb_pages} pages - {qte} ex."
-            item_panier.update({'qte': qte, 'nb_pages': nb_pages})
+    # ============================
+    # OFFRE FLYER PRÉSÉLECTIONNÉE
+    # ============================
 
-        # --- CAS DE SÉCURITÉ ---
-        else:
-            qte = int(request.POST.get('quantite_lot', 1))
-            prix_brut = qte * define_prix_u
-            total_final = prix_brut
-            montant_remise = 0
-            remise_texte_whatsapp = "Aucune"
-            unite_texte = f"{qte} exemplaire(s)"
-            item_panier.update({'qte': qte})
+    if type_unite == 'FLYER':
 
-        # Sauvegarde définitive des données calculées en session
-        item_panier.update({'prix': prix_brut, 'total': total_final})
-        request.session['commande_temporaire'] = {
-            'prestation_id': prestation.id,
-            'prestation_titre': prestation.titre,
-            'unite_texte': unite_texte,
-            'remise_texte_whatsapp': remise_texte_whatsapp,
-            'total_brut': prix_brut,
-            'montant_remise': montant_remise,
-            'total_final': total_final,
-            'total_final_formate': f"{total_final:,}".replace(',', ' '),
-            'item_panier': item_panier
-        }
-        request.session.modified = True
+        offre_id = request.GET.get('offre_id')
 
-        return redirect('confirmer_commande_client')
+        if offre_id:
+            offre_selectionnee = prestation.tarifs_specifiques.filter(
+                id=offre_id
+            ).first()
 
-    # ─── 🟢 INTERCEPTION & CONTEXTE : ENVOI DU PARAMÈTRE FORMAT DU CATALOGUE ───
-    format_id_clique = request.GET.get('format_id') # Capte l'ID cliqué depuis l'URL
+
+    # ============================
+    # TRAITEMENT DU FORMULAIRE
+    # ============================
+
+    if request.method == 'POST':
+
+        type_demande = request.POST.get(
+            'type_demande',
+            ''
+        )
+
+
+        # ==================================================
+        # COMMANDE FLYER
+        # ==================================================
+
+        if type_unite == 'FLYER' and type_demande == 'commande_flyer':
+
+            offre_id = request.POST.get('offre_id')
+
+            if not offre_id:
+                return redirect(
+                    request.path + '?erreur=offre'
+                )
+
+            offre = prestation.tarifs_specifiques.filter(
+                id=offre_id
+            ).first()
+
+            if not offre:
+                return redirect(
+                    request.path + '?erreur=offre'
+                )
+
+
+            # Prix brut du lot
+            prix_brut = float(offre.prix_total_lot)
+
+
+            # Remise
+            remise = prestation.remise_globale or 0
+
+            montant_remise = int(
+                prix_brut * (remise / 100)
+            )
+
+
+            # Prix final
+            prix_final = prix_brut - montant_remise
+
+
+            demande = {
+
+                'type_unite': 'FLYER',
+
+                'prestation_id': prestation.id,
+
+                'titre': prestation.titre,
+
+                'offre_id': offre.id,
+
+                'format': offre.format_papier,
+
+                'quantite': offre.quantite,
+
+                'prix_brut': prix_brut,
+
+                'remise_pourcent': remise,
+
+                'montant_remise': montant_remise,
+
+                'prix_final': prix_final,
+
+                'message': request.POST.get(
+                    'demande_personnalisee',
+                    ''
+                ),
+
+                'type_demande': 'commande_flyer',
+            }
+
+
+            request.session['demande_prestation'] = demande
+
+            request.session.modified = True
+
+
+            return redirect('resume_demande')
+
+
+        # ==================================================
+        # DEMANDE DE DEVIS FLYER PERSONNALISÉ
+        # ==================================================
+
+        if type_unite == 'FLYER' and type_demande == 'devis':
+
+            demande = {
+
+                'type_unite': 'FLYER',
+
+                'prestation_id': prestation.id,
+
+                'titre': prestation.titre,
+
+                'format': request.POST.get(
+                    'format_personnalise',
+                    ''
+                ),
+
+                'quantite': request.POST.get(
+                    'quantite_personnalisee'
+                ),
+
+                'prix_brut': 0,
+
+                'remise_pourcent': 0,
+
+                'montant_remise': 0,
+
+                'prix_final': 0,
+
+                'message': request.POST.get(
+                    'demande_personnalisee',
+                    ''
+                ),
+
+                'type_demande': 'devis',
+            }
+
+
+            request.session['demande_prestation'] = demande
+
+            request.session.modified = True
+
+
+            return redirect('resume_demande')
+
+
+        # ==================================================
+        # GRAND FORMAT
+        # ==================================================
+
+        if type_unite == 'SURFACE' and type_demande == 'commande_surface':
+
+            largeur = request.POST.get('largeur')
+            longueur = request.POST.get('longueur')
+
+            try:
+
+                largeur_float = float(largeur)
+                longueur_float = float(longueur)
+
+                calcul = prestation.calculer_prix(
+                    largeur_float,
+                    longueur_float
+                )
+
+            except (TypeError, ValueError):
+
+                calcul = {
+                    'prix_brut': 0,
+                    'remise_pourcent': 0,
+                    'montant_remise': 0,
+                    'prix_final': 0,
+                }
+
+
+            demande = {
+
+                'type_unite': 'SURFACE',
+
+                'prestation_id': prestation.id,
+
+                'titre': prestation.titre,
+
+                'largeur': largeur,
+
+                'longueur': longueur,
+
+                'prix_brut': calcul['prix_brut'],
+
+                'remise_pourcent': calcul['remise_pourcent'],
+
+                'montant_remise': calcul['montant_remise'],
+
+                'prix_final': calcul['prix_final'],
+
+                'message': request.POST.get(
+                    'demande_personnalisee',
+                    ''
+                ),
+
+                'type_demande': 'commande_surface',
+            }
+
+
+            request.session['demande_prestation'] = demande
+
+            request.session.modified = True
+
+
+            return redirect('resume_demande')
+
+
+        # ==================================================
+        # GOODIES
+        # ==================================================
+
+        if type_unite == 'GOODIES' and type_demande == 'commande_goodie':
+
+            quantite = request.POST.get('quantite')
+
+            try:
+                quantite_int = int(quantite)
+            except (TypeError, ValueError):
+                quantite_int = 0
+
+
+            calcul = prestation.calculer_prix(
+                quantite_int
+            )
+
+
+            demande = {
+
+                'type_unite': 'GOODIES',
+
+                'prestation_id': prestation.id,
+
+                'titre': prestation.titre,
+
+                'quantite': quantite_int,
+
+                'prix_brut': calcul['prix_brut'],
+
+                'remise_pourcent': calcul['remise_pourcent'],
+
+                'montant_remise': calcul['montant_remise'],
+
+                'prix_final': calcul['prix_final'],
+
+                'message': request.POST.get(
+                    'demande_personnalisee',
+                    ''
+                ),
+
+                'type_demande': 'commande_goodie',
+            }
+
+
+            request.session['demande_prestation'] = demande
+
+            request.session.modified = True
+
+
+            return redirect('resume_demande')
+
+
+        # ==================================================
+        # FAÇONNAGE
+        # ==================================================
+
+        if type_unite == 'FACONNAGE' and type_demande == 'commande_faconnage':
+
+            quantite = request.POST.get('quantite')
+
+            try:
+                quantite_int = int(quantite)
+            except (TypeError, ValueError):
+                quantite_int = 0
+
+
+            calcul = prestation.calculer_prix(
+                quantite_int
+            )
+
+
+            demande = {
+
+                'type_unite': 'FACONNAGE',
+
+                'prestation_id': prestation.id,
+
+                'titre': prestation.titre,
+
+                'quantite': quantite_int,
+
+                'prix_brut': calcul['prix_brut'],
+
+                'remise_pourcent': calcul['remise_pourcent'],
+
+                'montant_remise': calcul['montant_remise'],
+
+                'prix_final': calcul['prix_final'],
+
+                'message': request.POST.get(
+                    'demande_personnalisee',
+                    ''
+                ),
+
+                'type_demande': 'commande_faconnage',
+            }
+
+
+            request.session['demande_prestation'] = demande
+
+            request.session.modified = True
+
+
+            return redirect('resume_demande')
+
+
+    # ============================
+    # AFFICHAGE NORMAL
+    # ============================
 
     context = {
+
         'prestation': prestation,
-        'realisations': realisations,
-        'define_prix_u': define_prix_u,
-        'define_emoji': define_emoji,
-        'grilles_surface': prestation.grilles_surface.all(),
-        'formats_flyer': prestation.formats_flyer.all(),
-        'paliers_unite': prestation.paliers_unite.all(),
-        'paliers_pages': prestation.paliers_pages.all(),
-        'format_id_clique': format_id_clique, # 🌟 AJOUTÉ ICI pour alimenter prestation_flyer.html
+
+        'type_unite': type_unite,
+
+        'offres': offres,
+
+        'formats_disponibles': offres,
+
+        'offre_selectionnee': offre_selectionnee,
+
     }
 
-    type_unite_lower = prestation.type_unite.lower().strip()
-    
-    if any(keyword in titre_inf for keyword in ['t-shirt', 'tshirt', 'mug', 'tasse', 'casquette', 'sac', 'stylo']):
-        return render(request, 'shop/prestation_unite.html', context)
 
-    if type_unite_lower in ['m2', 'surface']:
-        return render(request, 'shop/prestation_surface.html', context)
-    elif type_unite_lower == 'flyer':
-        return render(request, 'shop/prestation_flyer.html', context)
-    elif type_unite_lower in ['unite', 'unité']:
-        return render(request, 'shop/prestation_unite.html', context)
-    elif type_unite_lower in ['pages', 'page', 'document']:
-        return render(request, 'shop/prestation_document.html', context)
+    return render(
+        request,
+        'shop/detail_prestation.html',
+        context
+    )
+
+
+from .models import (
+    Realisation,
+    Temoignage,
+    SupportFlyer,
+    SupportGrandFormat,
+    SupportObjetPublicitaire,
+    ServiceFaconnage,
+    TarifOptionFlyer,
+)
+from django.shortcuts import render, redirect
+
+from .models import (
+    SupportFlyer,
+    SupportGrandFormat,
+    SupportObjetPublicitaire,
+    ServiceFaconnage,
+    TarifOptionFlyer,
+    Realisation,
+    Temoignage,
+)
+
+from .forms import TemoignageForm
+
+
+def page_public_prestations(request):
+    """
+    Page publique de l'atelier d'impression.
+
+    Gère :
+    - les catégories
+    - les prestations
+    - les tarifs
+    - les réalisations
+    - les témoignages clients
+    - l'envoi de nouveaux témoignages
+    """
+
+    flyers = SupportFlyer.objects.all()
+
+    grands_formats = SupportGrandFormat.objects.all()
+
+    goodies = SupportObjetPublicitaire.objects.all()
+
+    faconnages = ServiceFaconnage.objects.all()
+
+    # ==========================================
+    # RÉALISATIONS
+    # ==========================================
+
+    realisations = (
+        Realisation.objects
+        .select_related('prestation')
+        .order_by('-date_ajout')
+    )
+
+    # ==========================================
+    # AVIS CLIENTS VALIDÉS
+    # ==========================================
+
+    temoignages = (
+        Temoignage.objects
+        .filter(est_approuve=True)
+        .order_by('-date_publication')
+    )
+
+    # ==========================================
+    # FORMULAIRE AVIS
+    # ==========================================
+
+    if request.method == "POST":
+
+        form_temoignage = TemoignageForm(request.POST)
+
+        if form_temoignage.is_valid():
+
+            temoignage = form_temoignage.save(
+                commit=False
+            )
+
+            # Toujours attendre la validation
+            # avant d'afficher l'avis publiquement.
+            temoignage.est_approuve = False
+
+            temoignage.save()
+
+            return redirect(
+                request.path + "?temoignage=envoye#temoignage"
+            )
+
     else:
-        return render(request, 'shop/prestation_unite.html', context)
 
+        form_temoignage = TemoignageForm()
+
+    # ==========================================
+    # MESSAGE APRÈS ENVOI
+    # ==========================================
+
+    temoignage_envoye = (
+        request.GET.get("temoignage") == "envoye"
+    )
+
+    # ==========================================
+    # PARAMÈTRES
+    # ==========================================
+
+    type_unite = request.GET.get(
+        'type_unite'
+    )
+
+    prestation_id = request.GET.get(
+        'prestation_id'
+    )
+
+    prestations_a_afficher = []
+
+    tarifs_a_afficher = []
+
+    prestation_selectionnee = None
+
+    formats_disponibles = []
+
+    nom_categorie_active = ""
+
+    # ==========================================
+    # CATÉGORIES
+    # ==========================================
+
+    if type_unite:
+
+        if type_unite == 'FLYER':
+
+            nom_categorie_active = (
+                "Flyers, Dépliants & Cartes"
+            )
+
+            tarifs_a_afficher = (
+                TarifOptionFlyer.objects
+                .all()
+                .select_related('flyer')
+            )
+
+        elif type_unite == 'SURFACE':
+
+            nom_categorie_active = (
+                "Grands Formats (Bâches, Vinyles)"
+            )
+
+            tarifs_a_afficher = grands_formats
+
+        elif type_unite == 'GOODIES':
+
+            nom_categorie_active = (
+                "Objets Publicitaires"
+            )
+
+            tarifs_a_afficher = goodies
+
+        elif type_unite == 'FACONNAGE':
+
+            nom_categorie_active = (
+                "Façonnage & Reprographie"
+            )
+
+            tarifs_a_afficher = faconnages
+
+    # ==========================================
+    # PRESTATION SÉLECTIONNÉE
+    # ==========================================
+
+    if prestation_id:
+
+        if type_unite == 'FLYER':
+
+            prestation_selectionnee = (
+                SupportFlyer.objects
+                .filter(id=prestation_id)
+                .first()
+            )
+
+            if prestation_selectionnee:
+
+                formats_disponibles = (
+                    prestation_selectionnee
+                    .tarifs_specifiques
+                    .all()
+                )
+
+        elif type_unite == 'SURFACE':
+
+            prestation_selectionnee = (
+                SupportGrandFormat.objects
+                .filter(id=prestation_id)
+                .first()
+            )
+
+            if prestation_selectionnee:
+
+                formats_disponibles = [
+                    prestation_selectionnee
+                ]
+
+    # ==========================================
+    # CONTEXT
+    # ==========================================
+
+    context = {
+
+        'flyers':
+            flyers,
+
+        'grands_formats':
+            grands_formats,
+
+        'goodies':
+            goodies,
+
+        'faconnages':
+            faconnages,
+
+        'type_unite_clique':
+            type_unite,
+
+        'tarifs_a_afficher':
+            tarifs_a_afficher,
+
+        'prestation_selectionnee':
+            prestation_selectionnee,
+
+        'formats_disponibles':
+            formats_disponibles,
+
+        'nom_categorie_active':
+            nom_categorie_active,
+
+        # Réalisations
+        'realisations':
+            realisations,
+
+        # Avis validés uniquement
+        'temoignages':
+            temoignages,
+
+        # Formulaire
+        'form_temoignage':
+            form_temoignage,
+
+        # Message de confirmation
+        'temoignage_envoye':
+            temoignage_envoye,
+    }
+
+    return render(
+        request,
+        'shop/atelier_client.html',
+        context
+    )
+
+
+def resume_demande(request):
+
+    demande = request.session.get('demande_prestation')
+
+    if not demande:
+        return redirect('/impression/prestations/')
+
+    type_unite = demande.get('type_unite')
+    prestation_id = demande.get('prestation_id')
+
+    prestation = None
+
+    prix_brut = 0
+    remise_pourcent = 0
+    montant_remise = 0
+    net_a_payer = 0
+    sur_devis = False
+
+    # =====================================================
+    # 1. FLYERS
+    # =====================================================
+
+    if type_unite == 'FLYER':
+
+        prestation = get_object_or_404(
+            SupportFlyer,
+            id=prestation_id
+        )
+
+        if demande.get('offre_id'):
+
+            offre = get_object_or_404(
+                TarifOptionFlyer,
+                id=demande['offre_id']
+            )
+
+            prix_brut = float(offre.prix_total_lot)
+
+        else:
+            sur_devis = True
+
+        remise_pourcent = prestation.remise_globale
+
+
+    # =====================================================
+    # 2. GRAND FORMAT
+    # =====================================================
+
+    elif type_unite == 'SURFACE':
+
+        prestation = get_object_or_404(
+            SupportGrandFormat,
+            id=prestation_id
+        )
+
+        largeur = demande.get('largeur')
+        longueur = demande.get('longueur')
+
+        if largeur and longueur:
+
+            largeur = float(largeur)
+            longueur = float(longueur)
+
+            surface = largeur * longueur
+
+            prix_brut = (
+                surface *
+                float(prestation.prix_au_metre_carre)
+            )
+
+            remise_pourcent = prestation.remise_globale
+
+            # On garde la surface dans la demande
+            demande['surface'] = surface
+
+        else:
+            sur_devis = True
+
+
+    # =====================================================
+    # 3. GOODIES
+    # =====================================================
+
+    elif type_unite == 'GOODIES':
+
+        prestation = get_object_or_404(
+            SupportObjetPublicitaire,
+            id=prestation_id
+        )
+
+        quantite = demande.get('quantite')
+
+        if quantite:
+
+            quantite = int(quantite)
+
+            palier = (
+                prestation.paliers_prix
+                .filter(
+                    quantite_minimale__lte=quantite
+                )
+                .order_by('-quantite_minimale')
+                .first()
+            )
+
+            if palier:
+
+                prix_brut = (
+                    float(palier.prix_unitaire)
+                    * quantite
+                )
+
+            else:
+                sur_devis = True
+
+            remise_pourcent = prestation.remise_globale
+
+        else:
+            sur_devis = True
+
+
+    # =====================================================
+    # 4. FAÇONNAGE
+    # =====================================================
+
+    elif type_unite == 'FACONNAGE':
+
+        prestation = get_object_or_404(
+            ServiceFaconnage,
+            id=prestation_id
+        )
+
+        quantite = demande.get('quantite')
+
+        if quantite:
+
+            quantite = int(quantite)
+
+            prix_brut = (
+                quantite *
+                float(prestation.prix_fixe_unitaire)
+            )
+
+            remise_pourcent = prestation.remise_globale
+
+        else:
+            sur_devis = True
+
+
+    # =====================================================
+    # 5. CALCUL DE LA REMISE
+    # =====================================================
+
+    if not sur_devis:
+
+        montant_remise = int(
+            prix_brut *
+            (remise_pourcent / 100)
+        )
+
+        net_a_payer = (
+            prix_brut -
+            montant_remise
+        )
+
+
+    # =====================================================
+    # 6. MISE À JOUR DE LA SESSION
+    # =====================================================
+
+    request.session['demande_prestation'] = demande
+
+
+    # =====================================================
+    # 7. CONFIRMATION DE LA COMMANDE
+    # =====================================================
+    # IMPORTANT :
+    # Ce bloc vient APRÈS les calculs ci-dessus.
+
+    if (
+        request.method == 'POST'
+        and request.POST.get('confirmer') == '1'
+    ):
+
+        commande_confirmee = {
+            **demande,
+
+            'titre': prestation.titre
+                if prestation else '',
+
+            'prix_brut': prix_brut,
+
+            'remise_pourcent': remise_pourcent,
+
+            'montant_remise': montant_remise,
+
+            'net_a_payer': net_a_payer,
+
+            'sur_devis': sur_devis,
+        }
+
+        request.session['commande_confirmee'] = (
+            commande_confirmee
+        )
+
+        request.session.modified = True
+
+        return redirect('confirmation_commande')
+
+
+    # =====================================================
+    # 8. AFFICHAGE DU RÉCAPITULATIF
+    # =====================================================
+
+    context = {
+
+        'demande': demande,
+
+        'prestation': prestation,
+
+        'prix_brut': prix_brut,
+
+        'remise_pourcent': remise_pourcent,
+
+        'montant_remise': montant_remise,
+
+        'net_a_payer': net_a_payer,
+
+        'sur_devis': sur_devis,
+    }
+
+    return render(
+        request,
+        'shop/resume_demande.html',
+        context
+    )
+
+
+
+def confirmation_commande(request):
+
+    commande = request.session.get(
+        'commande_confirmee'
+    )
+
+    if not commande:
+        return redirect('/impression/prestations/')
+
+    return render(
+        request,
+        'shop/confirmation_commande.html',
+        {
+            'commande': commande
+        }
+    )
 
 def calculer_tarif_ajax(request, prestation_id):
     prestation = get_object_or_404(Prestation, id=prestation_id)

@@ -1,0 +1,217 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="print-container" style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: 'Inter', sans-serif;">
+    
+    <!-- EN-TÊTE D'ACCUEIL -->
+    <div class="print-title-box" style="text-align: center; margin-bottom: 40px; padding: 20px; background: #0f172a; color: white; border-radius: 16px;">
+        <h1 style="margin: 0; font-size: 1.8rem; font-weight: 800;">Espace Impression Professionnel YaTout</h1>
+        <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 0.95rem;">Découvrez nos offres et configurez vos supports d'impression</p>
+    </div>
+
+    <div class="print-layout" style="display: flex; gap: 30px; flex-wrap: wrap;">
+        
+        <!-- COLONNE PRINCIPALE (À GAUCHE) -->
+        <div class="products-column" style="flex: 3; min-width: 320px;">
+
+            <!-- ===================================================================== -->
+            <!-- 🟢 ÉTAPE 2 : LA GRILLE DES FORMATS SUR LAQUELLE ON VEUT ATTERRIR       -->
+            <!-- S'affiche en priorité absolue dès qu'on a cliqué sur une catégorie   -->
+            <!-- ===================================================================== -->
+            {% if type_unite_clique and not prestation_selectionnee %}
+                <div class="catalog-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="margin: 0; font-size: 1.4rem; font-weight: 700; color: #0f172a;">Catégorie : {{ nom_categorie_active }}</h2>
+                    <a href="{% url 'page_prestations' %}" style="text-decoration: none; color: #4f46e5; font-weight: 700; font-size: 0.9rem;">
+                        <span>←</span> Retour à l'accueil
+                    </a>
+                </div>
+
+                <!-- Grille de cartes : affiche un bloc complet pour CHAQUE lot de prix -->
+                <div class="cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+                    {% for item in tarifs_a_afficher %}
+                        <div class="product-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(15,23,42,0.03); display: flex; flex-direction: column; justify-content: space-between;">
+                            
+                            <!-- 🖼️ Image du Support -->
+                            <div class="card-image-box" style="height: 180px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                {% if item.flyer.image %}
+                                    <img src="{{ item.flyer.image.url }}" alt="{{ item.flyer.titre }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% elif item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.titre }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="color: #94a3b8; font-size: 2rem;">📷</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 📝 Corps de la carte -->
+                            <div class="card-body" style="padding: 16px; flex-grow: 1;">
+                                {% if item.format_papier %}
+                                    <h3 style="margin: 0 0 6px 0; font-size: 1.15rem; font-weight: 700; color: #0f172a;">{{ item.flyer.titre }}</h3>
+                                    <p style="margin: 0; font-size: 0.95rem; color: #4f46e5; font-weight: 700;">📐 Format : {{ item.format_papier }}</p>
+                                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b; font-weight: 500;">📦 Quantité : Lot de {{ item.quantite }} unités</p>
+                                {% else %}
+                                    <h3 style="margin: 0 0 6px 0; font-size: 1.15rem; font-weight: 700; color: #0f172a;">{{ item.titre }}</h3>
+                                    <p style="margin: 0; font-size: 0.85rem; color: #64748b;">{{ item.description|truncatewords:12 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- 💰 Prix et Action -->
+                            <div class="card-footer" style="padding: 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                                <div class="price-zone">
+                                    {% if item.prix_total_lot %}
+                                        <strong style="font-size: 1.25rem; font-weight: 800; color: #16a34a;">{{ item.prix_total_lot }} FCFA</strong>
+                                    {% elif item.prix_au_metre_carre %}
+                                        <strong style="font-size: 1.25rem; font-weight: 800; color: #4f46e5;">{{ item.prix_au_metre_carre }} F/M²</strong>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Clic sur la carte ➔ Redirige vers l'écran final de validation -->
+                                {% if item.flyer %}
+                                    <a href="?type_unite={{ type_unite_clique }}&prestation_id={{ item.flyer.id }}" style="background: #0f172a; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
+                                        Sélectionner
+                                    </a>
+                                {% else %}
+                                    <a href="?type_unite={{ type_unite_clique }}&prestation_id={{ item.id }}" style="background: #0f172a; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
+                                        Sélectionner
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    {% empty %}
+                        <div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 40px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #ffffff;">
+                            Aucun format disponible dans cette catégorie actuellement.
+                        </div>
+                    {% endfor %}
+                </div>
+
+            <!-- ===================================================================== -->
+            <!-- 🟢 ÉTAPE 3 : CONFIRMATION FINALE AVEC LES BOUTONS BLEUS               -->
+            <!-- S'affiche uniquement si l'ID d'un produit spécifique est sélectionné  -->
+            <!-- ===================================================================== -->
+            {% elif prestation_selectionnee %}
+                <div class="catalog-header" style="margin-bottom: 25px;">
+                    <h2>Validation de votre commande : {{ prestation_selectionnee.titre }}</h2>
+                    <a href="?type_unite={{ type_unite_clique }}" style="text-decoration: none; color: #4f46e5; font-weight: 700;">
+                        <span>←</span> Retour aux déclinaisons et formats
+                    </a>
+                </div>
+
+                <div class="confirmation-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <div style="width: 60px; height: 60px; background: #e8f5e9; color: #2e7d32; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; font-size: 1.5rem;">✓</div>
+                    <h3 style="margin: 0 0 10px 0; font-size: 1.3rem;">Format sélectionné avec succès</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 25px;">Cliquez sur le bouton ci-dessous pour renseigner vos coordonnées et envoyer votre bon de commande directement sur WhatsApp.</p>
+                    
+                    <button type="button" onclick="ouvrirFormulaireCommande()" style="background: #0284c7; color: white; border: none; padding: 14px 28px; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                        Confirmer et commander via WhatsApp
+                    </button>
+                </div>
+
+            <!-- ===================================================================== -->
+            <!-- 🟢 ÉTAPE 1 : ACCUEIL DES GRANDES PRESTATIONS (L'ÉCRAN INITIAL)          -->
+            <!-- ===================================================================== -->
+            {% else %}
+                <div class="catalog-header" style="margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 1.4rem; font-weight: 700; color: #0f172a;">Nos Prestations</h2>
+                    <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9rem;">Sélectionnez une catégorie pour configurer vos dimensions, finitions et tarifs.</p>
+                </div>
+
+                <div class="catalog-list" style="display: flex; flex-direction: column; gap: 16px; margin-top: 20px;">
+                    <!-- 1. CATEGORIE FLYERS -->
+                    <div class="item-list-row" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #0f172a;">🖨️ Flyers, Dépliants & Cartes de visite</h3>
+                            <!-- 1. CATEGORIE FLYERS (Fin de bloc) -->
+                    <div class="item-list-row" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #0f172a;">🖨️ Flyers, Dépliants & Cartes de visite</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9rem;">Lots et tarifs dégressifs par volumes (Formats A5, A4, Cartes standards...)</p>
+                        </div>
+                        <a href="?type_unite=FLYER" style="background: #4f46e5; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">
+                            Accéder aux formats
+                        </a>
+                    </div>
+
+                    <!-- 2. CATEGORIE GRAND FORMAT -->
+                    <div class="item-list-row" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #0f172a;">🖼️ Grand Format (Bâches, Vinyles)</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9rem;">Impression haute définition sur-mesure calculée au Mètre Carré</p>
+                        </div>
+                        <a href="?type_unite=SURFACE" style="background: #4f46e5; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem;">
+                            Accéder aux formats
+                        </a>
+                    </div>
+                </div> <!-- FIN .catalog-list -->
+            {% endif %} <!-- FIN du grand bloc conditionnel (Étape 2 / Étape 1) -->
+
+        </div> <!-- FIN .products-column -->
+
+        <!-- COLONNE ACCUEIL / AIDE (À DROITE) -->
+        <div class="cart-column" style="flex: 1; min-width: 280px;">
+            <div style="position: sticky; top: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center;">
+                <h3 style="margin: 0 0 10px 0; font-size: 1rem; font-weight: 700; color: #0f172a;">Besoin d'aide ?</h3>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Nos conseillers vous guident pour préparer vos fichiers d'impression.</p>
+                <a href="{% url 'page_conseiller' %}" style="display: block; background: #16a34a; color: white; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Parler à un conseiller</a>
+            </div>
+        </div>
+
+    </div> <!-- FIN .print-layout -->
+</div> <!-- FIN .print-container -->
+
+<!-- 📦 FENÊTRE MODALE DE VALIDATION DE COMMANDE -->
+<div id="modal-commande-whatsapp" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; font-family: 'Inter', sans-serif;">
+    <div style="background: white; padding: 30px; border-radius: 16px; max-width: 450px; width: 90%; box-shadow: 0 20px 25px rgba(0,0,0,0.1); box-sizing: border-box;">
+        <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">Finaliser ma commande</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 20px;">Remplissez vos informations obligatoires.</p>
+        
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Nom complet *</label>
+            <input type="text" id="client-nom" placeholder="Ex: Kouassi Jean" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #334155;">Numéro CI (10 chiffres) *</label>
+            <input type="tel" id="client-tel" placeholder="Ex: 0707070707" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="fermerFormulaireCommande()" style="flex: 1; background: #f1f5f9; border: none; padding: 12px; border-radius: 6px; font-weight: 600; color: #475569; cursor: pointer;">Annuler</button>
+            <button type="button" onclick="validerEtEnvoyerWhatsApp()" style="flex: 2; background: #25d366; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer;">Valider sur WhatsApp</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🔑 LE SCRIPT JAVASCRIPT REPARAMÉTRÉ -->
+<script>
+    function ouvrirFormulaireCommande() {
+        document.getElementById('modal-commande-whatsapp').style.display = 'flex';
+    }
+
+    function fermerFormulaireCommande() {
+        document.getElementById('modal-commande-whatsapp').style.display = 'none';
+    }
+
+    function validerEtEnvoyerWhatsApp() {
+        const nom = document.getElementById('client-nom').value.trim();
+        const tel = document.getElementById('client-tel').value.trim();
+
+        if (nom === "" || tel.length !== 10) {
+            alert("Le nom est obligatoire et le numéro doit faire 10 chiffres.");
+            return;
+        }
+
+        // Utilisation correcte des guillemets d'accent grave (template literals) pour le message multiligne
+        let message = `🛒 *NOUVELLE COMMANDE - YATOUT IMPRIM*\n\n`;
+        message += `👤 *Client :* ${nom}\n`;
+        message += `📞 *Téléphone :* ${tel}\n`;
+        message += `📦 *Produit :* {{ prestation_selectionnee.titre|escapejs }}`;
+
+        const numeroAtelier = "2250700000000";
+        // Correction de la syntaxe de concaténation de la variable d'URL
+        const urlWhatsApp = `https://wa.me{numeroAtelier}?text=${encodeURIComponent(message)}`;
+
+        window.open(urlWhatsApp, '_blank');
+        fermerFormulaireCommande();
+    }
+</script>
+{% endblock %}

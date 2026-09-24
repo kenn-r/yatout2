@@ -10,100 +10,281 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-    .yt-main-shop-wrapper {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-        color: #1e293b;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
+   /* =====================================================================
+   🛒 STYLE DESIGN POUR LA BOUTIQUE MULTI-VENDEURS (TECH E-COMMERCE)
+   ===================================================================== */
+.shop-hero-section {
+    text-align: center;
+    padding: 40px 20px 20px 20px;
+}
 
-    /* 🟢 FORCE L'AFFICHAGE EN GRILLE : Calcule automatiquement le nombre de colonnes */
-    .yt-products-grid {
-        display: grid !important; 
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important; 
-        gap: 30px !important; 
-        margin-bottom: 50px !important;
-        width: 100% !important;
-    }
+.shop-hero-section h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.025em;
+}
 
-    /* Structure d'une carte produit */
-    .yt-product-card {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 14px !important;
-        overflow: hidden !important;
-        display: flex !important; 
-        flex-direction: column !important; 
-        justify-content: space-between !important; 
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-        height: 100% !important; 
-        position: relative !important;
-        box-sizing: border-box !important;
-    }
-    .yt-product-card:hover {
-        transform: translateY(-4px) !important;
-        box-shadow: 0 12px 25px rgba(15, 23, 42, 0.06) !important;
-        border-color: #7b24cc !important;
-    }
+.shop-hero-subtitle {
+    color: #475569;
+    font-size: 1rem;
+    margin: 0;
+}
 
-    .yt-card-body {
-        padding: 18px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        flex-grow: 1 !important;
-    }
+/* Barre de recherche droite et structurée (Sortie de la gélule enfantine) */
+.search-bar-container {
+    max-width: 600px;
+    margin-bottom: 40px;
+}
 
-    .yt-card-vendor {
-        font-size: 11px !important;
-        text-transform: uppercase !important;
-        font-weight: 700 !important;
-        color: #7b24cc !important;
-        letter-spacing: 0.5px !important;
-        margin-bottom: 4px !important;
-        display: block !important;
-    }
+.search-form-box {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: #ffffff;
+    padding: 6px 8px;
+    border-radius: 6px; /* Uniformisé avec les boutons et cartes à 6px */
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+}
 
-    .yt-card-title {
-        font-size: 15px !important;
-        font-weight: 600 !important;
-        color: #0f172a !important;
-        margin: 0 0 10px 0 !important;
-        line-height: 1.4 !important;
-        text-transform: capitalize !important;
-    }
+.search-input-control {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    color: #0f172a;
+    background: transparent;
+    padding: 8px 12px;
+}
 
-    /* Alignement des prix côte à côte */
-    .yt-card-price-box {
-        display: flex !important;
-        align-items: baseline !important; 
-        gap: 8px !important;
-        flex-wrap: wrap !important;
-        margin-bottom: 12px !important;
-    }
+.btn-clear-search {
+    text-decoration: none;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0 8px;
+}
 
-    .yt-card-price {
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        color: #10b981 !important; 
-        display: inline-flex !important;
-        align-items: baseline !important;
-        gap: 4px !important;
-    }
+.btn-clear-search:hover {
+    color: #0f172a;
+}
 
-    .yt-card-price-currency {
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        color: #64748b !important;
-        text-transform: uppercase !important;
-    }
+.btn-search-submit {
+    background-color: #0284c7; /* Reprise du bleu technique pro */
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
 
-    .yt-card-old-price {
-        font-size: 13px !important;
-        color: #94a3b8 !important;
-        text-decoration: line-through !important;
-        font-weight: 500 !important;
-    }
+.btn-search-submit:hover {
+    background-color: #0369a1;
+}
 
+/* =====================================================================
+   🎴 GRILLE & BADGES PRODUITS BOUTIQUE
+   ===================================================================== */
+.yt-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.yt-product-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.yt-product-card:hover {
+    transform: translateY(-3px);
+    border-color: #0284c7;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.product-badge-row {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: calc(100% - 24px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+}
+
+.tag-badge {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.tag-discount {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+.tag-stock-qty {
+    background-color: #16a34a;
+    color: #ffffff;
+}
+
+.yt-card-img-wrapper {
+    height: 180px;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.yt-card-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.no-product-image {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Corps interne de la carte */
+.yt-card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.yt-card-vendor {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    margin-bottom: 4px;
+}
+
+.yt-card-title {
+    font-size: 1.05rem;
+    color: #0f172a;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+    height: 2.8em; /* Force l'alignement sur deux lignes maximum */
+    overflow: hidden;
+}
+
+.yt-card-price-box {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.yt-card-price {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.yt-card-price-currency {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.yt-card-old-price {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    text-decoration: line-break;
+    text-decoration: line-through;
+}
+
+.stock-status-box {
+    margin-bottom: 16px;
+}
+
+.status-indicator {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-in-stock { color: #16a34a; }
+.status-out-of-stock { color: #dc2626; }
+
+/* Boutons horizontaux bas de carte */
+.yt-card-actions-row {
+    display: flex;
+    gap: 8px;
+    margin-top: auto; /* Pousse les boutons tout en bas de la carte */
+}
+
+.yt-card-form-left {
+    flex: 1;
+    margin: 0;
+}
+
+.yt-card-btn-cart {
+    width: 100%;
+    background-color: #0f172a; /* Bouton sombre sobre */
+    color: #ffffff;
+    border: none;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.yt-card-btn-cart:hover:not(:disabled) {
+    background-color: #334155;
+}
+
+.yt-card-btn-cart:disabled {
+    background-color: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.yt-card-btn-view {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.yt-card-btn-view:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
     /* Coalignement horizontal des boutons du bas */
     .yt-card-actions-row {
         margin-top: auto !important; 
@@ -150,7 +331,6 @@
         background-color: #2e0854 !important;
     }
 </style>
-
 <div class="yt-main-shop-wrapper">
     
     <!-- En-tête -->
@@ -255,7 +435,7 @@
                         </div>
                     </div> <!-- Fin de la div .yt-card-body -->
                 </div> <!-- Fin de la div .yt-product-card -->
-                
+
             {% empty %}
                 <!-- 🟢 CETTE ZONE EST MAINTENANT COMPATIBLE : S'exécute uniquement si la liste produits est vide -->
                 <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #64748b; background: white; border: 1px dashed #cbd5e1; border-radius: 12px;">

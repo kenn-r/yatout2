@@ -233,6 +233,46 @@ class DevisAuditLogAdmin(admin.ModelAdmin):
     list_filter = ('action', 'date_action')
     search_fields = ('devis_ref', 'client', 'resultat')
 
+
+
+
+from django.contrib import admin
+from .models import (
+    SupportFlyer, TarifOptionFlyer,
+    SupportGrandFormat,
+    SupportObjetPublicitaire, PalierPrixObjet,
+    ServiceFaconnage
+)
+
+# 🔑 Enregistrement des Flyers et de leurs options de tarifs
+class TarifOptionFlyerInline(admin.TabularInline):
+    model = TarifOptionFlyer
+    extra = 1
+
+@admin.register(SupportFlyer)
+class SupportFlyerAdmin(admin.ModelAdmin):
+    list_display = ('titre', 'remise_globale')
+    inlines = [TarifOptionFlyerInline]
+
+# 🔑 Enregistrement des Bâches, Vinyles (Grand Format)
+@admin.register(SupportGrandFormat)
+class SupportGrandFormatAdmin(admin.ModelAdmin):
+    list_display = ('titre', 'prix_au_metre_carre', 'remise_globale')
+
+# 🔑 Enregistrement des Mugs, T-shirts, Képis et de leurs paliers de prix
+class PalierPrixObjetInline(admin.TabularInline):
+    model = PalierPrixObjet
+    extra = 1
+
+@admin.register(SupportObjetPublicitaire)
+class SupportObjetPublicitaireAdmin(admin.ModelAdmin):
+    list_display = ('titre', 'remise_globale')
+    inlines = [PalierPrixObjetInline]
+
+# 🔑 Enregistrement des Photocopies, Reliures (Façonnage)
+@admin.register(ServiceFaconnage)
+class ServiceFaconnageAdmin(admin.ModelAdmin):
+    list_display = ('titre', 'prix_fixe_unitaire', 'remise_globale')
     
 
 from django.contrib import admin

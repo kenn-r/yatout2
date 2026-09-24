@@ -110,6 +110,143 @@ class MessageAssistant(models.Model):
         expediteur = "Assistant" if self.est_assistant else "Client"
         return f"{expediteur} : {self.message[:30]}"
     
+from django.db import models
+
+# =========================================================================
+# 🖨️ MODULE 1 : FLYERS, DÉPLIANTS & CARTES DE VISITE
+# =========================================================================
+class SupportFlyer(models.Model):
+    titre = models.CharField(max_length=200, verbose_name="Nom du support (Ex: Flyers Standard, Cartes de Visite)")
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='prestations/flyers/', blank=True, null=True)
+    remise_globale = models.IntegerField(default=0, verbose_name="Remise sur cet article (%)")
+
+    class Meta:
+        db_table = 'print_flyer'
+
+    def __str__(self):
+        return self.titre
+
+    def calculer_prix(self, format_papier, quantite):
+        """Recherche le prix exact du lot selon le format et le volume."""
+        try:
+            tarif = self.tarifs_specifiques.get(format_papier=format_papier, quantite=quantite)
+            prix_brut = float(tarif.prix_total_lot)
+            remise = self.remise_globale
+            montant_remise = int(prix_brut * (remise / 100.0))
+            return {
+                "prix_brut": prix_brut,
+                "remise_pourcent": remise,
+                "montant_remise": montant_remise,
+                "prix_final": prix_brut - montant_remise
+            }
+        except Exception:
+            return {"prix_brut": 0, "remise_pourcent": 0, "montant_remise": 0, "prix_final": 0, "erreur": "Tarif non configuré pour cette quantité/format."}
+    def type_unite(self):
+        return 'FLYER'
+    
+class TarifOptionFlyer(models.Model):
+    flyer = models.ForeignKey(SupportFlyer, on_delete=models.CASCADE, related_name='tarifs_specifiques')
+    format_papier = models.CharField(max_length=50, help_text="Ex: A5, A6, 8.5x5.4cm")
+    quantite = models.IntegerField(help_text="Ex: 100, 500, 1000")
+    prix_total_lot = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Prix brut global du lot")
+
+
+# =========================================================================
+# 🖼️ MODULE 2 : BÂCHES, VINYLES & GRAND FORMAT
+# =========================================================================
+class SupportGrandFormat(models.Model):
+    titre = models.CharField(max_length=200, verbose_name="Nom du produit (Ex: Bâche Publicitaire, Vinyle)")
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='prestations/grand_format/', blank=True, null=True)
+    prix_au_metre_carre = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix de base au M²")
+    remise_globale = models.IntegerField(default=0, verbose_name="Remise sur cet article (%)")
+
+    class Meta:
+        db_table = 'print_grand_format'
+
+    def __str__(self):
+        return self.titre
+
+    def calculer_prix(self, largeur_metres, longueur_metres):
+        """Calcul direct et mathématique au M² basé sur les dimensions saisies par le client."""
+        surface_m2 = float(largeur_metres) * float(longueur_metres)
+        prix_brut = surface_m2 * float(self.prix_au_metre_carre)
+        montant_remise = int(prix_brut * (self.remise_globale / 100.0))
+        return {
+            "prix_brut": prix_brut,
+            "remise_pourcent": self.remise_globale,
+            "montant_remise": montant_remise,
+            "prix_final": prix_brut - montant_remise
+        }
+
+    def type_unite(self):
+            return 'SURFACE'
+
+
+# =========================================================================
+# ☕ MODULE 3 : GOODIES & OBJETS (MUGS, TASSES, T-SHIRTS, CHAPEAUX, KÉPIS)
+# =========================================================================
+class SupportObjetPublicitaire(models.Model):
+    titre = models.CharField(max_length=200, verbose_name="Nom de l'objet (Ex: Mug en Céramique, T-shirt)")
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='prestations/goodies/', blank=True, null=True)
+    remise_globale = models.IntegerField(default=0, verbose_name="Remise sur cet article (%)")
+
+    class Meta:
+        db_table = 'print_objet'
+
+    def __str__(self):
+        return self.titre
+
+    def calculer_prix(self, quantite):
+        """Logique dégressive par paliers : plus on commande d'objets, moins l'unité est chère."""
+        palier = self.paliers_prix.filter(quantite_minimale__lte=quantite).order_by('-quantite_minimale').first()
+        if palier:
+            prix_brut = float(palier.prix_unitaire) * quantite
+        else:
+            prix_brut = 0
+            
+        montant_remise = int(prix_brut * (self.remise_globale / 100.0))
+        return {
+            "prix_brut": prix_brut,
+            "remise_pourcent": self.remise_globale,
+            "montant_remise": montant_remise,
+            "prix_final": prix_brut - montant_remise
+        }
+
+class PalierPrixObjet(models.Model):
+    objet = models.ForeignKey(SupportObjetPublicitaire, on_delete=models.CASCADE, related_name='paliers_prix')
+    quantite_minimale = models.IntegerField(help_text="Ex: 1, 10, 50, 100 (S'applique à partir de ce volume)")
+    prix_unitaire = models.DecimalField(max_digits=10, decimal_places=2, help_text="Prix pour une seule pièce à ce palier")
+
+
+# =========================================================================
+# 📚 MODULE 4 : SERVICES DE FACONNAGE (PHOTOCOPIES, RELIURES)
+# =========================================================================
+class ServiceFaconnage(models.Model):
+    titre = models.CharField(max_length=200, verbose_name="Nom du service (Ex: Reliure Document, Photocopie A4)")
+    description = models.TextField(blank=True)
+    prix_fixe_unitaire = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix fixe à la page ou à l'acte")
+    remise_globale = models.IntegerField(default=0, verbose_name="Remise sur cet article (%)")
+
+    class Meta:
+        db_table = 'print_faconnage'
+
+    def __str__(self):
+        return self.titre
+
+    def calculer_prix(self, quantite):
+        """Multiplication simple du prix unitaire par la quantité demandée."""
+        prix_brut = quantite * float(self.prix_fixe_unitaire)
+        montant_remise = int(prix_brut * (self.remise_globale / 100.0))
+        return {
+            "prix_brut": prix_brut,
+            "remise_pourcent": self.remise_globale,
+            "montant_remise": montant_remise,
+            "prix_final": prix_brut - montant_remise
+        }
+
 
 class Prestation(models.Model):
     CHOIX_UNITE = [
@@ -197,6 +334,7 @@ class Prestation(models.Model):
             "prix_final": prix_final
         }
 
+    
 
 # 1. SURFACE (Invariable)
 class GrilleTarifaireSurface(models.Model):

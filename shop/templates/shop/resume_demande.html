@@ -1,0 +1,371 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+
+<style>
+
+.resume-container {
+    max-width: 850px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.resume-card {
+    background: white;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 5px 25px rgba(0,0,0,.08);
+}
+
+.resume-title {
+    margin-bottom: 30px;
+}
+
+.resume-section {
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.resume-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 9px 0;
+}
+
+.resume-row strong {
+    font-weight: 600;
+}
+
+.remise {
+    color: #c62828;
+}
+
+.net-a-payer {
+    margin-top: 20px;
+    padding: 22px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.net-a-payer-label {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.net-a-payer-price {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.livraison {
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px dashed #bbb;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.sur-devis {
+    margin-top: 20px;
+    padding: 22px;
+    border-radius: 12px;
+    background: #fff7e6;
+    text-align: center;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 13px 20px;
+    border-radius: 9px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-retour {
+    background: #eee;
+    color: #222;
+}
+
+.btn-confirmer {
+    background: #111;
+    color: white;
+}
+
+@media (max-width: 600px) {
+
+    .resume-card {
+        padding: 20px;
+    }
+
+    .resume-row,
+    .net-a-payer {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        text-align: center;
+    }
+}
+
+</style>
+
+
+<div class="resume-container">
+
+    <div class="resume-card">
+
+        <h1 class="resume-title">
+            Récapitulatif de votre commande
+        </h1>
+
+
+        <!-- =================================
+             PRODUIT
+        ================================== -->
+
+        <div class="resume-section">
+
+            <h2>Votre demande</h2>
+
+            <div class="resume-row">
+                <span>Produit</span>
+                <strong>
+                    {{ prestation.titre }}
+                </strong>
+            </div>
+
+
+            {% if demande.format %}
+
+                <div class="resume-row">
+                    <span>Format</span>
+                    <strong>
+                        {{ demande.format }}
+                    </strong>
+                </div>
+
+            {% endif %}
+
+
+            {% if demande.quantite %}
+
+                <div class="resume-row">
+                    <span>Quantité</span>
+                    <strong>
+                        {{ demande.quantite }}
+                    </strong>
+                </div>
+
+            {% endif %}
+
+
+            {% if demande.largeur %}
+
+                <div class="resume-row">
+                    <span>Largeur</span>
+                    <strong>
+                        {{ demande.largeur }} m
+                    </strong>
+                </div>
+
+            {% endif %}
+
+
+            {% if demande.longueur %}
+
+                <div class="resume-row">
+                    <span>Longueur</span>
+                    <strong>
+                        {{ demande.longueur }} m
+                    </strong>
+                </div>
+
+            {% endif %}
+
+
+            {% if demande.surface %}
+
+                <div class="resume-row">
+                    <span>Surface</span>
+                    <strong>
+                        {{ demande.surface|floatformat:2 }} m²
+                    </strong>
+                </div>
+
+            {% endif %}
+
+
+            {% if demande.message %}
+
+                <div class="resume-row">
+                    <span>Précisions</span>
+                    <strong>
+                        {{ demande.message }}
+                    </strong>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================
+             TARIFICATION
+        ================================== -->
+
+        {% if not sur_devis %}
+
+            <div class="resume-section">
+
+                <h2>Tarification</h2>
+
+                <div class="resume-row">
+
+                    <span>
+                        Prix brut
+                    </span>
+
+                    <strong>
+                        {{ prix_brut|floatformat:0 }}
+                        FCFA
+                    </strong>
+
+                </div>
+
+
+                {% if remise_pourcent %}
+
+                    <div class="resume-row remise">
+
+                        <span>
+                            Remise
+                            ({{ remise_pourcent }} %)
+                        </span>
+
+                        <strong>
+                            - {{ montant_remise|floatformat:0 }}
+                            FCFA
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="net-a-payer">
+
+                    <span class="net-a-payer-label">
+                        NET À PAYER
+                    </span>
+
+                    <span class="net-a-payer-price">
+                        {{ net_a_payer|floatformat:0 }}
+                        FCFA
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 LIVRAISON
+            ================================== -->
+
+            <div class="livraison">
+
+                <strong>
+                    🚚 Livraison
+                </strong>
+
+                <p>
+                    Vous souhaitez une livraison ?
+                    Les frais seront confirmés directement
+                    par téléphone avec notre équipe.
+                </p>
+
+            </div>
+
+        {% else %}
+
+
+            <!-- =================================
+                 SUR DEVIS
+            ================================== -->
+
+            <div class="sur-devis">
+
+                <h2>
+                    Prix sur devis
+                </h2>
+
+                <p>
+                    Cette demande ne correspond pas à
+                    un tarif préconfiguré.
+                </p>
+
+                <p>
+                    Notre équipe vous contactera directement
+                    pour vous communiquer le prix exact.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =================================
+             ACTIONS
+        ================================== -->
+
+        <div class="actions">
+
+            <a
+                href="/impression/prestations/"
+                class="btn btn-retour"
+            >
+                ← Modifier ma demande
+            </a>
+
+
+            <form method="post"
+                  action="">
+                  
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    name="confirmer"
+                    value="1"
+                    class="btn btn-confirmer"
+                >
+                    Confirmer la commande
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

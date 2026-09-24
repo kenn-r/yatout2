@@ -75,3 +75,57 @@ class ProduitForm(forms.ModelForm):
                 "L'ancien prix (barré) doit obligatoirement être supérieur au prix actuel pour afficher une réduction valide."
             )
         return cleaned_data
+
+
+from django import forms
+from .models import Temoignage
+
+
+class TemoignageForm(forms.ModelForm):
+
+    note = forms.TypedChoiceField(
+        label="Note",
+        choices=[
+            (5, "★★★★★ — Excellent"),
+            (4, "★★★★☆ — Très bien"),
+            (3, "★★★☆☆ — Bien"),
+            (2, "★★☆☆☆ — Moyen"),
+            (1, "★☆☆☆☆ — À améliorer"),
+        ],
+        coerce=int,
+        widget=forms.Select(
+            attrs={
+                "class": "temoignage-input"
+            }
+        )
+    )
+
+    class Meta:
+        model = Temoignage
+        fields = [
+            "nom_client",
+            "commentaire",
+            "note",
+        ]
+
+        widgets = {
+            "nom_client": forms.TextInput(
+                attrs={
+                    "class": "temoignage-input",
+                    "placeholder": "Votre nom ou votre entreprise"
+                }
+            ),
+
+            "commentaire": forms.Textarea(
+                attrs={
+                    "class": "temoignage-input",
+                    "placeholder": "Écrivez votre avis...",
+                    "rows": 4
+                }
+            ),
+        }
+
+        labels = {
+            "nom_client": "Nom ou entreprise",
+            "commentaire": "Votre avis",
+        }

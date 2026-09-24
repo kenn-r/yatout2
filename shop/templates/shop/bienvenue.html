@@ -1,123 +1,671 @@
 {% extends 'shop/base.html' %}
-{% load static %}
 
-{% block title %}Bienvenue sur YaTout{% endblock %}
+{% block title %}
+    Bienvenue - YaTout CI
+{% endblock %}
 
-{% block content %}
-<!-- =====================================================================
-   STYLE CSS REPLONGÉ ICI POUR ÉVITER LES ERREURS DE CHARGEMENT DJANGO
-   ===================================================================== -->
+{% block extra_css %}
+
 <style>
-    /* Masque proprement le reste du site pendant le choix de démarrage */
-    .welcome-screen-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: #2e0854; /* Violet profond historique de YaTout */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 99999; /* Bloque l'affichage par-dessus la navbar et le chatbot */
+
+/* =========================================================
+   PAGE DE BIENVENUE YATOUT CI
+   ========================================================= */
+
+.welcome-page {
+    min-height: calc(100vh - 72px);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    padding: 50px 20px 70px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f0f9ff 0%,
+            #f8fafc 50%,
+            #ffffff 100%
+        );
+}
+
+
+/* =========================================================
+   EN-TÊTE
+   ========================================================= */
+
+.welcome-header {
+    width: 100%;
+    max-width: 850px;
+
+    text-align: center;
+
+    margin-bottom: 45px;
+}
+
+
+.welcome-logo {
+    width: 76px;
+    height: 76px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 20px;
+
+    border-radius: 22px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0284c7,
+            #0ea5e9
+        );
+
+    font-size: 2.3rem;
+
+    box-shadow:
+        0 15px 35px
+        rgba(2, 132, 199, .25);
+}
+
+
+.welcome-header h1 {
+    margin: 0;
+
+    color: #0f172a;
+
+    font-size:
+        clamp(2rem, 5vw, 3.4rem);
+
+    line-height: 1.1;
+
+    font-weight: 900;
+
+    letter-spacing: -1.5px;
+}
+
+
+.welcome-header h1 span {
+    color: #0284c7;
+}
+
+
+.welcome-header p {
+    max-width: 650px;
+
+    margin:
+        16px auto 0;
+
+    color: #64748b;
+
+    font-size:
+        clamp(.95rem, 2vw, 1.1rem);
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   SOUS-TITRE
+   ========================================================= */
+
+.welcome-question {
+
+    margin-top: 25px;
+
+    color: #0f172a;
+
+    font-size: 1.05rem;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   CHOIX
+   ========================================================= */
+
+.welcome-choices {
+
+    width: 100%;
+
+    max-width: 1050px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 25px;
+}
+
+
+/* =========================================================
+   CARTE
+   ========================================================= */
+
+.welcome-card {
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+    padding: 40px 30px;
+
+    min-height: 340px;
+
+    overflow: hidden;
+
+    color: #0f172a;
+
+    background: #ffffff;
+
+    border:
+        1px solid #e2e8f0;
+
+    border-radius: 24px;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 10px 30px
+        rgba(15, 23, 42, .07);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+}
+
+
+.welcome-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 5px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0284c7,
+            #0ea5e9
+        );
+
+    opacity: 0;
+
+    transition:
+        opacity .25s ease;
+}
+
+
+.welcome-card:hover {
+
+    color: #0f172a;
+
+    transform:
+        translateY(-7px);
+
+    border-color:
+        #bae6fd;
+
+    box-shadow:
+        0 20px 45px
+        rgba(2, 132, 199, .14);
+}
+
+
+.welcome-card:hover::before {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   ICÔNE
+   ========================================================= */
+
+.welcome-icon {
+
+    width: 90px;
+    height: 90px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 23px;
+
+    border-radius: 25px;
+
+    color: #0284c7;
+
+    background:
+        #e0f2fe;
+
+    font-size: 3rem;
+
+    transition:
+        transform .25s ease,
+        background .25s ease;
+}
+
+
+.welcome-card:hover .welcome-icon {
+
+    transform:
+        scale(1.08);
+
+    background:
+        #bae6fd;
+}
+
+
+/* =========================================================
+   TITRE CARTE
+   ========================================================= */
+
+.welcome-card h2 {
+
+    margin: 0 0 12px;
+
+    color: #0f172a;
+
+    font-size: 1.45rem;
+
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.welcome-card p {
+
+    max-width: 390px;
+
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: .92rem;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   BOUTON / LIEN
+   ========================================================= */
+
+.welcome-card span {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    margin-top: auto;
+    padding-top: 25px;
+
+    color: #0284c7;
+
+    font-size: .9rem;
+
+    font-weight: 800;
+
+    transition:
+        gap .2s ease;
+}
+
+
+.welcome-card:hover span {
+    color: #0369a1;
+}
+
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.welcome-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-bottom: 20px;
+
+    padding:
+        7px 13px;
+
+    color: #0369a1;
+
+    background: #e0f2fe;
+
+    border:
+        1px solid #bae6fd;
+
+    border-radius: 999px;
+
+    font-size: .78rem;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.welcome-footer {
+
+    margin-top: 40px;
+
+    text-align: center;
+
+    color: #94a3b8;
+
+    font-size: .78rem;
+}
+
+
+/* =========================================================
+   RESPONSIVE TABLETTE
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    .welcome-page {
+
+        padding:
+            40px 18px 55px;
     }
 
-    /* Boîtier central blanc aéré */
+
+    .welcome-choices {
+
+        grid-template-columns:
+            1fr;
+
+        max-width: 600px;
+    }
+
+
     .welcome-card {
-        background: #ffffff;
-        padding: 45px 50px;
-        border-radius: 20px;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        text-align: center;
-        max-width: 480px;
-        width: 90%;
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
+
+        min-height: 300px;
+
+        padding:
+            35px 25px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE MOBILE
+   ========================================================= */
+
+@media (max-width: 500px) {
+
+    .welcome-page {
+
+        min-height:
+            calc(100vh - 64px);
+
+        padding:
+            30px 15px 45px;
     }
 
-    .welcome-title {
-        color: #2e0854;
-        font-size: 2.2rem;
-        margin-bottom: 10px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
+
+    .welcome-header {
+
+        margin-bottom:
+            30px;
     }
 
-    .welcome-subtitle {
-        color: #64748b;
-        font-size: 1.05rem;
-        margin-bottom: 35px;
-        line-height: 1.5;
+
+    .welcome-logo {
+
+        width: 65px;
+        height: 65px;
+
+        border-radius: 18px;
+
+        font-size: 2rem;
     }
 
-    .welcome-buttons-container {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+
+    .welcome-header h1 {
+
+        font-size:
+            2rem;
+
+        letter-spacing:
+            -1px;
     }
 
-    /* Structure de base commune des boutons */
-    .w-btn {
-        display: block;
-        padding: 16px 20px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        text-decoration: none;
-        border-radius: 12px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-        box-sizing: border-box;
+
+    .welcome-header p {
+
+        font-size:
+            .88rem;
     }
 
-    .w-btn:hover {
-        transform: translateY(-2px);
+
+    .welcome-question {
+
+        font-size:
+            .95rem;
     }
 
-    /* 🟢 BOUTON ARTICLES : Thématique Vert Moderne */
-    .btn-green-shop {
-        background-color: #10b981;
-        color: #ffffff;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-    }
-    
-    .btn-green-shop:hover {
-        background-color: #059669;
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+
+    .welcome-choices {
+
+        gap:
+            16px;
     }
 
-    /* 🔵 BOUTON IMPRESSIONS : Thématique Bleu Professionnel */
-    .btn-blue-print {
-        background-color: #2563eb;
-        color: #ffffff;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+
+    .welcome-card {
+
+        min-height:
+            285px;
+
+        padding:
+            30px 20px;
+
+        border-radius:
+            20px;
     }
 
-    .btn-blue-print:hover {
-        background-color: #1d4ed8;
-        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+
+    .welcome-icon {
+
+        width:
+            75px;
+
+        height:
+            75px;
+
+        margin-bottom:
+            18px;
+
+        border-radius:
+            20px;
+
+        font-size:
+            2.5rem;
     }
+
+
+    .welcome-card h2 {
+
+        font-size:
+            1.25rem;
+    }
+
+
+    .welcome-card p {
+
+        font-size:
+            .85rem;
+    }
+}
+
 </style>
 
-<!-- =====================================================================
-   SUPERPOSITION ET LOGIQUE VISUELLE DE L'ÉCRAN DE BIENVENUE
-   ===================================================================== -->
-<div class="welcome-screen-overlay">
-    <div class="welcome-card">
-        
-        <h1 class="welcome-title">🔮 Bienvenue sur YaTout Ci</h1>
-        <p class="welcome-subtitle">Que souhaitez-vous découvrir aujourd'hui ?</p>
-        
-        <div class="welcome-buttons-container">
-            <!-- 🟢 Bouton Vert : Redirection vers la boutique d'articles principale -->
-            <a href="{% url 'accueil' %}" class="w-btn btn-green-shop">
-                🛍️ Cliquez ici pour voir les articles
-            </a>
-            
-            <!-- 🔵 Bouton Bleu : Redirection vers l'espace atelier d'impression (SYNC ROUTE) -->
-            <a href="{% url 'page_impressions' %}" class="w-btn btn-blue-print">
-                🖨️ Notre page d'impression
-            </a>
+{% endblock %}
+
+
+{% block content %}
+
+<section class="welcome-page">
+
+
+    <!-- =====================================================
+         EN-TÊTE
+         ===================================================== -->
+
+    <div class="welcome-header">
+
+
+        <div class="welcome-logo">
+            🖨️
+        </div>
+
+
+        <div class="welcome-badge">
+            ✦ Bienvenue chez YaTout CI
+        </div>
+
+
+        <h1>
+            Tout YaTout,
+            <span>au même endroit.</span>
+        </h1>
+
+
+        <p>
+            Découvrez nos produits dans la boutique
+            ou accédez directement à nos services
+            d'impression.
+        </p>
+
+
+        <div class="welcome-question">
+            Que souhaitez-vous faire ?
         </div>
 
     </div>
-</div>
+
+
+    <!-- =====================================================
+         LES DEUX UNIVERS
+         ===================================================== -->
+
+    <div class="welcome-choices">
+
+
+        <!-- =================================================
+             🛍️ BOUTIQUE
+             ================================================= -->
+
+        <a
+            href="{% url 'accueil' %}"
+            class="welcome-card"
+        >
+
+            <div class="welcome-icon">
+                🛍️
+            </div>
+
+
+            <h2>
+                Boutique
+            </h2>
+
+
+            <p>
+                Découvrez les produits disponibles
+                sur YaTout CI et explorez les
+                différentes boutiques de nos vendeurs.
+            </p>
+
+
+            <span>
+                Entrer dans la boutique →
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             🖨️ IMPRESSION
+             ================================================= -->
+
+        <a
+            href="{% url 'page_prestations' %}"
+            class="welcome-card"
+        >
+
+            <div class="welcome-icon">
+                🖨️
+            </div>
+
+
+            <h2>
+                Services d'impression
+            </h2>
+
+
+            <p>
+                Flyers, affiches, stickers, cartes,
+                t-shirts, mugs et autres supports
+                personnalisés.
+            </p>
+
+
+            <span>
+                Découvrir les services →
+            </span>
+
+        </a>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <div class="welcome-footer">
+
+        YaTout CI · Boutique & Impression
+
+    </div>
+
+
+</section>
+
 {% endblock %}

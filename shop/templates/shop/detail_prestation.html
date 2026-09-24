@@ -5,283 +5,782 @@
 
 {% block content %}
 
-<div class="product-page-container">
-    
-    <!-- Lien retour -->
-    <a href="{% url 'page_prestations' %}" style="text-decoration: none; color: #7c3aed; font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 20px; text-align: left;">
-        ← Retour au catalogue
-    </a>
+<style>
 
-    <!-- 🛒 CONFIGURATEUR DE COMMANDE UNIQUE ET UNIVERSEL -->
-    <div class="order-section">
-        <div class="order-card">
-            <h1 class="product-title" style="color: #2e0854; font-weight: 700; text-align: center; font-size: 1.5rem;">{{ prestation.titre }}</h1>
-            <div style="width: 50px; height: 3px; background-color: #dc3545; border-radius: 2px; margin: 10px auto 25px auto;"></div>
+.detail-container {
+    max-width: 1150px;
+    margin: auto;
+    padding: 30px 20px;
+}
 
-            <form method="POST" action="{% url 'confirmer_commande_client' %}" id="form-prestation" style="width: 100%; box-sizing: border-box;">
-                {% csrf_token %}
-                <input type="hidden" name="prestation_id" value="{{ prestation.id }}">
-                <input type="hidden" id="type_quantite" name="type_quantite" value="surface">
+.detail-back {
+    display: inline-block;
+    margin-bottom: 25px;
+    text-decoration: none;
+    color: #555;
+}
 
-                <!-- Champs cachés pour le calcul des surfaces -->
-                <input type="hidden" id="hidden_largeur" name="largeur" value="1">
-                <input type="hidden" id="hidden_hauteur" name="hauteur" value="1">
+.detail-product {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 5px 25px rgba(0,0,0,.08);
+}
 
-                <!-- ========================================================================= -->
-                <!-- 1️⃣ CAS A : PRESTATIONS AU MÈTRE CARRÉ (Ex: Bâche, Vinyle, Autocollant)     -->
-                <!-- ========================================================================= -->
-                {% if interstate_surface or prestation.type_unite == 'SURFACE' %}
-                    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">📐 Sélectionnez votre format de surface :</h5>
-                    
-                    <div class="lots-grid-unified">
-                        {% for grille in prestation.grilles_surface.all %}
-                        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('surface', '{{ grille.dimensions }}', this)" data-w="{{ grille.surface_m2 }}" data-h="1">
-                            <div class="lot-card-visual-wrapper">
-                                {% if grille.image %}
-                                    <img src="{{ grille.image.url }}" alt="{{ grille.dimensions }}">
-                                {% else %}
-                                    <span>📐</span>
-                                {% endif %}
-                            </div>
-                            <div class="lot-card-body">
-                                <strong class="lot-title-text">{{ grille.dimensions }}</strong>
-                                <span class="badge bg-success text-white" style="font-size: 0.8rem; padding: 4px 8px; border-radius: 4px;">{{ grille.prix_total }} F</span>
-                            </div>
-                        </div>
-                        {% endfor %}
+.detail-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+    padding: 30px;
+}
 
-                        <!-- Option Sur-mesure pour la surface -->
-                        <div class="card-lot-modern" id="custom-option-card" onclick="selectionnerOptionUniverselle('custom-surface', 'custom', this)" style="min-width: 100%;">
-                            <div class="lot-card-visual-wrapper" style="height: 90px; border-bottom: none;">
-                                <span>✏️</span>
-                            </div>
-                            <div class="lot-card-body" style="padding-top: 0;">
-                                <strong class="d-block mb-2" style="color: #1e293b;">Dimensions personnalisées (mètres)</strong>
-                                <div class="input-grid" style="display: flex; gap: 10px; width: 100%; box-sizing: border-box;">
-                                    <input type="number" step="0.01" id="custom_w" placeholder="Largeur (m)" class="form-input" style="flex: 1;">
-                                    <input type="number" step="0.01" id="custom_h" placeholder="Hauteur (m)" class="form-input" style="flex: 1;">
-                                </div>
-                            </div>
-                        </div>
+.detail-image {
+    height: 430px;
+    background: #f6f6f6;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+}
+
+.detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.detail-info h1 {
+    margin-top: 0;
+    font-size: 32px;
+}
+
+.detail-description {
+    color: #666;
+    line-height: 1.6;
+    margin: 20px 0;
+}
+
+.detail-section {
+    padding: 30px;
+    border-top: 1px solid #eee;
+}
+
+.offres {
+    display: grid;
+    gap: 12px;
+}
+
+.offre {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 15px;
+    padding: 18px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+}
+
+.offre:hover {
+    border-color: #111;
+}
+
+.offre-prix {
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.selection {
+    margin-top: 25px;
+    padding: 25px;
+    background: #f8f8f8;
+    border-radius: 14px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.btn-commande {
+    border: none;
+    background: #111;
+    color: white;
+    padding: 14px 22px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.autre {
+    margin-top: 25px;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+}
+
+@media (max-width: 700px) {
+
+    .detail-top {
+        grid-template-columns: 1fr;
+        padding: 18px;
+    }
+
+    .detail-image {
+        height: 300px;
+    }
+
+    .offre {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-info h1 {
+        font-size: 25px;
+    }
+
+}
+.offres {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.offre {
+    display: block;
+    cursor: pointer;
+    border: 2px solid #e5e5e5;
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+    transition: .2s ease;
+}
+
+.offre:hover {
+    border-color: #222;
+    transform: translateY(-1px);
+}
+
+.offre input[type="radio"] {
+    display: none;
+}
+
+.offre-contenu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.offre-contenu > div {
+    flex: 1;
+}
+
+.offre-prix {
+    text-align: right;
+    font-weight: 800;
+    font-size: 17px;
+    white-space: nowrap;
+}
+
+.offre:has(input:checked) {
+    border-color: #111;
+    background: #f5f5f5;
+    box-shadow: 0 5px 15px rgba(0,0,0,.06);
+}
+
+@media (max-width: 600px) {
+
+    .offre-contenu {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .offre-prix {
+        width: 100%;
+        text-align: left;
+    }
+
+}
+.offre-contenu small {
+    display: block;
+    color: #888;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    margin-bottom: 5px;
+}
+
+.offre-contenu strong {
+    display: block;
+    font-size: 17px;
+}
+
+.offre {
+    position: relative;
+}
+
+.offre input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.offre:has(input[type="radio"]:checked) {
+    border-color: #111;
+    background: #f7f7f7;
+    box-shadow: 0 5px 18px rgba(0,0,0,.08);
+}
+
+.offre:has(input[type="radio"]:checked)::after {
+    content: "✓";
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #111;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+</style>
+
+
+<div class="detail-container">
+
+   <a href="/impression/prestations/"
+   class="detail-back">
+    ← Retour aux prestations
+</a>
+
+
+    <div class="detail-product">
+
+        <!-- =====================================
+             PRODUIT
+        ====================================== -->
+
+        <div class="detail-top">
+
+            <div class="detail-image">
+
+                {% if prestation.image %}
+
+                    <img
+                        src="{{ prestation.image.url }}"
+                        alt="{{ prestation.titre }}"
+                    >
+
+                {% else %}
+
+                    <span>
+                        Image non disponible
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="detail-info">
+
+                <h1>
+                    {{ prestation.titre }}
+                </h1>
+
+
+                {% if prestation.description %}
+
+                    <div class="detail-description">
+                        {{ prestation.description }}
                     </div>
 
-                <!-- ========================================================================= -->
-               <!-- ========================================================================= -->
-<!-- 2️⃣ CAS B : PRESTATIONS PAR LOTS (Ex: Flyers, Dépliants, Cartes)           -->
-<!-- ========================================================================= -->
-{% elif examen_lot or prestation.type_unite == 'LOT' %}
-    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">📦 Sélectionnez votre volume de lot :</h5>
-    
-    <div class="lots-grid-unified" style="margin-bottom: 20px;">
-        {% for option in prestation.options_quantite.all %}
-        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('lot', '{{ option.quantite }}', this)">
-            <div class="lot-card-visual-wrapper">
-                {% if option.image %}
-                    <img src="{{ option.image.url }}" alt="Lot {{ option.quantite }}">
-                {% else %}
-                    <span>📇</span>
                 {% endif %}
-            </div>
-            <div class="lot-card-body">
-                <input type="radio" name="quantite_lot" value="{{ option.quantite }}" {% if forloop.first %}checked{% endif %} style="display: none;">
-                <strong class="lot-title-text">Lot {{ option.quantite }} ex.</strong>
-                {% if option.remise_pourcentage > 0 %}
-                    <span class="lot-discount-badge badge-style-discount">Remise -{{ option.remise_pourcentage }}%</span>
-                {% else %}
-                    <span class="lot-discount-badge badge-style-catalogue">Tarif Catalogue</span>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
 
-        <!-- Option Sur-mesure pour les lots -->
-        <div class="card-lot-modern" id="custom-option-card" onclick="selectionnerOptionUniverselle('custom-lot', 'custom', this)">
-            <div class="lot-card-visual-wrapper">
-                <span>✏️</span>
+
+                {% if prestation.remise_globale %}
+
+                    <p>
+                        Remise disponible :
+                        <strong>
+                            {{ prestation.remise_globale }}%
+                        </strong>
+                    </p>
+
+                {% endif %}
+
             </div>
-            <div class="lot-card-body">
-                <strong class="d-block mb-1" style="color: #1e293b;">Quantité libre</strong>
-                <input type="number" id="input_custom_qty" placeholder="Ex: 1500" class="form-input text-center" style="padding: 6px; width: 90%;">
-            </div>
+
         </div>
+
+
+        <!-- =====================================
+             FLYER
+        ====================================== -->
+{% if type_unite == 'FLYER' %}
+
+<div class="detail-section">
+
+    <h2>
+        Choisissez votre format et votre lot
+    </h2>
+
+    <p>
+        Sélectionnez l'offre qui correspond à votre besoin.
+    </p>
+
+
+    <!-- =====================================
+         OFFRES DISPONIBLES
+    ====================================== -->
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="offres">
+
+            {% for offre in formats_disponibles %}
+
+                <label class="offre">
+
+                    <input
+                        type="radio"
+                        name="offre_id"
+                        value="{{ offre.id }}"
+                        required
+                    >
+
+                    <div class="offre-contenu">
+
+                        <div>
+                            <small>FORMAT</small>
+                            <strong>
+                                {{ offre.format_papier }}
+                            </strong>
+                        </div>
+
+
+                        <div>
+                            <small>QUANTITÉ</small>
+                            <strong>
+                                {{ offre.quantite }} exemplaires
+                            </strong>
+                        </div>
+
+
+                        <div class="offre-prix">
+                            {{ offre.prix_total_lot|floatformat:0 }}
+                            FCFA
+                        </div>
+
+                    </div>
+
+                </label>
+
+            {% empty %}
+
+                <p>
+                    Aucun tarif disponible pour le moment.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+
+        <button
+            type="submit"
+            name="type_demande"
+            value="commande_flyer"
+            class="btn-commande"
+        >
+            Continuer
+        </button>
+
+    </form>
+
+
+    <!-- =====================================
+         DEMANDE PERSONNALISÉE
+    ====================================== -->
+
+    <div class="autre">
+
+        <h3>
+            Vous ne trouvez pas votre besoin ?
+        </h3>
+
+        <p>
+            Indiquez-nous exactement ce que vous souhaitez.
+        </p>
+
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+
+                <label>
+                    Format souhaité
+                </label>
+
+                <input
+                    type="text"
+                    name="format_personnalise"
+                    placeholder="Ex : A4, A3, 10 x 15 cm..."
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Quantité / lot
+                </label>
+
+                <input
+                    type="number"
+                    name="quantite_personnalisee"
+                    min="1"
+                    placeholder="Ex : 250"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Précisions
+                </label>
+
+                <textarea
+                    name="demande_personnalisee"
+                    rows="4"
+                    placeholder="Décrivez ce que vous souhaitez..."
+                ></textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                name="type_demande"
+                value="devis"
+                class="btn-commande"
+            >
+                Demander un devis
+            </button>
+
+        </form>
+
     </div>
 
-    <!-- 🟢 BOUTON TURQUOISE INSÉRÉ ET BRANCHÉ SUR LA LOGIQUE DE SÉCURITÉ -->
-    <button type="button" onclick="declencherSaisieQuantiteLibre()" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px; background-color: #00a896; color: #ffffff; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; cursor: pointer; box-shadow: 0 4px 14px rgba(0, 168, 150, 0.3); margin-top: 15px; margin-bottom: 25px;">
-        🎛️ TAPEZ VOTRE QUANTITE
-    </button>
+</div>
 
-   
 {% endif %}
-                <!-- ========================================================================= -->
-                <!-- 3️⃣ CAS C : PRESTATIONS À L'UNITÉ (Ex: T-shirts, Tasses, Casquettes)        -->
-                <!-- ========================================================================= -->
-                {% else %}
-                    <h5 class="font-weight-bold mb-3" style="color: #1e293b; font-size: 1rem; text-align: left;">🔢 Sélectionnez votre palier de quantité :</h5>
-                    
-                    <div class="lots-grid-unified">
-                        {% for palier in prestation.paliers_unite.all %}
-                        <div class="card-lot-modern {% if forloop.first %}active-lot{% endif %}" onclick="selectionnerOptionUniverselle('unite', '{{ palier.quantite_minimale }}', this)">
-                            <div class="lot-card-visual-wrapper">
-                                {% if palier.image %}
-                                    <img src="{{ palier.image.url }}" alt="Dès {{ palier.quantite_minimale }} ex.">
-                                {% else %}
-                                    <span>☕</span>
-                                {% endif %}
-                            </div>
-                            <div class="lot-card-body">
-                                <strong class="lot-title-text">Dès {{ palier.quantite_minimale }} ex.</strong>
-                                <span class="badge bg-primary text-white" style="font-size: 0.85rem; padding: 4px 8px; border-radius: 4px;">{{ palier.prix_unitaire }} F / u</span>
-                            </div>
-                        </div>
-                        {% endfor %}
 
-                        <!-- Zone de saisie du nombre exact pour l'unité -->
-                        <div class="form-group" style="width: 100%; margin-top: 15px;">
-                            <label for="quantite_custom_unite" style="font-weight: 600; color: #475569; display: block; margin-bottom: 6px;">Indiquez la quantité exacte à commander :</label>
-                            <input type="number" id="quantite_custom_unite" name="quantite_custom_unite" min="1" value="1" class="form-input" style="max-width: 200px;" required>
-                        </div>
+
+
+        <!-- =====================================
+             GRAND FORMAT
+        ====================================== -->
+
+        {% if type_unite == 'SURFACE' %}
+
+            <div class="detail-section">
+
+                <h2>
+                    Indiquez vos dimensions
+                </h2>
+
+                <p>
+                    Prix :
+                    <strong>
+                        {{ prestation.prix_au_metre_carre }}
+                        FCFA / m²
+                    </strong>
+                </p>
+
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Largeur (m)
+                        </label>
+
+                        <input
+                            type="number"
+                            name="largeur"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="Ex : 2"
+                        >
+
                     </div>
-                {% endif %}
 
-                <!-- BOUTON DE SOUMISSION UNIQUE EN BAS DU FORMULAIRE -->
-                <div style="text-align: center; margin-top: 30px; width: 100%;">
-                    <button type="submit" class="btn-submit-order" style="max-width: 400px; margin: 0 auto; display: block;">
-                        🛒 Confirmer et ajouter au panier
+
+                    <div class="form-group">
+
+                        <label>
+                            Longueur (m)
+                        </label>
+
+                        <input
+                            type="number"
+                            name="longueur"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="Ex : 1.5"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Précisions
+                        </label>
+
+                        <textarea
+                            name="demande_personnalisee"
+                            rows="4"
+                            placeholder="Votre demande..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        name="type_demande"
+                        value="commande_surface"
+                        class="btn-commande"
+                    >
+                        Continuer
                     </button>
+
+                </form>
+
+            </div>
+
+        {% endif %}
+
+
+
+        <!-- =====================================
+             GOODIES
+        ====================================== -->
+
+        {% if type_unite == 'GOODIES' %}
+
+            <div class="detail-section">
+
+                <h2>
+                    Choisissez votre quantité
+                </h2>
+
+
+                <div class="offres">
+
+                    {% for offre in offres %}
+
+                        <div class="offre">
+
+                            <div>
+                                À partir de
+                                <strong>
+                                    {{ offre.quantite_minimale }}
+                                </strong>
+                                pièces
+                            </div>
+
+                            <div>
+                                Prix unitaire
+                            </div>
+
+                            <div class="offre-prix">
+                                {{ offre.prix_unitaire }}
+                                FCFA
+                            </div>
+
+                        </div>
+
+                    {% empty %}
+
+                        <p>
+                            Aucun tarif configuré.
+                        </p>
+
+                    {% endfor %}
+
                 </div>
 
-            </form>
-        </div>
-        <!-- ===================================================================== -->
-<!-- JAVASCRIPT DE CONFIGURATION UNIVERSELLE (BURGER / SESSIONS / ACTIONS) -->
-<!-- ===================================================================== -->
-<script>
-    // 🟢 1. FONCTION DE RÉACTIVATION DU MENU BURGER MOBILE
-    function basculerMenuMobile(bouton) {
-        // Cherche le conteneur .nav-actions situé dans la navbar courante
-        const navActions = bouton.parentElement.querySelector('.nav-actions');
-        if (navActions) {
-            navActions.classList.toggle('open');
-            bouton.classList.toggle('open');
-        }
-    }
 
-    // 🟢 2. SÉCURISATION ET INITIALISATION INITIALE DES MODULES PYTHON
-    document.addEventListener("DOMContentLoaded", function () {
-        const hiddenType = document.getElementById('type_quantite');
-        
-        // Configuration initiale automatique du type de formulaire pour views.py
-        if (hiddenType) {
-            if (document.getElementById('quantite_custom_unite')) {
-                hiddenType.value = 'unite_palier';
-            } else if (document.querySelector('input[name="quantite_lot"]')) {
-                hiddenType.value = 'lot';
-            } else {
-                hiddenType.value = 'surface';
-            }
-        }
+                <div class="selection">
 
-        // Synchronisation en direct pour le sur-mesure de la surface (Largeur x Hauteur)
-        const customW = document.getElementById('custom_w');
-        const customH = document.getElementById('custom_h');
-        if (customW && customH) {
-            const syncInputs = () => {
-                const cardCustom = document.getElementById('custom-option-card');
-                if (cardCustom && cardCustom.classList.contains('active-lot')) {
-                    const hiddenW = document.getElementById('hidden_largeur');
-                    const hiddenH = document.getElementById('hidden_hauteur');
-                    if (hiddenW) hiddenW.value = customW.value || 1;
-                    if (hiddenH) hiddenH.value = customH.value || 1;
-                }
-            };
-            customW.addEventListener('input', syncInputs);
-            customH.addEventListener('input', syncInputs);
-        }
-    });
+                    <h3>
+                        Quantité personnalisée
+                    </h3>
 
-    // 🟢 3. FONCTION DE SÉLECTION INTERACTIVE DES CARTES (SURFACE, LOTS, UNITÉS)
-    function selectionnerOptionUniverselle(categorie, valeur, element) {
-        // Désactive l'état sélectionné sur les autres éléments de la grille
-        document.querySelectorAll('.card-lot-modern').forEach(card => card.classList.remove('active-lot'));
-        
-        // Active graphiquement la carte cliquée
-        element.classList.add('active-lot');
-        
-        const hiddenType = document.getElementById('type_quantite');
-        const hiddenW = document.getElementById('hidden_largeur');
-        const hiddenH = document.getElementById('hidden_hauteur');
 
-        // ROUTAGE DYNAMIQUE VERS LES SESSIONS PYTHON DE VIEWS.PY
-        if (categorie === 'lot') {
-            if (hiddenType) hiddenType.value = 'lot';
-            const radio = element.querySelector('input[type="radio"]');
-            if (radio) radio.checked = true;
-        } 
-        else if (categorie === 'custom-lot') {
-            if (hiddenType) hiddenType.value = 'libre';
-        } 
-        else if (categorie === 'surface') {
-            if (hiddenType) hiddenType.value = 'surface';
-            if (hiddenW) hiddenW.value = element.getAttribute('data-w') || 1;
-            if (hiddenH) hiddenH.value = 1;
-        } 
-        else if (categorie === 'custom-surface') {
-            if (hiddenType) hiddenType.value = 'surface';
-            if (hiddenW) hiddenW.value = document.getElementById('custom_w').value || 1;
-            if (hiddenH) hiddenH.value = document.getElementById('custom_h').value || 1;
-        }
-    }
-     <!-- 🟢 SCRIPT DE PROTECTION ET D'FOCUS INTERACTIF -->
-    function declencherSaisieQuantiteLibre() {
-        // 1️⃣ RECHERCHE UNIVERSELLE : On teste toutes les variantes d'ID possibles pour votre sélecteur de format
-        var selectFormat = document.getElementById('dimensions_m2') 
-                        || document.getElementById('dimensions') 
-                        || document.getElementById('format_id')
-                        || document.querySelector('select[name*="dimension"]')
-                        || document.querySelector('select[name*="format"]');
-        
-        // Si le sélecteur est trouvé et qu'aucune option n'est cochée (valeur vide, ou première option désactivée)
-        if (selectFormat && (selectFormat.value === "" || selectFormat.value === null || selectFormat.selectedIndex === 0 && selectFormat.options[0].disabled)) {
-            // Indication d'erreur visuelle : le sélecteur passe en rouge
-            selectFormat.style.setProperty('border', '2.5px solid #ef4444', 'important');
-            selectFormat.style.setProperty('background-color', '#fef2f2', 'important');
-            
-            // Pop-up d'alerte explicite
-            alert("⚠️ Veuillez d'abord choisir un format (A5, A6...) avant de taper votre quantité.");
-            
-            // On renvoie le focus de l'écran vers le choix du format
-            selectFormat.focus();
-            return; // On bloque l'accès tant que le format n'est pas choisi
-        }
+                    <form method="post">
 
-        // 2️⃣ ACTIVATION DE LA QUANTITÉ LIBRE (Si le format est bien sélectionné)
-        var carteCustom = document.getElementById('custom-option-card');
-        var inputCustom = document.getElementById('input_custom_qty');
-        
-        if (carteCustom && inputCustom) {
-            // Nettoyage des bordures rouges d'erreur si elles étaient visibles
-            if (selectFormat) {
-                selectFormat.style.border = "1.5px solid #cbd5e1";
-                selectFormat.style.backgroundColor = "#ffffff";
-            }
+                        {% csrf_token %}
 
-            // On décoche visuellement les styles actifs des autres grilles de lots classiques
-            document.querySelectorAll('.card-lot-modern').forEach(function(card) {
-                card.classList.remove('active-lot');
-                card.style.borderColor = 'rgba(124, 58, 237, 0.15)';
-            });
-            
-            // On simule le clic physique sur votre option de quantité libre
-            carteCustom.click(); 
-            carteCustom.classList.add('active-lot');
-            carteCustom.style.borderColor = '#00a896';
-            
-            // On force l'ouverture et le focus du clavier sur l'input numérique
-            inputCustom.focus();
-            inputCustom.style.border = "2px solid #00a896";
-        }
-    }
-</script>
+                        <div class="form-group">
+
+                            <label>
+                                Quantité souhaitée
+                            </label>
+
+                            <input
+                                type="number"
+                                name="quantite"
+                                min="1"
+                                placeholder="Ex : 25"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Précisions
+                            </label>
+
+                            <textarea
+                                name="demande_personnalisee"
+                                rows="4"
+                                placeholder="Couleur, personnalisation, impression..."
+                            ></textarea>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            name="type_demande"
+                            value="commande_goodie"
+                            class="btn-commande"
+                        >
+                            Continuer
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+
+        <!-- =====================================
+             FACONNAGE
+        ====================================== -->
+
+        {% if type_unite == 'FACONNAGE' %}
+
+            <div class="detail-section">
+
+                <h2>
+                    Quantité souhaitée
+                </h2>
+
+                <p>
+                    Prix unitaire :
+                    <strong>
+                        {{ prestation.prix_fixe_unitaire }}
+                        FCFA
+                    </strong>
+                </p>
+
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Quantité
+                        </label>
+
+                        <input
+                            type="number"
+                            name="quantite"
+                            min="1"
+                            value="1"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Précisions
+                        </label>
+
+                        <textarea
+                            name="demande_personnalisee"
+                            rows="4"
+                            placeholder="Indiquez vos besoins..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        name="type_demande"
+                        value="commande_faconnage"
+                        class="btn-commande"
+                    >
+                        Continuer
+                    </button>
+
+                </form>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
 
 {% endblock %}
