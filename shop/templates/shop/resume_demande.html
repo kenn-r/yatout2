@@ -1,268 +1,842 @@
 {% extends 'shop/base.html' %}
 
+{% block title %}
+    Récapitulatif de votre commande - YaTout
+{% endblock %}
+
 {% block content %}
 
 <style>
 
-.resume-container {
-    max-width: 850px;
-    margin: 40px auto;
-    padding: 20px;
+/* =========================================================
+   🌈 PAGE RÉSUMÉ — BACKGROUND ANIMÉ
+   ========================================================= */
+
+.resume-page {
+
+    min-height: calc(100vh - 70px);
+
+    padding: 45px 18px 80px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            125deg,
+            #dbeafe,
+            #ede9fe,
+            #fce7f3,
+            #fef3c7,
+            #dcfce7,
+            #cffafe
+        );
+
+    background-size: 500% 500%;
+
+    animation:
+        resumeColorMove 18s ease infinite;
 }
+
+
+/* Animation du fond */
+
+@keyframes resumeColorMove {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    20% {
+        background-position: 50% 100%;
+    }
+
+    40% {
+        background-position: 100% 50%;
+    }
+
+    60% {
+        background-position: 50% 0%;
+    }
+
+    80% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+/* =========================================================
+   ✨ LUMIÈRES DÉCORATIVES
+   ========================================================= */
+
+.resume-page::before,
+.resume-page::after {
+
+    content: "";
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    filter: blur(60px);
+
+    pointer-events: none;
+
+    opacity: .45;
+}
+
+
+.resume-page::before {
+
+    width: 280px;
+    height: 280px;
+
+    top: 40px;
+    left: -100px;
+
+    background: #38bdf8;
+
+    animation:
+        floatingLight 8s ease-in-out infinite;
+}
+
+
+.resume-page::after {
+
+    width: 320px;
+    height: 320px;
+
+    bottom: 20px;
+    right: -100px;
+
+    background: #c084fc;
+
+    animation:
+        floatingLight 10s ease-in-out infinite reverse;
+}
+
+
+@keyframes floatingLight {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(40px, -30px);
+    }
+}
+
+
+/* =========================================================
+   📦 CONTENEUR
+   ========================================================= */
+
+.resume-container {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    max-width: 900px;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   🧾 CARTE PRINCIPALE
+   ========================================================= */
 
 .resume-card {
-    background: white;
-    border-radius: 18px;
-    padding: 30px;
-    box-shadow: 0 5px 25px rgba(0,0,0,.08);
+
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 38px;
+
+    border-radius: 28px;
+
+    background:
+        rgba(255,255,255,.90);
+
+    border:
+        1px solid rgba(255,255,255,.95);
+
+    box-shadow:
+        0 30px 80px
+        rgba(15,23,42,.18);
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
 }
+
+
+/* Barre colorée supérieure */
+
+.resume-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 6px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0284c7,
+            #7c3aed,
+            #db2777,
+            #f59e0b,
+            #10b981,
+            #06b6d4
+        );
+
+    background-size: 300% 100%;
+
+    animation:
+        rainbowBar 8s linear infinite;
+}
+
+
+@keyframes rainbowBar {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 300% 50%;
+    }
+}
+
+
+/* =========================================================
+   🏷️ TITRE
+   ========================================================= */
 
 .resume-title {
-    margin-bottom: 30px;
+
+    margin: 0 0 35px;
+
+    color: #0f172a;
+
+    font-size:
+        clamp(1.8rem, 4vw, 2.6rem);
+
+    font-weight: 900;
+
+    letter-spacing: -1px;
+
+    line-height: 1.15;
 }
+
+
+.resume-title::before {
+
+    content: "🧾";
+
+    display: inline-flex;
+
+    margin-right: 12px;
+
+    font-size: .85em;
+}
+
+
+/* =========================================================
+   📋 SECTIONS
+   ========================================================= */
 
 .resume-section {
-    padding: 20px 0;
-    border-bottom: 1px solid #eee;
+
+    padding: 25px 0;
+
+    border-bottom:
+        1px solid rgba(148,163,184,.25);
 }
+
+
+.resume-section h2 {
+
+    margin: 0 0 18px;
+
+    color: #0f172a;
+
+    font-size: 1.25rem;
+
+    font-weight: 850;
+}
+
+
+/* =========================================================
+   📊 LIGNES
+   ========================================================= */
 
 .resume-row {
+
     display: flex;
+
     justify-content: space-between;
-    gap: 20px;
-    padding: 9px 0;
+
+    align-items: center;
+
+    gap: 25px;
+
+    padding: 13px 15px;
+
+    margin: 5px 0;
+
+    border-radius: 12px;
+
+    color: #64748b;
+
+    background:
+        rgba(248,250,252,.75);
+
+    transition:
+        transform .2s ease,
+        background .2s ease;
 }
+
+
+.resume-row:hover {
+
+    transform:
+        translateX(4px);
+
+    background:
+        rgba(239,246,255,.95);
+}
+
 
 .resume-row strong {
-    font-weight: 600;
+
+    color: #0f172a;
+
+    font-weight: 750;
+
+    text-align: right;
 }
+
+
+/* =========================================================
+   💸 REMISE
+   ========================================================= */
 
 .remise {
-    color: #c62828;
+
+    color: #dc2626;
+
+    background:
+        rgba(254,226,226,.65);
 }
+
+
+.remise strong {
+
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   💰 NET À PAYER
+   ========================================================= */
 
 .net-a-payer {
-    margin-top: 20px;
-    padding: 22px;
-    border-radius: 12px;
-    background: #f5f5f5;
+
+    position: relative;
+
+    overflow: hidden;
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     gap: 20px;
+
+    margin-top: 25px;
+
+    padding: 25px;
+
+    border-radius: 18px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0284c7,
+            #4f46e5,
+            #7c3aed
+        );
+
+    box-shadow:
+        0 15px 35px
+        rgba(79,70,229,.25);
 }
+
+
+.net-a-payer::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 150px;
+    height: 150px;
+
+    right: -50px;
+    top: -70px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,.12);
+}
+
 
 .net-a-payer-label {
-    font-size: 20px;
-    font-weight: bold;
+
+    position: relative;
+
+    z-index: 1;
+
+    font-size: 1rem;
+
+    font-weight: 800;
+
+    letter-spacing: .5px;
 }
+
 
 .net-a-payer-price {
-    font-size: 28px;
-    font-weight: bold;
+
+    position: relative;
+
+    z-index: 1;
+
+    font-size: clamp(1.5rem, 4vw, 2rem);
+
+    font-weight: 950;
+
+    white-space: nowrap;
 }
+
+
+/* =========================================================
+   🚚 LIVRAISON
+   ========================================================= */
 
 .livraison {
-    margin-top: 20px;
-    padding: 18px;
-    border: 1px dashed #bbb;
-    border-radius: 12px;
-    background: #fafafa;
+
+    margin-top: 22px;
+
+    padding: 20px;
+
+    border-radius: 16px;
+
+    border:
+        1px solid #bae6fd;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(239,246,255,.95),
+            rgba(224,242,254,.8)
+        );
+
+    color: #475569;
 }
+
+
+.livraison strong {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #0369a1;
+
+    font-size: 1rem;
+}
+
+
+.livraison p {
+
+    margin: 0;
+
+    line-height: 1.6;
+
+    font-size: .92rem;
+}
+
+
+/* =========================================================
+   🟠 SUR DEVIS
+   ========================================================= */
 
 .sur-devis {
-    margin-top: 20px;
-    padding: 22px;
-    border-radius: 12px;
-    background: #fff7e6;
+
+    margin-top: 25px;
+
+    padding: 28px;
+
     text-align: center;
+
+    border-radius: 18px;
+
+    border:
+        1px solid #fed7aa;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff7ed,
+            #ffedd5
+        );
 }
+
+
+.sur-devis h2 {
+
+    margin: 0 0 10px;
+
+    color: #c2410c;
+
+    font-size: 1.45rem;
+}
+
+
+.sur-devis p {
+
+    margin: 7px 0;
+
+    color: #7c2d12;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   🎯 ACTIONS
+   ========================================================= */
 
 .actions {
+
     display: flex;
-    gap: 12px;
-    margin-top: 30px;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-top: 32px;
 }
+
 
 .btn {
-    display: inline-block;
-    padding: 13px 20px;
-    border-radius: 9px;
-    text-decoration: none;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 48px;
+
+    padding: 13px 21px;
+
     border: none;
+
+    border-radius: 12px;
+
+    text-decoration: none;
+
     cursor: pointer;
-    font-weight: bold;
+
+    font-size: .92rem;
+
+    font-weight: 800;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
 }
+
+
+.btn:hover {
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* Retour */
 
 .btn-retour {
-    background: #eee;
-    color: #222;
+
+    color: #334155;
+
+    background:
+        #f1f5f9;
+
+    border:
+        1px solid #e2e8f0;
 }
+
+
+.btn-retour:hover {
+
+    color: #0f172a;
+
+    background:
+        #e2e8f0;
+}
+
+
+/* Confirmer */
 
 .btn-confirmer {
-    background: #111;
+
     color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0284c7,
+            #4f46e5
+        );
+
+    box-shadow:
+        0 10px 25px
+        rgba(79,70,229,.25);
 }
 
-@media (max-width: 600px) {
+
+.btn-confirmer:hover {
+
+    box-shadow:
+        0 15px 30px
+        rgba(79,70,229,.35);
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .resume-page {
+
+        padding:
+            25px 12px 55px;
+    }
+
 
     .resume-card {
-        padding: 20px;
+
+        padding:
+            25px 18px;
+
+        border-radius:
+            22px;
     }
 
-    .resume-row,
-    .net-a-payer {
-        flex-direction: column;
-        gap: 5px;
+
+    .resume-title {
+
+        font-size:
+            1.65rem;
+
+        margin-bottom:
+            25px;
     }
+
+
+    .resume-row {
+
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+        gap:
+            5px;
+
+        padding:
+            12px;
+    }
+
+
+    .resume-row strong {
+
+        text-align:
+            left;
+    }
+
+
+    .net-a-payer {
+
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+
+        padding:
+            22px;
+    }
+
+
+    .net-a-payer-price {
+
+        font-size:
+            1.65rem;
+    }
+
 
     .actions {
-        flex-direction: column;
+
+        flex-direction:
+            column;
+
+        align-items:
+            stretch;
     }
 
-    .btn {
-        text-align: center;
+
+    .actions form {
+
+        width:
+            100%;
     }
+
+
+    .btn {
+
+        width:
+            100%;
+
+        box-sizing:
+            border-box;
+    }
+
+}
+
+
+/* =========================================================
+   📱 PETIT MOBILE
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+    .resume-card {
+
+        padding:
+            22px 14px;
+    }
+
+
+    .resume-title {
+
+        font-size:
+            1.45rem;
+    }
+
+
+    .resume-section h2 {
+
+        font-size:
+            1.1rem;
+    }
+
 }
 
 </style>
 
 
-<div class="resume-container">
+<!-- =========================================================
+     🌈 PAGE
+     ========================================================= -->
 
-    <div class="resume-card">
-
-        <h1 class="resume-title">
-            Récapitulatif de votre commande
-        </h1>
+<div class="resume-page">
 
 
-        <!-- =================================
-             PRODUIT
-        ================================== -->
-
-        <div class="resume-section">
-
-            <h2>Votre demande</h2>
-
-            <div class="resume-row">
-                <span>Produit</span>
-                <strong>
-                    {{ prestation.titre }}
-                </strong>
-            </div>
+    <div class="resume-container">
 
 
-            {% if demande.format %}
+        <!-- =================================================
+             🧾 CARTE PRINCIPALE
+             ================================================= -->
 
-                <div class="resume-row">
-                    <span>Format</span>
-                    <strong>
-                        {{ demande.format }}
-                    </strong>
-                </div>
-
-            {% endif %}
+        <div class="resume-card">
 
 
-            {% if demande.quantite %}
+            <!-- =================================================
+                 TITRE
+                 ================================================= -->
 
-                <div class="resume-row">
-                    <span>Quantité</span>
-                    <strong>
-                        {{ demande.quantite }}
-                    </strong>
-                </div>
-
-            {% endif %}
+            <h1 class="resume-title">
+                Récapitulatif de votre commande
+            </h1>
 
 
-            {% if demande.largeur %}
-
-                <div class="resume-row">
-                    <span>Largeur</span>
-                    <strong>
-                        {{ demande.largeur }} m
-                    </strong>
-                </div>
-
-            {% endif %}
-
-
-            {% if demande.longueur %}
-
-                <div class="resume-row">
-                    <span>Longueur</span>
-                    <strong>
-                        {{ demande.longueur }} m
-                    </strong>
-                </div>
-
-            {% endif %}
-
-
-            {% if demande.surface %}
-
-                <div class="resume-row">
-                    <span>Surface</span>
-                    <strong>
-                        {{ demande.surface|floatformat:2 }} m²
-                    </strong>
-                </div>
-
-            {% endif %}
-
-
-            {% if demande.message %}
-
-                <div class="resume-row">
-                    <span>Précisions</span>
-                    <strong>
-                        {{ demande.message }}
-                    </strong>
-                </div>
-
-            {% endif %}
-
-        </div>
-
-
-        <!-- =================================
-             TARIFICATION
-        ================================== -->
-
-        {% if not sur_devis %}
+            <!-- =================================================
+                 📋 VOTRE DEMANDE
+                 ================================================= -->
 
             <div class="resume-section">
 
-                <h2>Tarification</h2>
+                <h2>
+                    Votre demande
+                </h2>
+
 
                 <div class="resume-row">
 
                     <span>
-                        Prix brut
+                        Produit
                     </span>
 
                     <strong>
-                        {{ prix_brut|floatformat:0 }}
-                        FCFA
+                        {{ prestation.titre }}
                     </strong>
 
                 </div>
 
 
-                {% if remise_pourcent %}
+                {% if demande.format %}
 
-                    <div class="resume-row remise">
+                    <div class="resume-row">
 
                         <span>
-                            Remise
-                            ({{ remise_pourcent }} %)
+                            Format
                         </span>
 
                         <strong>
-                            - {{ montant_remise|floatformat:0 }}
-                            FCFA
+                            {{ demande.format }}
                         </strong>
 
                     </div>
@@ -270,97 +844,239 @@
                 {% endif %}
 
 
-                <div class="net-a-payer">
+                {% if demande.quantite %}
 
-                    <span class="net-a-payer-label">
-                        NET À PAYER
-                    </span>
+                    <div class="resume-row">
 
-                    <span class="net-a-payer-price">
-                        {{ net_a_payer|floatformat:0 }}
-                        FCFA
-                    </span>
+                        <span>
+                            Quantité
+                        </span>
+
+                        <strong>
+                            {{ demande.quantite }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if demande.largeur %}
+
+                    <div class="resume-row">
+
+                        <span>
+                            Largeur
+                        </span>
+
+                        <strong>
+                            {{ demande.largeur }} m
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if demande.longueur %}
+
+                    <div class="resume-row">
+
+                        <span>
+                            Longueur
+                        </span>
+
+                        <strong>
+                            {{ demande.longueur }} m
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if demande.surface %}
+
+                    <div class="resume-row">
+
+                        <span>
+                            Surface
+                        </span>
+
+                        <strong>
+                            {{ demande.surface|floatformat:2 }} m²
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if demande.message %}
+
+                    <div class="resume-row">
+
+                        <span>
+                            Précisions
+                        </span>
+
+                        <strong>
+                            {{ demande.message }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =================================================
+                 💰 TARIFICATION
+                 ================================================= -->
+
+            {% if not sur_devis %}
+
+                <div class="resume-section">
+
+                    <h2>
+                        Tarification
+                    </h2>
+
+
+                    <div class="resume-row">
+
+                        <span>
+                            Prix brut
+                        </span>
+
+                        <strong>
+                            {{ prix_brut|floatformat:0 }}
+                            FCFA
+                        </strong>
+
+                    </div>
+
+
+                    {% if remise_pourcent %}
+
+                        <div class="resume-row remise">
+
+                            <span>
+                                Remise
+                                ({{ remise_pourcent }} %)
+                            </span>
+
+                            <strong>
+                                - {{ montant_remise|floatformat:0 }}
+                                FCFA
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- NET À PAYER -->
+
+                    <div class="net-a-payer">
+
+                        <span class="net-a-payer-label">
+                            NET À PAYER
+                        </span>
+
+                        <span class="net-a-payer-price">
+                            {{ net_a_payer|floatformat:0 }}
+                            FCFA
+                        </span>
+
+                    </div>
 
                 </div>
 
-            </div>
+
+                <!-- =================================================
+                     🚚 LIVRAISON
+                     ================================================= -->
+
+                <div class="livraison">
+
+                    <strong>
+                        🚚 Livraison
+                    </strong>
+
+                    <p>
+                        Vous souhaitez une livraison ?
+                        Les frais seront confirmés directement
+                        par téléphone avec notre équipe.
+                    </p>
+
+                </div>
+
+            {% else %}
 
 
-            <!-- =================================
-                 LIVRAISON
-            ================================== -->
+                <!-- =================================================
+                     🟠 SUR DEVIS
+                     ================================================= -->
 
-            <div class="livraison">
+                <div class="sur-devis">
 
-                <strong>
-                    🚚 Livraison
-                </strong>
+                    <h2>
+                        Prix sur devis
+                    </h2>
 
-                <p>
-                    Vous souhaitez une livraison ?
-                    Les frais seront confirmés directement
-                    par téléphone avec notre équipe.
-                </p>
+                    <p>
+                        Cette demande ne correspond pas
+                        à un tarif préconfiguré.
+                    </p>
 
-            </div>
+                    <p>
+                        Notre équipe vous contactera directement
+                        pour vous communiquer le prix exact.
+                    </p>
 
-        {% else %}
+                </div>
 
-
-            <!-- =================================
-                 SUR DEVIS
-            ================================== -->
-
-            <div class="sur-devis">
-
-                <h2>
-                    Prix sur devis
-                </h2>
-
-                <p>
-                    Cette demande ne correspond pas à
-                    un tarif préconfiguré.
-                </p>
-
-                <p>
-                    Notre équipe vous contactera directement
-                    pour vous communiquer le prix exact.
-                </p>
-
-            </div>
-
-        {% endif %}
+            {% endif %}
 
 
-        <!-- =================================
-             ACTIONS
-        ================================== -->
+            <!-- =================================================
+                 🎯 ACTIONS
+                 ================================================= -->
 
-        <div class="actions">
-
-            <a
-                href="/impression/prestations/"
-                class="btn btn-retour"
-            >
-                ← Modifier ma demande
-            </a>
+            <div class="actions">
 
 
-            <form method="post"
-                  action="">
-                  
-                {% csrf_token %}
-
-                <button
-                    type="submit"
-                    name="confirmer"
-                    value="1"
-                    class="btn btn-confirmer"
+                <a
+                    href="{% url 'page_prestations' %}"
+                    class="btn btn-retour"
                 >
-                    Confirmer la commande
-                </button>
+                    ← Modifier ma demande
+                </a>
 
-            </form>
+
+                <form
+                    method="post"
+                    action=""
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        name="confirmer"
+                        value="1"
+                        class="btn btn-confirmer"
+                    >
+                        ✓ Confirmer la commande
+                    </button>
+
+                </form>
+
+
+            </div>
+
 
         </div>
 

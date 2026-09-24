@@ -1,44 +1,201 @@
 {% extends 'shop/base.html' %}
 
 {% block title %}
-    Bienvenue - YaTout CI
+YaTout CI — Boutique & Impression
 {% endblock %}
 
-{% block extra_css %}
+
+{% block content %}
 
 <style>
 
 /* =========================================================
-   PAGE DE BIENVENUE YATOUT CI
+   RESET LOCAL
+   ========================================================= */
+
+.welcome-page,
+.welcome-page * {
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PAGE
    ========================================================= */
 
 .welcome-page {
-    min-height: calc(100vh - 72px);
+
+    min-height: calc(100vh - 70px);
+
+    position: relative;
 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 
-    padding: 50px 20px 70px;
+    padding: 55px 25px 65px;
+
+    overflow: hidden;
 
     background:
+        radial-gradient(
+            circle at 10% 20%,
+            rgba(14,165,233,.28),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 90% 15%,
+            rgba(168,85,247,.25),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 50% 100%,
+            rgba(16,185,129,.22),
+            transparent 35%
+        ),
         linear-gradient(
-            180deg,
-            #f0f9ff 0%,
-            #f8fafc 50%,
-            #ffffff 100%
+            135deg,
+            #f8fbff,
+            #eef4ff,
+            #f9f5ff
         );
+
+    background-size:
+        100% 100%,
+        100% 100%,
+        100% 100%,
+        300% 300%;
+
+    animation:
+        backgroundMove 15s ease infinite;
+}
+
+
+@keyframes backgroundMove {
+
+    0% {
+        background-position:
+            0% 0%,
+            100% 0%,
+            50% 100%,
+            0% 50%;
+    }
+
+    50% {
+        background-position:
+            20% 20%,
+            80% 30%,
+            60% 80%,
+            100% 50%;
+    }
+
+    100% {
+        background-position:
+            0% 0%,
+            100% 0%,
+            50% 100%,
+            0% 50%;
+    }
 }
 
 
 /* =========================================================
-   EN-TÊTE
+   FORMES DÉCORATIVES
+   ========================================================= */
+
+.welcome-shape {
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    filter: blur(2px);
+
+    opacity: .45;
+}
+
+
+.shape-one {
+
+    width: 260px;
+    height: 260px;
+
+    top: -100px;
+    left: -80px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #38bdf8,
+            #6366f1
+        );
+
+    animation:
+        shapeFloat 9s ease-in-out infinite;
+}
+
+
+.shape-two {
+
+    width: 300px;
+    height: 300px;
+
+    right: -130px;
+    bottom: -120px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #c084fc,
+            #f472b6
+        );
+
+    animation:
+        shapeFloat 11s ease-in-out infinite reverse;
+}
+
+
+@keyframes shapeFloat {
+
+    0%,
+    100% {
+        transform:
+            translate(0,0)
+            scale(1);
+    }
+
+    50% {
+        transform:
+            translate(35px,-25px)
+            scale(1.12);
+    }
+}
+
+
+/* =========================================================
+   CONTENU
+   ========================================================= */
+
+.welcome-content {
+
+    position: relative;
+
+    z-index: 5;
+
+    width: 100%;
+
+    max-width: 1100px;
+}
+
+
+/* =========================================================
+   HEADER
    ========================================================= */
 
 .welcome-header {
-    width: 100%;
-    max-width: 850px;
 
     text-align: center;
 
@@ -46,298 +203,74 @@
 }
 
 
+/* =========================================================
+   LOGO
+   ========================================================= */
+
 .welcome-logo {
-    width: 76px;
-    height: 76px;
+
+    width: 82px;
+    height: 82px;
+
+    margin:
+        0 auto 18px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    margin: 0 auto 20px;
+    border-radius: 25px;
 
-    border-radius: 22px;
+    font-size: 2.6rem;
 
-    color: #ffffff;
+    color: white;
 
     background:
         linear-gradient(
             135deg,
             #0284c7,
-            #0ea5e9
+            #4f46e5,
+            #9333ea
         );
 
-    font-size: 2.3rem;
-
-    box-shadow:
-        0 15px 35px
-        rgba(2, 132, 199, .25);
-}
-
-
-.welcome-header h1 {
-    margin: 0;
-
-    color: #0f172a;
-
-    font-size:
-        clamp(2rem, 5vw, 3.4rem);
-
-    line-height: 1.1;
-
-    font-weight: 900;
-
-    letter-spacing: -1.5px;
-}
-
-
-.welcome-header h1 span {
-    color: #0284c7;
-}
-
-
-.welcome-header p {
-    max-width: 650px;
-
-    margin:
-        16px auto 0;
-
-    color: #64748b;
-
-    font-size:
-        clamp(.95rem, 2vw, 1.1rem);
-
-    line-height: 1.7;
-}
-
-
-/* =========================================================
-   SOUS-TITRE
-   ========================================================= */
-
-.welcome-question {
-
-    margin-top: 25px;
-
-    color: #0f172a;
-
-    font-size: 1.05rem;
-
-    font-weight: 800;
-}
-
-
-/* =========================================================
-   CHOIX
-   ========================================================= */
-
-.welcome-choices {
-
-    width: 100%;
-
-    max-width: 1050px;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap: 25px;
-}
-
-
-/* =========================================================
-   CARTE
-   ========================================================= */
-
-.welcome-card {
-
-    position: relative;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    text-align: center;
-
-    padding: 40px 30px;
-
-    min-height: 340px;
-
-    overflow: hidden;
-
-    color: #0f172a;
-
-    background: #ffffff;
-
-    border:
-        1px solid #e2e8f0;
-
-    border-radius: 24px;
-
-    text-decoration: none;
-
-    box-shadow:
-        0 10px 30px
-        rgba(15, 23, 42, .07);
-
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        border-color .25s ease;
-}
-
-
-.welcome-card::before {
-
-    content: "";
-
-    position: absolute;
-
-    top: 0;
-    left: 0;
-    right: 0;
-
-    height: 5px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #0284c7,
-            #0ea5e9
-        );
-
-    opacity: 0;
-
-    transition:
-        opacity .25s ease;
-}
-
-
-.welcome-card:hover {
-
-    color: #0f172a;
-
-    transform:
-        translateY(-7px);
-
-    border-color:
-        #bae6fd;
+    background-size: 200% 200%;
 
     box-shadow:
         0 20px 45px
-        rgba(2, 132, 199, .14);
+        rgba(79,70,229,.30);
+
+    animation:
+        logoAnimation 6s ease infinite,
+        logoFloat 4s ease-in-out infinite;
 }
 
 
-.welcome-card:hover::before {
-    opacity: 1;
+@keyframes logoAnimation {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 
-/* =========================================================
-   ICÔNE
-   ========================================================= */
+@keyframes logoFloat {
 
-.welcome-icon {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
 
-    width: 90px;
-    height: 90px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    margin-bottom: 23px;
-
-    border-radius: 25px;
-
-    color: #0284c7;
-
-    background:
-        #e0f2fe;
-
-    font-size: 3rem;
-
-    transition:
-        transform .25s ease,
-        background .25s ease;
-}
-
-
-.welcome-card:hover .welcome-icon {
-
-    transform:
-        scale(1.08);
-
-    background:
-        #bae6fd;
-}
-
-
-/* =========================================================
-   TITRE CARTE
-   ========================================================= */
-
-.welcome-card h2 {
-
-    margin: 0 0 12px;
-
-    color: #0f172a;
-
-    font-size: 1.45rem;
-
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   DESCRIPTION
-   ========================================================= */
-
-.welcome-card p {
-
-    max-width: 390px;
-
-    margin: 0;
-
-    color: #64748b;
-
-    font-size: .92rem;
-
-    line-height: 1.65;
-}
-
-
-/* =========================================================
-   BOUTON / LIEN
-   ========================================================= */
-
-.welcome-card span {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    margin-top: auto;
-    padding-top: 25px;
-
-    color: #0284c7;
-
-    font-size: .9rem;
-
-    font-weight: 800;
-
-    transition:
-        gap .2s ease;
-}
-
-
-.welcome-card:hover span {
-    color: #0369a1;
+    50% {
+        transform: translateY(-7px);
+    }
 }
 
 
@@ -351,25 +284,574 @@
 
     align-items: center;
 
-    gap: 6px;
-
-    margin-bottom: 20px;
+    gap: 8px;
 
     padding:
-        7px 13px;
+        8px 16px;
 
-    color: #0369a1;
+    margin-bottom:
+        17px;
 
-    background: #e0f2fe;
+    border-radius:
+        999px;
+
+    background:
+        rgba(255,255,255,.72);
 
     border:
-        1px solid #bae6fd;
+        1px solid
+        rgba(99,102,241,.16);
 
-    border-radius: 999px;
+    color:
+        #4f46e5;
 
-    font-size: .78rem;
+    box-shadow:
+        0 8px 25px
+        rgba(79,70,229,.08);
 
-    font-weight: 800;
+    backdrop-filter:
+        blur(15px);
+
+    font-size:
+        .8rem;
+
+    font-weight:
+        800;
+}
+
+
+/* =========================================================
+   TITRE
+   ========================================================= */
+
+.welcome-header h1 {
+
+    margin: 0;
+
+    color:
+        #111827;
+
+    font-size:
+        clamp(2.4rem, 6vw, 4.6rem);
+
+    line-height:
+        1;
+
+    letter-spacing:
+        -3px;
+
+    font-weight:
+        950;
+}
+
+
+.welcome-title-gradient {
+
+    display: block;
+
+    margin-top: 8px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0284c7,
+            #4f46e5,
+            #9333ea,
+            #0284c7
+        );
+
+    background-size:
+        300% auto;
+
+    color:
+        transparent;
+
+    -webkit-background-clip:
+        text;
+
+    background-clip:
+        text;
+
+    animation:
+        titleGradient 6s linear infinite;
+}
+
+
+@keyframes titleGradient {
+
+    to {
+        background-position:
+            300% center;
+    }
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.welcome-description {
+
+    max-width:
+        680px;
+
+    margin:
+        20px auto 0;
+
+    color:
+        #64748b;
+
+    font-size:
+        1rem;
+
+    line-height:
+        1.8;
+}
+
+
+/* =========================================================
+   QUESTION
+   ========================================================= */
+
+.welcome-question {
+
+    margin-top:
+        24px;
+
+    color:
+        #1e293b;
+
+    font-size:
+        1rem;
+
+    font-weight:
+        850;
+}
+
+
+/* =========================================================
+   CARTES
+   ========================================================= */
+
+.welcome-choices {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        28px;
+}
+
+
+/* =========================================================
+   CARTE
+   ========================================================= */
+
+.welcome-card {
+
+    position:
+        relative;
+
+    min-height:
+        390px;
+
+    padding:
+        42px 35px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    text-align:
+        center;
+
+    text-decoration:
+        none;
+
+    overflow:
+        hidden;
+
+    border-radius:
+        32px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.85);
+
+    background:
+        rgba(255,255,255,.72);
+
+    backdrop-filter:
+        blur(22px);
+
+    -webkit-backdrop-filter:
+        blur(22px);
+
+    box-shadow:
+        0 20px 55px
+        rgba(15,23,42,.10);
+
+    transition:
+        transform .4s ease,
+        box-shadow .4s ease,
+        background .4s ease;
+}
+
+
+/* =========================================================
+   LUMIÈRE DANS CARTE
+   ========================================================= */
+
+.welcome-card::before {
+
+    content: "";
+
+    position:
+        absolute;
+
+    width:
+        280px;
+
+    height:
+        280px;
+
+    border-radius:
+        50%;
+
+    top:
+        -170px;
+
+    right:
+        -100px;
+
+    opacity:
+        .45;
+
+    filter:
+        blur(20px);
+
+    transition:
+        transform .5s ease;
+}
+
+
+/* BOUTIQUE */
+
+.welcome-card.shop::before {
+
+    background:
+        #fbbf24;
+}
+
+
+/* IMPRESSION */
+
+.welcome-card.print::before {
+
+    background:
+        #38bdf8;
+}
+
+
+/* =========================================================
+   BARRE BAS
+   ========================================================= */
+
+.welcome-card::after {
+
+    content: "";
+
+    position:
+        absolute;
+
+    left:
+        10%;
+
+    right:
+        10%;
+
+    bottom:
+        0;
+
+    height:
+        5px;
+
+    border-radius:
+        999px 999px 0 0;
+
+    transform:
+        scaleX(0);
+
+    transition:
+        transform .4s ease;
+}
+
+
+.welcome-card.shop::after {
+
+    background:
+        linear-gradient(
+            90deg,
+            #f59e0b,
+            #ef4444
+        );
+}
+
+
+.welcome-card.print::after {
+
+    background:
+        linear-gradient(
+            90deg,
+            #0284c7,
+            #7c3aed
+        );
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.welcome-card:hover {
+
+    transform:
+        translateY(-12px);
+
+    background:
+        rgba(255,255,255,.92);
+
+    box-shadow:
+        0 35px 75px
+        rgba(15,23,42,.17);
+}
+
+
+.welcome-card:hover::before {
+
+    transform:
+        scale(1.6);
+}
+
+
+.welcome-card:hover::after {
+
+    transform:
+        scaleX(1);
+}
+
+
+/* =========================================================
+   ICÔNE
+   ========================================================= */
+
+.welcome-icon {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    width:
+        105px;
+
+    height:
+        105px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    margin-bottom:
+        25px;
+
+    border-radius:
+        30px;
+
+    font-size:
+        3.3rem;
+
+    transition:
+        transform .4s ease,
+        border-radius .4s ease;
+}
+
+
+.shop .welcome-icon {
+
+    background:
+        linear-gradient(
+            135deg,
+            #fef3c7,
+            #fde68a
+        );
+
+    box-shadow:
+        0 15px 35px
+        rgba(245,158,11,.20);
+}
+
+
+.print .welcome-icon {
+
+    background:
+        linear-gradient(
+            135deg,
+            #dbeafe,
+            #c4b5fd
+        );
+
+    box-shadow:
+        0 15px 35px
+        rgba(79,70,229,.20);
+}
+
+
+.welcome-card:hover .welcome-icon {
+
+    transform:
+        scale(1.1)
+        rotate(-4deg);
+
+    border-radius:
+        35px;
+}
+
+
+/* =========================================================
+   TITRE CARTE
+   ========================================================= */
+
+.welcome-card h2 {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    margin:
+        0 0 13px;
+
+    color:
+        #111827;
+
+    font-size:
+        1.55rem;
+
+    font-weight:
+        950;
+}
+
+
+/* =========================================================
+   TEXTE CARTE
+   ========================================================= */
+
+.welcome-card p {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    max-width:
+        430px;
+
+    margin:
+        0;
+
+    color:
+        #64748b;
+
+    font-size:
+        .94rem;
+
+    line-height:
+        1.75;
+}
+
+
+/* =========================================================
+   BOUTON
+   ========================================================= */
+
+.welcome-button {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    margin-top:
+        auto;
+
+    padding:
+        12px 20px;
+
+    border-radius:
+        999px;
+
+    font-size:
+        .88rem;
+
+    font-weight:
+        900;
+
+    transition:
+        transform .3s ease;
+}
+
+
+.shop .welcome-button {
+
+    color:
+        #92400e;
+
+    background:
+        #fef3c7;
+}
+
+
+.print .welcome-button {
+
+    color:
+        #3730a3;
+
+    background:
+        #e0e7ff;
+}
+
+
+.welcome-card:hover .welcome-button {
+
+    transform:
+        translateX(5px);
 }
 
 
@@ -379,18 +861,25 @@
 
 .welcome-footer {
 
-    margin-top: 40px;
+    margin-top:
+        38px;
 
-    text-align: center;
+    text-align:
+        center;
 
-    color: #94a3b8;
+    color:
+        #64748b;
 
-    font-size: .78rem;
+    font-size:
+        .78rem;
+
+    font-weight:
+        650;
 }
 
 
 /* =========================================================
-   RESPONSIVE TABLETTE
+   MOBILE
    ========================================================= */
 
 @media (max-width: 800px) {
@@ -398,32 +887,22 @@
     .welcome-page {
 
         padding:
-            40px 18px 55px;
+            45px 18px 55px;
     }
-
 
     .welcome-choices {
 
         grid-template-columns:
             1fr;
-
-        max-width: 600px;
     }
-
 
     .welcome-card {
 
-        min-height: 300px;
-
-        padding:
-            35px 25px;
+        min-height:
+            320px;
     }
 }
 
-
-/* =========================================================
-   RESPONSIVE MOBILE
-   ========================================================= */
 
 @media (max-width: 500px) {
 
@@ -433,9 +912,8 @@
             calc(100vh - 64px);
 
         padding:
-            30px 15px 45px;
+            30px 15px 40px;
     }
-
 
     .welcome-header {
 
@@ -443,87 +921,65 @@
             30px;
     }
 
-
     .welcome-logo {
 
-        width: 65px;
-        height: 65px;
+        width:
+            68px;
 
-        border-radius: 18px;
+        height:
+            68px;
 
-        font-size: 2rem;
+        font-size:
+            2.1rem;
     }
-
 
     .welcome-header h1 {
 
         font-size:
-            2rem;
+            2.35rem;
 
         letter-spacing:
-            -1px;
+            -1.8px;
     }
 
-
-    .welcome-header p {
+    .welcome-description {
 
         font-size:
-            .88rem;
+            .87rem;
     }
-
-
-    .welcome-question {
-
-        font-size:
-            .95rem;
-    }
-
-
-    .welcome-choices {
-
-        gap:
-            16px;
-    }
-
 
     .welcome-card {
 
         min-height:
-            285px;
+            300px;
 
         padding:
-            30px 20px;
+            30px 22px;
 
         border-radius:
-            20px;
+            25px;
     }
-
 
     .welcome-icon {
 
         width:
-            75px;
+            80px;
 
         height:
-            75px;
-
-        margin-bottom:
-            18px;
-
-        border-radius:
-            20px;
+            80px;
 
         font-size:
             2.5rem;
-    }
 
+        border-radius:
+            23px;
+    }
 
     .welcome-card h2 {
 
         font-size:
-            1.25rem;
+            1.3rem;
     }
-
 
     .welcome-card p {
 
@@ -534,134 +990,164 @@
 
 </style>
 
-{% endblock %}
-
-
-{% block content %}
 
 <section class="welcome-page">
 
 
-    <!-- =====================================================
-         EN-TÊTE
-         ===================================================== -->
+    <!-- FORMES DÉCORATIVES -->
 
-    <div class="welcome-header">
+    <div class="welcome-shape shape-one"></div>
 
-
-        <div class="welcome-logo">
-            🖨️
-        </div>
+    <div class="welcome-shape shape-two"></div>
 
 
-        <div class="welcome-badge">
-            ✦ Bienvenue chez YaTout CI
-        </div>
+    <div class="welcome-content">
 
 
-        <h1>
-            Tout YaTout,
-            <span>au même endroit.</span>
-        </h1>
+        <!-- HEADER -->
+
+        <header class="welcome-header">
 
 
-        <p>
-            Découvrez nos produits dans la boutique
-            ou accédez directement à nos services
-            d'impression.
-        </p>
-
-
-        <div class="welcome-question">
-            Que souhaitez-vous faire ?
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         LES DEUX UNIVERS
-         ===================================================== -->
-
-    <div class="welcome-choices">
-
-
-        <!-- =================================================
-             🛍️ BOUTIQUE
-             ================================================= -->
-
-        <a
-            href="{% url 'accueil' %}"
-            class="welcome-card"
-        >
-
-            <div class="welcome-icon">
-                🛍️
-            </div>
-
-
-            <h2>
-                Boutique
-            </h2>
-
-
-            <p>
-                Découvrez les produits disponibles
-                sur YaTout CI et explorez les
-                différentes boutiques de nos vendeurs.
-            </p>
-
-
-            <span>
-                Entrer dans la boutique →
-            </span>
-
-        </a>
-
-
-        <!-- =================================================
-             🖨️ IMPRESSION
-             ================================================= -->
-
-        <a
-            href="{% url 'page_prestations' %}"
-            class="welcome-card"
-        >
-
-            <div class="welcome-icon">
+            <div class="welcome-logo">
                 🖨️
             </div>
 
 
-            <h2>
-                Services d'impression
-            </h2>
+            <div class="welcome-badge">
+                ✦ BIENVENUE CHEZ YATOUT CI
+            </div>
 
 
-            <p>
-                Flyers, affiches, stickers, cartes,
-                t-shirts, mugs et autres supports
-                personnalisés.
+            <h1>
+
+                Tout YaTout,
+
+                <span class="welcome-title-gradient">
+                    au même endroit.
+                </span>
+
+            </h1>
+
+
+            <p class="welcome-description">
+
+                Une seule plateforme pour découvrir
+                nos produits, commander en ligne
+                et profiter de nos services
+                d'impression personnalisés.
+
             </p>
 
 
-            <span>
-                Découvrir les services →
-            </span>
+            <div class="welcome-question">
 
-        </a>
+                Que souhaitez-vous faire ?
 
-
-    </div>
+            </div>
 
 
-    <!-- =====================================================
-         FOOTER
-         ===================================================== -->
+        </header>
 
-    <div class="welcome-footer">
 
-        YaTout CI · Boutique & Impression
+        <!-- CARTES -->
+
+        <div class="welcome-choices">
+
+
+            <!-- ============================
+                 BOUTIQUE
+                 ============================ -->
+
+            <a
+                href="{% url 'accueil' %}"
+                class="welcome-card shop"
+            >
+
+                <div class="welcome-icon">
+                    🛍️
+                </div>
+
+
+                <h2>
+                    Boutique YaTout
+                </h2>
+
+
+                <p>
+
+                    Découvrez les produits disponibles
+                    sur YaTout CI et explorez les différentes
+                    boutiques de nos vendeurs.
+
+                </p>
+
+
+                <div class="welcome-button">
+
+                    Découvrir la boutique
+
+                    <span>
+                        →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- ============================
+                 IMPRESSION
+                 ============================ -->
+
+            <a
+                href="{% url 'page_prestations' %}"
+                class="welcome-card print"
+            >
+
+                <div class="welcome-icon">
+                    🖨️
+                </div>
+
+
+                <h2>
+                    Atelier d'impression
+                </h2>
+
+
+                <p>
+
+                    Flyers, affiches, cartes de visite,
+                    stickers, t-shirts, mugs,
+                    bâches et supports personnalisés.
+
+                </p>
+
+
+                <div class="welcome-button">
+
+                    Voir les services
+
+                    <span>
+                        →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <footer class="welcome-footer">
+
+            YaTout CI · Boutique · Impression · Création
+
+        </footer>
+
 
     </div>
 

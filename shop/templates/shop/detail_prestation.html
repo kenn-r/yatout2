@@ -1,783 +1,2340 @@
 {% extends 'shop/base.html' %}
 {% load static %}
 
-{% block title %}{{ prestation.titre }} - Configuration - YaTout{% endblock %}
+{% block title %}
+    {{ prestation.titre }} - Configuration - YaTout CI
+{% endblock %}
+
 
 {% block content %}
 
 <style>
 
-.detail-container {
-    max-width: 1150px;
-    margin: auto;
-    padding: 30px 20px;
+/* =========================================================
+   YA TOUT CI
+   PAGE CONFIGURATION PRESTATION
+   VERSION DYNAMIQUE
+========================================================= */
+
+:root {
+
+    --yt-blue: #0284c7;
+    --yt-indigo: #4f46e5;
+    --yt-purple: #9333ea;
+    --yt-cyan: #06b6d4;
+    --yt-green: #10b981;
+
+    --yt-orange: #f97316;
+    --yt-red: #ef4444;
+    --yt-yellow: #f59e0b;
+
+    --yt-dark: #0f172a;
+    --yt-text: #334155;
+    --yt-muted: #64748b;
+
+    --yt-white: #ffffff;
+
+    --yt-radius: 24px;
 }
+
+
+/* =========================================================
+   PAGE PRINCIPALE
+========================================================= */
+
+.detail-page {
+
+    position: relative;
+
+    min-height: calc(100vh - 70px);
+
+    padding: 35px 20px 80px;
+
+    overflow: hidden;
+
+    /*
+       FOND ANIMÉ CLAIR
+       Les couleurs restent suffisamment pâles
+       pour garder une bonne lisibilité.
+    */
+
+    background:
+
+        linear-gradient(
+            120deg,
+            #eff6ff,
+            #f5f3ff,
+            #ecfeff,
+            #f0fdf4,
+            #fff7ed,
+            #fdf2f8
+        );
+
+    background-size: 600% 600%;
+
+    animation:
+        ytBackgroundFlow 18s ease infinite;
+
+    transition:
+        background 1s ease;
+}
+
+
+/* =========================================================
+   ANIMATION DU BACKGROUND
+========================================================= */
+
+@keyframes ytBackgroundFlow {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    20% {
+        background-position: 50% 100%;
+    }
+
+    40% {
+        background-position: 100% 50%;
+    }
+
+    60% {
+        background-position: 70% 0%;
+    }
+
+    80% {
+        background-position: 20% 30%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+/* =========================================================
+   BULLES DÉCORATIVES
+========================================================= */
+
+.detail-page::before,
+.detail-page::after {
+
+    content: "";
+
+    position: absolute;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    z-index: 0;
+
+    filter: blur(8px);
+
+}
+
+
+/* BULLE BLEUE */
+
+.detail-page::before {
+
+    width: 380px;
+    height: 380px;
+
+    top: -160px;
+    left: -130px;
+
+    background:
+        rgba(14,165,233,.16);
+
+    animation:
+        ytFloatBlue 9s ease-in-out infinite;
+}
+
+
+/* BULLE ROSE / VIOLET */
+
+.detail-page::after {
+
+    width: 430px;
+    height: 430px;
+
+    right: -180px;
+    bottom: -190px;
+
+    background:
+        rgba(168,85,247,.14);
+
+    animation:
+        ytFloatPurple 11s ease-in-out infinite;
+}
+
+
+@keyframes ytFloatBlue {
+
+    0%,
+    100% {
+        transform:
+            translate(0,0)
+            scale(1);
+    }
+
+    50% {
+        transform:
+            translate(35px,-25px)
+            scale(1.08);
+    }
+}
+
+
+@keyframes ytFloatPurple {
+
+    0%,
+    100% {
+        transform:
+            translate(0,0)
+            scale(1);
+    }
+
+    50% {
+        transform:
+            translate(-30px,25px)
+            scale(1.06);
+    }
+}
+
+
+/* =========================================================
+   CONTENEUR
+========================================================= */
+
+.detail-container {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    max-width: 1180px;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   BOUTON RETOUR
+========================================================= */
 
 .detail-back {
-    display: inline-block;
-    margin-bottom: 25px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 24px;
+
+    padding: 11px 18px;
+
+    border-radius: 999px;
+
     text-decoration: none;
-    color: #555;
+
+    color: #3730a3;
+
+    background:
+        rgba(255,255,255,.82);
+
+    border:
+        1px solid
+        rgba(99,102,241,.20);
+
+    box-shadow:
+        0 8px 25px
+        rgba(15,23,42,.08);
+
+    backdrop-filter:
+        blur(14px);
+
+    -webkit-backdrop-filter:
+        blur(14px);
+
+    font-size: .9rem;
+
+    font-weight: 800;
+
+    transition:
+        all .3s ease;
 }
+
+
+.detail-back:hover {
+
+    color: white;
+
+    transform:
+        translateX(-6px);
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--yt-blue),
+            var(--yt-indigo),
+            var(--yt-purple)
+        );
+
+    background-size:
+        200% 200%;
+
+    animation:
+        ytButtonGradient 2s ease infinite;
+
+    box-shadow:
+        0 14px 32px
+        rgba(79,70,229,.28);
+}
+
+
+/* =========================================================
+   CARTE PRINCIPALE
+========================================================= */
 
 .detail-product {
-    background: white;
-    border-radius: 18px;
+
+    position: relative;
+
     overflow: hidden;
-    box-shadow: 0 5px 25px rgba(0,0,0,.08);
+
+    border-radius: 30px;
+
+    background:
+        rgba(255,255,255,.82);
+
+    border:
+        1px solid
+        rgba(255,255,255,.95);
+
+    box-shadow:
+        0 25px 70px
+        rgba(15,23,42,.13);
+
+    backdrop-filter:
+        blur(22px);
+
+    -webkit-backdrop-filter:
+        blur(22px);
 }
+
+
+/* =========================================================
+   PARTIE PRODUIT
+========================================================= */
 
 .detail-top {
+
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 35px;
-    padding: 30px;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 40px;
+
+    padding: 38px;
 }
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
 
 .detail-image {
-    height: 430px;
-    background: #f6f6f6;
-    border-radius: 15px;
+
+    position: relative;
+
+    min-height: 430px;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
-    padding: 15px;
+
+    padding: 25px;
+
+    overflow: hidden;
+
+    border-radius: 26px;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            rgba(224,242,254,.95),
+            rgba(237,233,254,.95),
+            rgba(236,254,255,.95),
+            rgba(255,247,237,.92)
+        );
+
+    background-size: 300% 300%;
+
+    animation:
+        ytImageBackground 10s ease infinite;
+
+    border:
+        1px solid
+        rgba(99,102,241,.12);
+
+    box-shadow:
+
+        inset
+        0 1px 0
+        rgba(255,255,255,.9),
+
+        0 18px 45px
+        rgba(79,70,229,.09);
 }
+
+
+@keyframes ytImageBackground {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+.detail-image::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    top: -80px;
+    right: -60px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(6,182,212,.16);
+
+    animation:
+        ytFloatBlue 8s ease-in-out infinite;
+}
+
 
 .detail-image img {
+
+    position: relative;
+
+    z-index: 2;
+
     width: 100%;
     height: 100%;
+
+    max-height: 390px;
+
     object-fit: contain;
+
+    transition:
+        transform .5s ease,
+        filter .5s ease;
 }
+
+
+.detail-image:hover img {
+
+    transform:
+        scale(1.05);
+
+    filter:
+        drop-shadow(
+            0 18px 25px
+            rgba(79,70,229,.15)
+        );
+}
+
+
+.image-empty {
+
+    position: relative;
+
+    z-index: 2;
+
+    color:
+        #64748b;
+
+    font-weight:
+        700;
+}
+
+
+/* =========================================================
+   INFORMATIONS
+========================================================= */
+
+.detail-info {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+}
+
+
+/* TITRE AVEC CHANGEMENT DE COULEUR */
 
 .detail-info h1 {
-    margin-top: 0;
-    font-size: 32px;
+
+    margin: 0;
+
+    color:
+        var(--yt-indigo);
+
+    font-size:
+        clamp(2rem, 4vw, 3.1rem);
+
+    line-height:
+        1.05;
+
+    font-weight:
+        950;
+
+    letter-spacing:
+        -1.8px;
+
+    animation:
+        ytTitleColor 7s ease-in-out infinite;
 }
+
+
+@keyframes ytTitleColor {
+
+    0% {
+        color: #0f4c81;
+    }
+
+    25% {
+        color: #4f46e5;
+    }
+
+    50% {
+        color: #7c3aed;
+    }
+
+    75% {
+        color: #0284c7;
+    }
+
+    100% {
+        color: #0f4c81;
+    }
+}
+
+
+.detail-info h1::after {
+
+    content: "";
+
+    display: block;
+
+    width: 90px;
+    height: 5px;
+
+    margin-top: 17px;
+
+    border-radius: 999px;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            var(--yt-blue),
+            var(--yt-indigo),
+            var(--yt-purple),
+            var(--yt-cyan)
+        );
+
+    background-size:
+        300% 300%;
+
+    animation:
+        ytGradient 4s ease infinite;
+}
+
+
+@keyframes ytGradient {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
 
 .detail-description {
-    color: #666;
-    line-height: 1.6;
-    margin: 20px 0;
+
+    margin: 22px 0;
+
+    color:
+        var(--yt-muted);
+
+    font-size:
+        1rem;
+
+    line-height:
+        1.8;
 }
+
+
+/* =========================================================
+   🔥 MACARON REMISE
+========================================================= */
+
+.discount-badge {
+
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    width: fit-content;
+
+    padding: 11px 17px;
+
+    border-radius: 999px;
+
+    color: #ffffff;
+
+    /*
+       Orange / rouge dynamique
+    */
+
+    background:
+        linear-gradient(
+            135deg,
+            #f97316,
+            #ef4444,
+            #f59e0b
+        );
+
+    background-size:
+        250% 250%;
+
+    border:
+        2px solid
+        rgba(255,255,255,.75);
+
+    box-shadow:
+
+        0 7px 20px
+        rgba(239,68,68,.28),
+
+        0 0 0 0
+        rgba(249,115,22,.45);
+
+    font-size:
+        .9rem;
+
+    font-weight:
+        900;
+
+    animation:
+        ytDiscountPulse 1.5s ease-in-out infinite,
+        ytDiscountGradient 3s ease infinite;
+
+    z-index: 3;
+}
+
+
+/* halo lumineux */
+
+.discount-badge::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -5px;
+
+    border-radius: inherit;
+
+    border:
+        2px solid
+        rgba(249,115,22,.5);
+
+    opacity: .8;
+
+    animation:
+        ytDiscountRing 1.5s ease-in-out infinite;
+
+    pointer-events: none;
+}
+
+
+@keyframes ytDiscountPulse {
+
+    0%,
+    100% {
+
+        transform:
+            scale(1);
+
+        box-shadow:
+
+            0 7px 20px
+            rgba(239,68,68,.28),
+
+            0 0 0 0
+            rgba(249,115,22,.45);
+    }
+
+    50% {
+
+        transform:
+            scale(1.06);
+
+        box-shadow:
+
+            0 10px 30px
+            rgba(239,68,68,.42),
+
+            0 0 0 8px
+            rgba(249,115,22,0);
+    }
+}
+
+
+@keyframes ytDiscountRing {
+
+    0%,
+    100% {
+        transform:
+            scale(1);
+
+        opacity: .8;
+    }
+
+    50% {
+        transform:
+            scale(1.12);
+
+        opacity: 0;
+    }
+}
+
+
+@keyframes ytDiscountGradient {
+
+    0% {
+        background-position:
+            0% 50%;
+    }
+
+    50% {
+        background-position:
+            100% 50%;
+    }
+
+    100% {
+        background-position:
+            0% 50%;
+    }
+}
+
+
+/* =========================================================
+   SECTIONS
+========================================================= */
 
 .detail-section {
-    padding: 30px;
-    border-top: 1px solid #eee;
+
+    padding: 38px;
+
+    border-top:
+        1px solid
+        rgba(148,163,184,.18);
 }
+
+
+.detail-section h2 {
+
+    margin:
+        0 0 8px;
+
+    color:
+        var(--yt-dark);
+
+    font-size:
+        1.65rem;
+
+    font-weight:
+        900;
+
+    animation:
+        ytSectionColor 9s ease-in-out infinite;
+}
+
+
+@keyframes ytSectionColor {
+
+    0% {
+        color: #0f172a;
+    }
+
+    50% {
+        color: #3730a3;
+    }
+
+    100% {
+        color: #0f172a;
+    }
+}
+
+
+.section-intro {
+
+    margin:
+        0;
+
+    color:
+        var(--yt-muted);
+
+    line-height:
+        1.6;
+}
+
+
+/* =========================================================
+   OFFRES
+========================================================= */
 
 .offres {
-    display: grid;
-    gap: 12px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        14px;
+
+    margin-top:
+        25px;
 }
+
 
 .offre {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    align-items: center;
-    gap: 15px;
-    padding: 18px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
+
+    position:
+        relative;
+
+    display:
+        block;
+
+    cursor:
+        pointer;
+
+    padding:
+        20px;
+
+    border:
+        2px solid
+        rgba(226,232,240,.95);
+
+    border-radius:
+        19px;
+
+    background:
+        rgba(255,255,255,.84);
+
+    transition:
+
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        background .25s ease;
 }
+
 
 .offre:hover {
-    border-color: #111;
+
+    transform:
+        translateY(-4px)
+        scale(1.005);
+
+    border-color:
+        #60a5fa;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(239,246,255,.96),
+            rgba(245,243,255,.96)
+        );
+
+    box-shadow:
+        0 16px 38px
+        rgba(37,99,235,.14);
 }
+
+
+/* =========================================================
+   RADIO
+========================================================= */
+
+.offre input[type="radio"] {
+
+    position:
+        absolute;
+
+    opacity:
+        0;
+
+    pointer-events:
+        none;
+}
+
+
+/* =========================================================
+   CONTENU OFFRE
+========================================================= */
+
+.offre-contenu {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        20px;
+}
+
+
+.offre-contenu > div {
+
+    flex:
+        1;
+}
+
+
+.offre-contenu small {
+
+    display:
+        block;
+
+    margin-bottom:
+        5px;
+
+    color:
+        #94a3b8;
+
+    font-size:
+        .67rem;
+
+    font-weight:
+        900;
+
+    letter-spacing:
+        1px;
+}
+
+
+.offre-contenu strong {
+
+    display:
+        block;
+
+    color:
+        #1e293b;
+
+    font-size:
+        1rem;
+
+    font-weight:
+        850;
+}
+
+
+/* =========================================================
+   PRIX
+========================================================= */
 
 .offre-prix {
-    font-size: 19px;
-    font-weight: bold;
+
+    color:
+        #4f46e5;
+
+    text-align:
+        right;
+
+    white-space:
+        nowrap;
+
+    font-size:
+        1.12rem;
+
+    font-weight:
+        950;
+
+    transition:
+        color .3s ease;
 }
 
-.selection {
-    margin-top: 25px;
-    padding: 25px;
-    background: #f8f8f8;
-    border-radius: 14px;
+
+.offre:hover .offre-prix {
+
+    color:
+        #db2777;
 }
+
+
+/* =========================================================
+   OFFRE SÉLECTIONNÉE
+========================================================= */
+
+.offre:has(
+    input[type="radio"]:checked
+) {
+
+    border-color:
+        #6366f1;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            rgba(238,242,255,.98),
+            rgba(245,243,255,.98),
+            rgba(236,254,255,.96)
+        );
+
+    box-shadow:
+        0 15px 40px
+        rgba(79,70,229,.18);
+
+    transform:
+        translateY(-2px);
+}
+
+
+.offre:has(
+    input[type="radio"]:checked
+) .offre-prix {
+
+    color:
+        #7c3aed;
+}
+
+
+.offre:has(
+    input[type="radio"]:checked
+)::after {
+
+    content:
+        "✓";
+
+    position:
+        absolute;
+
+    top:
+        12px;
+
+    right:
+        14px;
+
+    width:
+        30px;
+
+    height:
+        30px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        50%;
+
+    color:
+        white;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            var(--yt-blue),
+            var(--yt-indigo),
+            var(--yt-purple)
+        );
+
+    background-size:
+        200% 200%;
+
+    animation:
+        ytGradient 3s ease infinite;
+
+    font-weight:
+        900;
+
+    box-shadow:
+        0 6px 15px
+        rgba(79,70,229,.30);
+}
+
+
+/* =========================================================
+   ZONE FORMULAIRE
+========================================================= */
+
+.selection,
+.autre {
+
+    margin-top:
+        30px;
+
+    padding:
+        28px;
+
+    border-radius:
+        22px;
+
+    background:
+        rgba(248,250,252,.84);
+
+    border:
+        1px solid
+        rgba(148,163,184,.20);
+
+    box-shadow:
+        0 10px 30px
+        rgba(15,23,42,.04);
+}
+
+
+.autre {
+
+    background:
+
+        linear-gradient(
+            135deg,
+            rgba(239,246,255,.92),
+            rgba(245,243,255,.92),
+            rgba(236,254,255,.90)
+        );
+
+    background-size:
+        250% 250%;
+
+    animation:
+        ytFormBackground 10s ease infinite;
+
+    border:
+        1px solid
+        rgba(99,102,241,.14);
+}
+
+
+@keyframes ytFormBackground {
+
+    0% {
+        background-position:
+            0% 50%;
+    }
+
+    50% {
+        background-position:
+            100% 50%;
+    }
+
+    100% {
+        background-position:
+            0% 50%;
+    }
+}
+
+
+.selection h3,
+.autre h3 {
+
+    margin:
+        0 0 8px;
+
+    color:
+        var(--yt-dark);
+
+    font-size:
+        1.18rem;
+
+    font-weight:
+        900;
+}
+
+
+.selection p,
+.autre p {
+
+    color:
+        var(--yt-muted);
+
+    line-height:
+        1.6;
+}
+
+
+/* =========================================================
+   FORMULAIRE
+========================================================= */
 
 .form-group {
-    margin-bottom: 18px;
+
+    margin-bottom:
+        18px;
 }
 
+
 .form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 7px;
+
+    display:
+        block;
+
+    margin-bottom:
+        7px;
+
+    color:
+        #334155;
+
+    font-size:
+        .88rem;
+
+    font-weight:
+        800;
+
+    transition:
+        color .3s ease;
 }
+
+
+.form-group:focus-within label {
+
+    color:
+        #4f46e5;
+}
+
 
 .form-group input,
 .form-group textarea,
 .form-group select {
-    width: 100%;
-    padding: 13px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 15px;
+
+    box-sizing:
+        border-box;
+
+    width:
+        100%;
+
+    padding:
+        13px 15px;
+
+    border:
+        1px solid
+        #cbd5e1;
+
+    border-radius:
+        12px;
+
+    outline:
+        none;
+
+    color:
+        #0f172a;
+
+    background:
+        rgba(255,255,255,.96);
+
+    font-family:
+        inherit;
+
+    font-size:
+        .92rem;
+
+    transition:
+
+        border-color .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease,
+        background .2s ease;
 }
+
+
+.form-group input:hover,
+.form-group textarea:hover,
+.form-group select:hover {
+
+    border-color:
+        #93c5fd;
+}
+
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+
+    border-color:
+        #6366f1;
+
+    background:
+        #ffffff;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(99,102,241,.10);
+
+    transform:
+        translateY(-1px);
+}
+
+
+.form-group textarea {
+
+    min-height:
+        110px;
+
+    resize:
+        vertical;
+}
+
+
+/* =========================================================
+   🔘 BOUTONS
+========================================================= */
 
 .btn-commande {
-    border: none;
-    background: #111;
-    color: white;
-    padding: 14px 22px;
-    border-radius: 9px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: bold;
+
+    position:
+        relative;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        8px;
+
+    margin-top:
+        5px;
+
+    padding:
+        14px 25px;
+
+    border:
+        none;
+
+    border-radius:
+        13px;
+
+    color:
+        white;
+
+    /*
+       Bouton avec plusieurs couleurs
+    */
+
+    background:
+
+        linear-gradient(
+            120deg,
+            #0284c7,
+            #4f46e5,
+            #9333ea,
+            #ec4899
+        );
+
+    background-size:
+        300% 300%;
+
+    box-shadow:
+        0 10px 25px
+        rgba(79,70,229,.25);
+
+    cursor:
+        pointer;
+
+    font-family:
+        inherit;
+
+    font-size:
+        .93rem;
+
+    font-weight:
+        900;
+
+    transition:
+
+        transform .25s ease,
+        box-shadow .25s ease,
+        filter .25s ease;
+    
+    animation:
+        ytButtonColor 5s ease infinite;
+
+    overflow:
+        hidden;
 }
 
-.autre {
-    margin-top: 25px;
-    padding: 20px;
-    border: 2px dashed #ccc;
-    border-radius: 12px;
+
+/* lumière qui traverse le bouton */
+
+.btn-commande::before {
+
+    content: "";
+
+    position:
+        absolute;
+
+    top:
+        0;
+
+    left:
+        -120%;
+
+    width:
+        80%;
+
+    height:
+        100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.38),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+
+    transition:
+        left .6s ease;
 }
 
-@media (max-width: 700px) {
+
+.btn-commande:hover::before {
+
+    left:
+        140%;
+}
+
+
+@keyframes ytButtonColor {
+
+    0% {
+        background-position:
+            0% 50%;
+    }
+
+    25% {
+        background-position:
+            50% 100%;
+    }
+
+    50% {
+        background-position:
+            100% 50%;
+    }
+
+    75% {
+        background-position:
+            50% 0%;
+    }
+
+    100% {
+        background-position:
+            0% 50%;
+    }
+}
+
+
+.btn-commande:hover {
+
+    transform:
+        translateY(-4px)
+        scale(1.02);
+
+    filter:
+        brightness(1.08);
+
+    box-shadow:
+        0 17px 38px
+        rgba(79,70,229,.35);
+}
+
+
+.btn-commande:active {
+
+    transform:
+        translateY(0)
+        scale(.98);
+
+    box-shadow:
+        0 6px 15px
+        rgba(79,70,229,.20);
+}
+
+
+/* =========================================================
+   MESSAGE VIDE
+========================================================= */
+
+.empty-message {
+
+    padding:
+        20px;
+
+    border-radius:
+        15px;
+
+    color:
+        #64748b;
+
+    background:
+        rgba(248,250,252,.92);
+
+    border:
+        1px solid
+        rgba(148,163,184,.15);
+
+    text-align:
+        center;
+
+    font-weight:
+        700;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 850px) {
+
+    .detail-page {
+
+        padding:
+            25px 15px 55px;
+    }
+
 
     .detail-top {
-        grid-template-columns: 1fr;
-        padding: 18px;
+
+        grid-template-columns:
+            1fr;
+
+        gap:
+            25px;
+
+        padding:
+            22px;
     }
+
 
     .detail-image {
-        height: 300px;
+
+        min-height:
+            320px;
     }
 
-    .offre {
-        grid-template-columns: 1fr;
+
+    .detail-section {
+
+        padding:
+            28px 22px;
     }
-
-    .detail-info h1 {
-        font-size: 25px;
-    }
-
-}
-.offres {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
 }
 
-.offre {
-    display: block;
-    cursor: pointer;
-    border: 2px solid #e5e5e5;
-    border-radius: 14px;
-    padding: 16px;
-    background: #fff;
-    transition: .2s ease;
-}
-
-.offre:hover {
-    border-color: #222;
-    transform: translateY(-1px);
-}
-
-.offre input[type="radio"] {
-    display: none;
-}
-
-.offre-contenu {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.offre-contenu > div {
-    flex: 1;
-}
-
-.offre-prix {
-    text-align: right;
-    font-weight: 800;
-    font-size: 17px;
-    white-space: nowrap;
-}
-
-.offre:has(input:checked) {
-    border-color: #111;
-    background: #f5f5f5;
-    box-shadow: 0 5px 15px rgba(0,0,0,.06);
-}
 
 @media (max-width: 600px) {
 
-    .offre-contenu {
-        flex-wrap: wrap;
-        gap: 12px;
+    .detail-page {
+
+        padding:
+            20px 12px 45px;
     }
+
+
+    .detail-product {
+
+        border-radius:
+            22px;
+    }
+
+
+    .detail-top {
+
+        padding:
+            17px;
+    }
+
+
+    .detail-image {
+
+        min-height:
+            260px;
+
+        padding:
+            15px;
+
+        border-radius:
+            20px;
+    }
+
+
+    .detail-info h1 {
+
+        font-size:
+            1.9rem;
+
+        letter-spacing:
+            -1px;
+    }
+
+
+    .detail-section {
+
+        padding:
+            24px 17px;
+    }
+
+
+    .detail-section h2 {
+
+        font-size:
+            1.35rem;
+    }
+
+
+    .offre {
+
+        padding:
+            17px;
+    }
+
+
+    .offre-contenu {
+
+        flex-wrap:
+            wrap;
+
+        gap:
+            12px;
+    }
+
 
     .offre-prix {
-        width: 100%;
-        text-align: left;
+
+        width:
+            100%;
+
+        padding-top:
+            5px;
+
+        text-align:
+            left;
     }
 
-}
-.offre-contenu small {
-    display: block;
-    color: #888;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .5px;
-    margin-bottom: 5px;
+
+    .selection,
+    .autre {
+
+        padding:
+            20px;
+    }
+
+
+    .btn-commande {
+
+        width:
+            100%;
+    }
+
+
+    .discount-badge {
+
+        font-size:
+            .82rem;
+
+        padding:
+            10px 14px;
+    }
 }
 
-.offre-contenu strong {
-    display: block;
-    font-size: 17px;
+
+/* =========================================================
+   ACCESSIBILITÉ
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .detail-page,
+    .detail-page::before,
+    .detail-page::after,
+    .detail-image,
+    .detail-info h1,
+    .detail-info h1::after,
+    .discount-badge,
+    .discount-badge::before,
+    .offre:has(input[type="radio"]:checked)::after,
+    .autre,
+    .btn-commande {
+
+        animation:
+            none !important;
+    }
 }
 
-.offre {
-    position: relative;
-}
-
-.offre input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-}
-
-.offre:has(input[type="radio"]:checked) {
-    border-color: #111;
-    background: #f7f7f7;
-    box-shadow: 0 5px 18px rgba(0,0,0,.08);
-}
-
-.offre:has(input[type="radio"]:checked)::after {
-    content: "✓";
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: #111;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
 </style>
 
 
-<div class="detail-container">
+<!-- =========================================================
+     PAGE
+========================================================= -->
 
-   <a href="/impression/prestations/"
-   class="detail-back">
-    ← Retour aux prestations
-</a>
+<div class="detail-page">
 
-
-    <div class="detail-product">
-
-        <!-- =====================================
-             PRODUIT
-        ====================================== -->
-
-        <div class="detail-top">
-
-            <div class="detail-image">
-
-                {% if prestation.image %}
-
-                    <img
-                        src="{{ prestation.image.url }}"
-                        alt="{{ prestation.titre }}"
-                    >
-
-                {% else %}
-
-                    <span>
-                        Image non disponible
-                    </span>
-
-                {% endif %}
-
-            </div>
+    <div class="detail-container">
 
 
-            <div class="detail-info">
+        <!-- =====================================================
+             RETOUR
+        ===================================================== -->
 
-                <h1>
-                    {{ prestation.titre }}
-                </h1>
-
-
-                {% if prestation.description %}
-
-                    <div class="detail-description">
-                        {{ prestation.description }}
-                    </div>
-
-                {% endif %}
-
-
-                {% if prestation.remise_globale %}
-
-                    <p>
-                        Remise disponible :
-                        <strong>
-                            {{ prestation.remise_globale }}%
-                        </strong>
-                    </p>
-
-                {% endif %}
-
-            </div>
-
-        </div>
-
-
-        <!-- =====================================
-             FLYER
-        ====================================== -->
-{% if type_unite == 'FLYER' %}
-
-<div class="detail-section">
-
-    <h2>
-        Choisissez votre format et votre lot
-    </h2>
-
-    <p>
-        Sélectionnez l'offre qui correspond à votre besoin.
-    </p>
-
-
-    <!-- =====================================
-         OFFRES DISPONIBLES
-    ====================================== -->
-
-    <form method="post">
-
-        {% csrf_token %}
-
-        <div class="offres">
-
-            {% for offre in formats_disponibles %}
-
-                <label class="offre">
-
-                    <input
-                        type="radio"
-                        name="offre_id"
-                        value="{{ offre.id }}"
-                        required
-                    >
-
-                    <div class="offre-contenu">
-
-                        <div>
-                            <small>FORMAT</small>
-                            <strong>
-                                {{ offre.format_papier }}
-                            </strong>
-                        </div>
-
-
-                        <div>
-                            <small>QUANTITÉ</small>
-                            <strong>
-                                {{ offre.quantite }} exemplaires
-                            </strong>
-                        </div>
-
-
-                        <div class="offre-prix">
-                            {{ offre.prix_total_lot|floatformat:0 }}
-                            FCFA
-                        </div>
-
-                    </div>
-
-                </label>
-
-            {% empty %}
-
-                <p>
-                    Aucun tarif disponible pour le moment.
-                </p>
-
-            {% endfor %}
-
-        </div>
-
-
-        <button
-            type="submit"
-            name="type_demande"
-            value="commande_flyer"
-            class="btn-commande"
+        <a
+            href="{% url 'page_prestations' %}"
+            class="detail-back"
         >
-            Continuer
-        </button>
-
-    </form>
+            ← Retour aux prestations
+        </a>
 
 
-    <!-- =====================================
-         DEMANDE PERSONNALISÉE
-    ====================================== -->
+        <!-- =====================================================
+             CARTE PRINCIPALE
+        ===================================================== -->
 
-    <div class="autre">
-
-        <h3>
-            Vous ne trouvez pas votre besoin ?
-        </h3>
-
-        <p>
-            Indiquez-nous exactement ce que vous souhaitez.
-        </p>
+        <div class="detail-product">
 
 
-        <form method="post">
+            <!-- =================================================
+                 INFORMATIONS PRESTATION
+            ================================================= -->
 
-            {% csrf_token %}
-
-            <div class="form-group">
-
-                <label>
-                    Format souhaité
-                </label>
-
-                <input
-                    type="text"
-                    name="format_personnalise"
-                    placeholder="Ex : A4, A3, 10 x 15 cm..."
-                >
-
-            </div>
+            <div class="detail-top">
 
 
-            <div class="form-group">
+                <!-- IMAGE -->
 
-                <label>
-                    Quantité / lot
-                </label>
+                <div class="detail-image">
 
-                <input
-                    type="number"
-                    name="quantite_personnalisee"
-                    min="1"
-                    placeholder="Ex : 250"
-                >
+                    {% if prestation.image %}
 
-            </div>
-
-
-            <div class="form-group">
-
-                <label>
-                    Précisions
-                </label>
-
-                <textarea
-                    name="demande_personnalisee"
-                    rows="4"
-                    placeholder="Décrivez ce que vous souhaitez..."
-                ></textarea>
-
-            </div>
-
-
-            <button
-                type="submit"
-                name="type_demande"
-                value="devis"
-                class="btn-commande"
-            >
-                Demander un devis
-            </button>
-
-        </form>
-
-    </div>
-
-</div>
-
-{% endif %}
-
-
-
-        <!-- =====================================
-             GRAND FORMAT
-        ====================================== -->
-
-        {% if type_unite == 'SURFACE' %}
-
-            <div class="detail-section">
-
-                <h2>
-                    Indiquez vos dimensions
-                </h2>
-
-                <p>
-                    Prix :
-                    <strong>
-                        {{ prestation.prix_au_metre_carre }}
-                        FCFA / m²
-                    </strong>
-                </p>
-
-
-                <form method="post">
-
-                    {% csrf_token %}
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Largeur (m)
-                        </label>
-
-                        <input
-                            type="number"
-                            name="largeur"
-                            step="0.01"
-                            min="0.01"
-                            placeholder="Ex : 2"
+                        <img
+                            src="{{ prestation.image.url }}"
+                            alt="{{ prestation.titre }}"
                         >
 
-                    </div>
+                    {% else %}
 
-
-                    <div class="form-group">
-
-                        <label>
-                            Longueur (m)
-                        </label>
-
-                        <input
-                            type="number"
-                            name="longueur"
-                            step="0.01"
-                            min="0.01"
-                            placeholder="Ex : 1.5"
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Précisions
-                        </label>
-
-                        <textarea
-                            name="demande_personnalisee"
-                            rows="4"
-                            placeholder="Votre demande..."
-                        ></textarea>
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        name="type_demande"
-                        value="commande_surface"
-                        class="btn-commande"
-                    >
-                        Continuer
-                    </button>
-
-                </form>
-
-            </div>
-
-        {% endif %}
-
-
-
-        <!-- =====================================
-             GOODIES
-        ====================================== -->
-
-        {% if type_unite == 'GOODIES' %}
-
-            <div class="detail-section">
-
-                <h2>
-                    Choisissez votre quantité
-                </h2>
-
-
-                <div class="offres">
-
-                    {% for offre in offres %}
-
-                        <div class="offre">
-
-                            <div>
-                                À partir de
-                                <strong>
-                                    {{ offre.quantite_minimale }}
-                                </strong>
-                                pièces
-                            </div>
-
-                            <div>
-                                Prix unitaire
-                            </div>
-
-                            <div class="offre-prix">
-                                {{ offre.prix_unitaire }}
-                                FCFA
-                            </div>
-
+                        <div class="image-empty">
+                            🖨️ Image non disponible
                         </div>
 
-                    {% empty %}
-
-                        <p>
-                            Aucun tarif configuré.
-                        </p>
-
-                    {% endfor %}
+                    {% endif %}
 
                 </div>
 
 
-                <div class="selection">
+                <!-- INFORMATIONS -->
 
-                    <h3>
-                        Quantité personnalisée
-                    </h3>
+                <div class="detail-info">
+
+                    <h1>
+                        {{ prestation.titre }}
+                    </h1>
+
+
+                    {% if prestation.description %}
+
+                        <div class="detail-description">
+                            {{ prestation.description }}
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if prestation.remise_globale %}
+
+                        <!-- 🔥 MACARON REMISE -->
+
+                        <div class="discount-badge">
+
+                            🔥
+                            REMISE DISPONIBLE :
+
+                            <strong>
+                                {{ prestation.remise_globale }}%
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FLYERS
+            ================================================= -->
+
+            {% if type_unite == 'FLYER' %}
+
+                <div class="detail-section">
+
+                    <h2>
+                        Choisissez votre format et votre lot
+                    </h2>
+
+                    <p class="section-intro">
+                        Sélectionnez l'offre qui correspond
+                        à votre besoin.
+                    </p>
 
 
                     <form method="post">
 
                         {% csrf_token %}
 
-                        <div class="form-group">
+                        <div class="offres">
 
-                            <label>
-                                Quantité souhaitée
-                            </label>
+                            {% for offre in formats_disponibles %}
 
-                            <input
-                                type="number"
-                                name="quantite"
-                                min="1"
-                                placeholder="Ex : 25"
-                                required
+                                <label class="offre">
+
+                                    <input
+                                        type="radio"
+                                        name="offre_id"
+                                        value="{{ offre.id }}"
+                                        required
+                                    >
+
+                                    <div class="offre-contenu">
+
+                                        <div>
+
+                                            <small>
+                                                FORMAT
+                                            </small>
+
+                                            <strong>
+                                                {{ offre.format_papier }}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <small>
+                                                QUANTITÉ
+                                            </small>
+
+                                            <strong>
+                                                {{ offre.quantite }}
+                                                exemplaires
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="offre-prix">
+
+                                            {{ offre.prix_total_lot|floatformat:0 }}
+                                            FCFA
+
+                                        </div>
+
+                                    </div>
+
+                                </label>
+
+                            {% empty %}
+
+                                <div class="empty-message">
+                                    Aucun tarif disponible
+                                    pour le moment.
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        {% if formats_disponibles %}
+
+                            <button
+                                type="submit"
+                                name="type_demande"
+                                value="commande_flyer"
+                                class="btn-commande"
                             >
+                                Continuer →
+                            </button>
 
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label>
-                                Précisions
-                            </label>
-
-                            <textarea
-                                name="demande_personnalisee"
-                                rows="4"
-                                placeholder="Couleur, personnalisation, impression..."
-                            ></textarea>
-
-                        </div>
-
-
-                        <button
-                            type="submit"
-                            name="type_demande"
-                            value="commande_goodie"
-                            class="btn-commande"
-                        >
-                            Continuer
-                        </button>
+                        {% endif %}
 
                     </form>
 
+
+                    <!-- =================================================
+                         DEMANDE PERSONNALISÉE
+                    ================================================= -->
+
+                    <div class="autre">
+
+                        <h3>
+                            ✨ Vous ne trouvez pas votre besoin ?
+                        </h3>
+
+                        <p>
+                            Indiquez-nous exactement ce que vous
+                            souhaitez et nous vous préparerons
+                            une proposition adaptée.
+                        </p>
+
+
+                        <form method="post">
+
+                            {% csrf_token %}
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Format souhaité
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="format_personnalise"
+                                    placeholder="Ex : A4, A3, 10 x 15 cm..."
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Quantité / lot
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="quantite_personnalisee"
+                                    min="1"
+                                    placeholder="Ex : 250"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Précisions
+                                </label>
+
+                                <textarea
+                                    name="demande_personnalisee"
+                                    rows="4"
+                                    placeholder="Décrivez ce que vous souhaitez..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                name="type_demande"
+                                value="devis"
+                                class="btn-commande"
+                            >
+                                Demander un devis →
+                            </button>
+
+                        </form>
+
+                    </div>
+
                 </div>
 
-            </div>
-
-        {% endif %}
+            {% endif %}
 
 
+            <!-- =================================================
+                 GRAND FORMAT
+            ================================================= -->
 
-        <!-- =====================================
-             FACONNAGE
-        ====================================== -->
+            {% if type_unite == 'SURFACE' %}
 
-        {% if type_unite == 'FACONNAGE' %}
+                <div class="detail-section">
 
-            <div class="detail-section">
+                    <h2>
+                        📐 Indiquez vos dimensions
+                    </h2>
 
-                <h2>
-                    Quantité souhaitée
-                </h2>
+                    <p class="section-intro">
 
-                <p>
-                    Prix unitaire :
-                    <strong>
-                        {{ prestation.prix_fixe_unitaire }}
-                        FCFA
-                    </strong>
-                </p>
+                        Prix :
+                        <strong>
+                            {{ prestation.prix_au_metre_carre }}
+                            FCFA / m²
+                        </strong>
 
-
-                <form method="post">
-
-                    {% csrf_token %}
+                    </p>
 
 
-                    <div class="form-group">
+                    <div class="selection">
 
-                        <label>
-                            Quantité
-                        </label>
+                        <form method="post">
 
-                        <input
-                            type="number"
-                            name="quantite"
-                            min="1"
-                            value="1"
-                            required
-                        >
+                            {% csrf_token %}
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Largeur (m)
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="largeur"
+                                    step="0.01"
+                                    min="0.01"
+                                    placeholder="Ex : 2"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Longueur (m)
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="longueur"
+                                    step="0.01"
+                                    min="0.01"
+                                    placeholder="Ex : 1.5"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Précisions
+                                </label>
+
+                                <textarea
+                                    name="demande_personnalisee"
+                                    rows="4"
+                                    placeholder="Votre demande..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                name="type_demande"
+                                value="commande_surface"
+                                class="btn-commande"
+                            >
+                                Continuer →
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 GOODIES
+            ================================================= -->
+
+            {% if type_unite == 'GOODIES' %}
+
+                <div class="detail-section">
+
+                    <h2>
+                        🎁 Choisissez votre quantité
+                    </h2>
+
+                    <p class="section-intro">
+                        Sélectionnez ou indiquez la quantité
+                        que vous souhaitez personnaliser.
+                    </p>
+
+
+                    <div class="offres">
+
+                        {% for offre in offres %}
+
+                            <div class="offre">
+
+                                <div class="offre-contenu">
+
+                                    <div>
+
+                                        <small>
+                                            QUANTITÉ MINIMALE
+                                        </small>
+
+                                        <strong>
+                                            {{ offre.quantite_minimale }}
+                                            pièces
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <small>
+                                            PRIX UNITAIRE
+                                        </small>
+
+                                        <strong>
+                                            {{ offre.prix_unitaire }}
+                                            FCFA
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% empty %}
+
+                            <div class="empty-message">
+                                Aucun tarif configuré.
+                            </div>
+
+                        {% endfor %}
 
                     </div>
 
 
-                    <div class="form-group">
+                    <div class="selection">
 
-                        <label>
-                            Précisions
-                        </label>
+                        <h3>
+                            Quantité personnalisée
+                        </h3>
 
-                        <textarea
-                            name="demande_personnalisee"
-                            rows="4"
-                            placeholder="Indiquez vos besoins..."
-                        ></textarea>
+
+                        <form method="post">
+
+                            {% csrf_token %}
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Quantité souhaitée
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="quantite"
+                                    min="1"
+                                    placeholder="Ex : 25"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Précisions
+                                </label>
+
+                                <textarea
+                                    name="demande_personnalisee"
+                                    rows="4"
+                                    placeholder="Couleur, personnalisation, impression..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                name="type_demande"
+                                value="commande_goodie"
+                                class="btn-commande"
+                            >
+                                Continuer →
+                            </button>
+
+                        </form>
 
                     </div>
 
+                </div>
 
-                    <button
-                        type="submit"
-                        name="type_demande"
-                        value="commande_faconnage"
-                        class="btn-commande"
-                    >
-                        Continuer
-                    </button>
+            {% endif %}
 
-                </form>
 
-            </div>
+            <!-- =================================================
+                 FAÇONNAGE
+            ================================================= -->
 
-        {% endif %}
+            {% if type_unite == 'FACONNAGE' %}
+
+                <div class="detail-section">
+
+                    <h2>
+                        ✂️ Quantité souhaitée
+                    </h2>
+
+                    <p class="section-intro">
+
+                        Prix unitaire :
+                        <strong>
+                            {{ prestation.prix_fixe_unitaire }}
+                            FCFA
+                        </strong>
+
+                    </p>
+
+
+                    <div class="selection">
+
+                        <form method="post">
+
+                            {% csrf_token %}
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Quantité
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="quantite"
+                                    min="1"
+                                    value="1"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Précisions
+                                </label>
+
+                                <textarea
+                                    name="demande_personnalisee"
+                                    rows="4"
+                                    placeholder="Indiquez vos besoins..."
+                                ></textarea>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                name="type_demande"
+                                value="commande_faconnage"
+                                class="btn-commande"
+                            >
+                                Continuer →
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
 
     </div>
 

@@ -45,8 +45,8 @@ urlpatterns = [
     # path('impressions/', views.page_impressions, name='page_impressions'),
     path('impressions/api/panier/', views.modifier_panier_print_api, name='modifier_panier_print_api'),
     path('impression/conseiller/', views.page_conseiller, name='page_conseiller'),
-    path('impressions/', views.page_public_prestations, name='page_prestations'),
-    #path('impressions/prestations/', views.page_public_prestations, name='page_prestations'),
+    #path('impressions/', views.page_public_prestations, name='page_prestations'),
+    path('impressions/prestations/', views.page_public_prestations, name='page_prestations'),
     #path('impression/prestations/', views.page_prestations, name='page_prestations'),
     path(
     'impression/prestations/<str:type_unite>/<int:prestation_id>/',

@@ -1,274 +1,1277 @@
 {% extends 'shop/base.html' %}
 
+{% block title %}
+Commande confirmée - YaTout
+{% endblock %}
+
 {% block content %}
 
 <style>
 
+/* =========================================================
+   YATOUT — PAGE CONFIRMATION
+   ========================================================= */
+
 .confirmation-page {
-    min-height: 75vh;
-    padding: 45px 20px;
-    background: #f6f7f9;
+
+    min-height: calc(100vh - 70px);
+
+    padding: 55px 20px 80px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            120deg,
+            #dff6ff,
+            #f3e8ff,
+            #fff0f6,
+            #e8fff4,
+            #fff8df,
+            #e6f0ff
+        );
+
+    background-size: 500% 500%;
+
+    animation:
+        confirmationBackground
+        18s
+        ease
+        infinite;
 }
+
+
+/* =========================================================
+   ANIMATION BACKGROUND
+   ========================================================= */
+
+@keyframes confirmationBackground {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    25% {
+        background-position: 50% 100%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    75% {
+        background-position: 50% 0%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+/* =========================================================
+   HALOS DÉCORATIFS
+   ========================================================= */
+
+.confirmation-page::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 380px;
+    height: 380px;
+
+    top: -170px;
+    left: -120px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(14,165,233,.30),
+            rgba(168,85,247,.25)
+        );
+
+    filter: blur(30px);
+
+    animation:
+        floatingCircle
+        8s
+        ease-in-out
+        infinite alternate;
+}
+
+
+.confirmation-page::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 400px;
+    height: 400px;
+
+    right: -150px;
+    bottom: -180px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(236,72,153,.25),
+            rgba(34,197,94,.25)
+        );
+
+    filter: blur(35px);
+
+    animation:
+        floatingCircle
+        10s
+        ease-in-out
+        infinite alternate-reverse;
+}
+
+
+@keyframes floatingCircle {
+
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(35px, 25px) scale(1.12);
+    }
+}
+
+
+/* =========================================================
+   CONTENEUR
+   ========================================================= */
 
 .confirmation-card {
-    max-width: 700px;
+
+    position: relative;
+
+    z-index: 2;
+
+    max-width: 780px;
+
     margin: auto;
-    background: white;
-    border-radius: 24px;
-    padding: 40px;
-    box-shadow: 0 15px 45px rgba(0,0,0,.08);
+
+    padding: 42px;
+
+    border-radius: 30px;
+
+    background:
+        rgba(255,255,255,.88);
+
+    border:
+        1px solid
+        rgba(255,255,255,.85);
+
+    box-shadow:
+        0 30px 80px
+        rgba(15,23,42,.15);
+
+    backdrop-filter:
+        blur(18px);
+
+    -webkit-backdrop-filter:
+        blur(18px);
+
+    animation:
+        cardAppear
+        .7s
+        ease
+        both;
 }
 
-/* =========================
+
+@keyframes cardAppear {
+
+    from {
+        opacity: 0;
+        transform: translateY(25px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================================
    EN-TÊTE
-========================= */
+   ========================================================= */
 
 .confirmation-header {
+
     text-align: center;
+
+    margin-bottom: 10px;
 }
+
+
+/* =========================================================
+   ICÔNE
+   ========================================================= */
 
 .confirmation-icon {
-    width: 70px;
-    height: 70px;
-    margin: auto;
-    border-radius: 50%;
-    background: #e9f8ef;
+
+    width: 88px;
+    height: 88px;
+
+    margin: 0 auto;
+
     display: flex;
+
     align-items: center;
     justify-content: center;
-    font-size: 34px;
-    color: #168447;
+
+    border-radius: 50%;
+
+    color: white;
+
+    font-size: 42px;
+
+    font-weight: 900;
+
+    background:
+        linear-gradient(
+            135deg,
+            #16a34a,
+            #22c55e,
+            #06b6d4
+        );
+
+    background-size: 200% 200%;
+
+    box-shadow:
+        0 12px 35px
+        rgba(22,163,74,.30);
+
+    animation:
+        successGradient
+        5s
+        ease
+        infinite,
+        successPop
+        .7s
+        ease
+        both;
 }
+
+
+@keyframes successGradient {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+@keyframes successPop {
+
+    0% {
+        transform: scale(.5);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   TITRE
+   ========================================================= */
 
 .confirmation-header h1 {
-    margin: 20px 0 8px;
-    font-size: 29px;
+
+    margin:
+        22px 0 10px;
+
+    font-size:
+        clamp(28px, 5vw, 40px);
+
+    font-weight: 950;
+
+    letter-spacing:
+        -1.5px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0284c7,
+            #7c3aed,
+            #db2777,
+            #059669,
+            #0284c7
+        );
+
+    background-size:
+        300% auto;
+
+    -webkit-background-clip:
+        text;
+
+    background-clip:
+        text;
+
+    -webkit-text-fill-color:
+        transparent;
+
+    animation:
+        textColorChange
+        8s
+        linear
+        infinite;
 }
+
+
+@keyframes textColorChange {
+
+    0% {
+        background-position: 0% center;
+    }
+
+    50% {
+        background-position: 100% center;
+    }
+
+    100% {
+        background-position: 0% center;
+    }
+}
+
 
 .confirmation-header p {
-    color: #777;
+
     margin: 0;
+
+    color: #475569;
+
+    font-size: 15px;
+
+    animation:
+        softTextColor
+        8s
+        ease
+        infinite;
 }
 
-/* =========================
-   REFERENCE
-========================= */
+
+@keyframes softTextColor {
+
+    0% {
+        color: #475569;
+    }
+
+    25% {
+        color: #0369a1;
+    }
+
+    50% {
+        color: #7c3aed;
+    }
+
+    75% {
+        color: #047857;
+    }
+
+    100% {
+        color: #475569;
+    }
+}
+
+
+/* =========================================================
+   RÉFÉRENCE
+   ========================================================= */
 
 .reference {
+
     text-align: center;
-    margin: 18px 0 30px;
+
+    margin:
+        20px 0 32px;
 }
+
 
 .reference span {
-    display: inline-block;
-    padding: 8px 15px;
-    background: #f1f1f1;
-    border-radius: 30px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding:
+        9px 17px;
+
+    border-radius:
+        999px;
+
+    color: #075985;
+
+    background:
+        linear-gradient(
+            135deg,
+            #e0f2fe,
+            #ede9fe
+        );
+
+    border:
+        1px solid
+        rgba(14,165,233,.25);
+
     font-size: 13px;
-    color: #555;
+
+    font-weight: 800;
+
+    box-shadow:
+        0 5px 15px
+        rgba(14,165,233,.10);
 }
 
-/* =========================
-   DETAILS
-========================= */
+
+/* =========================================================
+   CARTE DÉTAILS
+   ========================================================= */
 
 .details-card {
-    border: 1px solid #e8e8e8;
-    border-radius: 16px;
+
     overflow: hidden;
+
+    border-radius: 20px;
+
+    background:
+        rgba(255,255,255,.92);
+
+    border:
+        1px solid
+        rgba(148,163,184,.20);
+
+    box-shadow:
+        0 10px 30px
+        rgba(15,23,42,.06);
 }
+
+
+/* =========================================================
+   TITRE DÉTAILS
+   ========================================================= */
 
 .details-title {
-    padding: 17px 20px;
-    background: #fafafa;
-    font-size: 16px;
-    font-weight: 700;
+
+    padding:
+        18px 22px;
+
+    font-size: 17px;
+
+    font-weight: 900;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0284c7,
+            #7c3aed,
+            #db2777
+        );
+
+    background-size:
+        200% auto;
+
+    animation:
+        titleBarColor
+        7s
+        ease
+        infinite;
 }
+
+
+@keyframes titleBarColor {
+
+    0% {
+        background-position: 0% center;
+    }
+
+    50% {
+        background-position: 100% center;
+    }
+
+    100% {
+        background-position: 0% center;
+    }
+}
+
 
 .details-body {
-    padding: 20px;
+
+    padding:
+        18px 22px;
 }
 
+
+/* =========================================================
+   LIGNES
+   ========================================================= */
+
 .detail-line {
+
     display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f1f1;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        flex-start;
+
+    gap: 25px;
+
+    padding:
+        14px 0;
+
+    border-bottom:
+        1px solid
+        #edf2f7;
 }
+
 
 .detail-line:last-child {
     border-bottom: none;
 }
 
+
 .detail-label {
-    color: #777;
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    font-weight: 600;
 }
+
 
 .detail-value {
-    font-weight: 600;
+
+    color: #0f172a;
+
+    font-size: 15px;
+
+    font-weight: 800;
+
     text-align: right;
+
+    max-width: 60%;
+
+    overflow-wrap: anywhere;
 }
 
-/* =========================
+
+/* =========================================================
    TARIFICATION
-========================= */
+   ========================================================= */
 
 .pricing {
-    margin-top: 22px;
+
+    margin-top: 25px;
+
+    padding:
+        20px;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(239,246,255,.95),
+            rgba(250,245,255,.95),
+            rgba(255,247,237,.95)
+        );
+
+    border:
+        1px solid
+        rgba(148,163,184,.18);
 }
+
 
 .pricing-line {
+
     display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
+
+    justify-content:
+        space-between;
+
+    gap: 20px;
+
+    padding:
+        9px 0;
+
+    color: #334155;
+
+    font-size: 15px;
 }
+
+
+.pricing-line strong {
+    color: #0f172a;
+}
+
+
+/* =========================================================
+   REMISE
+   ========================================================= */
 
 .discount {
-    color: #c62828;
+
+    color: #dc2626 !important;
+
+    font-weight: 700;
+
+    animation:
+        discountColor
+        5s
+        ease
+        infinite;
 }
+
+
+@keyframes discountColor {
+
+    0% {
+        color: #dc2626;
+    }
+
+    50% {
+        color: #db2777;
+    }
+
+    100% {
+        color: #dc2626;
+    }
+}
+
+
+/* =========================================================
+   NET À PAYER
+   ========================================================= */
 
 .net-box {
-    margin-top: 12px;
-    padding: 20px;
-    background: #111;
-    color: white;
-    border-radius: 14px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    margin-top: 16px;
+
+    padding:
+        22px;
+
+    border-radius:
+        17px;
+
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    gap: 20px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            120deg,
+            #0284c7,
+            #7c3aed,
+            #db2777,
+            #059669
+        );
+
+    background-size:
+        300% 300%;
+
+    animation:
+        netGradient
+        9s
+        ease
+        infinite;
+
+    box-shadow:
+        0 12px 30px
+        rgba(124,58,237,.22);
 }
+
+
+@keyframes netGradient {
+
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
 
 .net-label {
-    font-size: 17px;
-    font-weight: 700;
+
+    font-size:
+        17px;
+
+    font-weight:
+        900;
 }
+
 
 .net-price {
-    font-size: 25px;
-    font-weight: 800;
+
+    font-size:
+        clamp(23px, 5vw, 30px);
+
+    font-weight:
+        950;
+
+    white-space:
+        nowrap;
 }
 
-/* =========================
+
+/* =========================================================
    SUR DEVIS
-========================= */
+   ========================================================= */
 
 .quote-box {
-    margin-top: 22px;
-    padding: 20px;
-    background: #fff7e6;
-    border-radius: 14px;
-    text-align: center;
+
+    margin-top:
+        24px;
+
+    padding:
+        23px;
+
+    text-align:
+        center;
+
+    border-radius:
+        18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff7ed,
+            #fef3c7,
+            #fce7f3
+        );
+
+    border:
+        1px solid
+        #fed7aa;
+
+    animation:
+        quoteColor
+        7s
+        ease
+        infinite;
 }
+
+
+@keyframes quoteColor {
+
+    0% {
+        background-color: #fff7ed;
+    }
+
+    50% {
+        background-color: #fdf2f8;
+    }
+
+    100% {
+        background-color: #fff7ed;
+    }
+}
+
 
 .quote-box h3 {
+
     margin-top: 0;
+
+    color:
+        #9a3412;
+
+    font-size:
+        20px;
+
+    animation:
+        quoteText
+        6s
+        ease
+        infinite;
 }
+
+
+@keyframes quoteText {
+
+    0% {
+        color: #9a3412;
+    }
+
+    50% {
+        color: #be185d;
+    }
+
+    100% {
+        color: #9a3412;
+    }
+}
+
 
 .quote-box p {
-    margin-bottom: 0;
-    color: #6b5a2a;
+
+    margin-bottom:
+        0;
+
+    color:
+        #78350f;
+
+    line-height:
+        1.6;
 }
 
-/* =========================
+
+/* =========================================================
    LIVRAISON
-========================= */
+   ========================================================= */
 
 .delivery-box {
-    margin-top: 22px;
-    padding: 18px;
-    border: 1px dashed #ccc;
-    border-radius: 14px;
-    background: #fafafa;
+
+    margin-top:
+        22px;
+
+    padding:
+        20px;
+
+    border-radius:
+        17px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ecfeff,
+            #eff6ff
+        );
+
+    border:
+        1px solid
+        #bae6fd;
+
+    box-shadow:
+        0 8px 20px
+        rgba(14,165,233,.07);
 }
+
 
 .delivery-box strong {
-    display: block;
-    margin-bottom: 7px;
+
+    display:
+        block;
+
+    margin-bottom:
+        7px;
+
+    color:
+        #0369a1;
+
+    font-size:
+        16px;
 }
+
 
 .delivery-box p {
-    margin: 0;
-    color: #666;
-    font-size: 14px;
-    line-height: 1.5;
+
+    margin:
+        0;
+
+    color:
+        #475569;
+
+    font-size:
+        14px;
+
+    line-height:
+        1.6;
 }
 
-/* =========================
-   MESSAGE
-========================= */
+
+/* =========================================================
+   MESSAGE FINAL
+   ========================================================= */
 
 .confirmation-note {
-    margin-top: 22px;
-    text-align: center;
-    color: #666;
-    line-height: 1.6;
+
+    margin-top:
+        25px;
+
+    padding:
+        15px;
+
+    text-align:
+        center;
+
+    color:
+        #475569;
+
+    font-size:
+        14px;
+
+    line-height:
+        1.7;
+
+    animation:
+        noteColor
+        8s
+        ease
+        infinite;
 }
 
-/* =========================
+
+@keyframes noteColor {
+
+    0% {
+        color: #475569;
+    }
+
+    33% {
+        color: #0369a1;
+    }
+
+    66% {
+        color: #7c3aed;
+    }
+
+    100% {
+        color: #475569;
+    }
+}
+
+
+/* =========================================================
    BOUTON
-========================= */
+   ========================================================= */
 
 .confirmation-actions {
-    margin-top: 30px;
+
+    margin-top:
+        28px;
 }
+
 
 .btn-home {
-    display: block;
-    text-align: center;
-    padding: 14px;
-    background: #111;
-    color: white;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 700;
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+    display:
+        block;
+
+    padding:
+        15px 20px;
+
+    text-align:
+        center;
+
+    border-radius:
+        13px;
+
+    color:
+        white;
+
+    text-decoration:
+        none;
+
+    font-size:
+        15px;
+
+    font-weight:
+        900;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0284c7,
+            #7c3aed,
+            #db2777,
+            #059669
+        );
+
+    background-size:
+        300% auto;
+
+    box-shadow:
+        0 10px 25px
+        rgba(124,58,237,.20);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+
+    animation:
+        buttonGradient
+        8s
+        ease
+        infinite;
 }
 
-/* =========================
-   MOBILE
-========================= */
 
-@media (max-width: 600px) {
+@keyframes buttonGradient {
+
+    0% {
+        background-position:
+            0% center;
+    }
+
+    50% {
+        background-position:
+            100% center;
+    }
+
+    100% {
+        background-position:
+            0% center;
+    }
+}
+
+
+.btn-home:hover {
+
+    transform:
+        translateY(-3px);
+
+    color:
+        white;
+
+    box-shadow:
+        0 15px 35px
+        rgba(124,58,237,.30);
+}
+
+
+/* =========================================================
+   PETIT EFFET SUR LES TEXTES
+   ========================================================= */
+
+.confirmation-card h2 {
+
+    color:
+        #0f172a;
+
+    font-weight:
+        900;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
 
     .confirmation-page {
-        padding: 25px 12px;
+
+        padding:
+            30px 13px 55px;
     }
+
 
     .confirmation-card {
-        padding: 25px 18px;
-        border-radius: 18px;
+
+        padding:
+            28px 18px;
+
+        border-radius:
+            23px;
     }
+
+
+    .confirmation-icon {
+
+        width:
+            74px;
+
+        height:
+            74px;
+
+        font-size:
+            34px;
+    }
+
 
     .confirmation-header h1 {
-        font-size: 25px;
+
+        font-size:
+            27px;
+
+        letter-spacing:
+            -1px;
     }
 
-    .detail-line,
-    .net-box {
-        flex-direction: column;
-        gap: 5px;
+
+    .details-title {
+
+        padding:
+            16px 18px;
     }
+
+
+    .details-body {
+
+        padding:
+            15px 18px;
+    }
+
+
+    .detail-line {
+
+        flex-direction:
+            column;
+
+        gap:
+            5px;
+    }
+
 
     .detail-value {
-        text-align: left;
+
+        max-width:
+            100%;
+
+        text-align:
+            left;
     }
 
-    .net-price {
-        font-size: 24px;
+
+    .pricing {
+
+        padding:
+            17px;
     }
+
+
+    .net-box {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+        gap:
+            8px;
+    }
+
+
+    .net-price {
+
+        font-size:
+            25px;
+    }
+
+
+    .delivery-box {
+
+        padding:
+            17px;
+    }
+}
+
+
+/* =========================================================
+   TRÈS PETITS ÉCRANS
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+    .confirmation-card {
+
+        padding:
+            23px 15px;
+    }
+
+
+    .confirmation-header h1 {
+
+        font-size:
+            24px;
+    }
+
+
+    .reference span {
+
+        font-size:
+            11px;
+
+        padding:
+            8px 12px;
+    }
+
+
+    .net-price {
+
+        font-size:
+            23px;
+    }
+
 }
 
 </style>
 
 
+<!-- =========================================================
+     PAGE
+     ========================================================= -->
+
 <div class="confirmation-page">
+
 
     <div class="confirmation-card">
 
 
-        <!-- =========================
+        <!-- =================================================
              CONFIRMATION
-        ========================== -->
+        ================================================= -->
 
         <div class="confirmation-header">
 
@@ -276,9 +1279,11 @@
                 ✓
             </div>
 
+
             <h1>
                 Commande confirmée !
             </h1>
+
 
             <p>
                 Votre demande a bien été enregistrée.
@@ -287,25 +1292,26 @@
         </div>
 
 
-        <!-- =========================
-             REFERENCE
-        ========================== -->
+        <!-- =================================================
+             RÉFÉRENCE
+        ================================================= -->
 
         <div class="reference">
 
             <span>
-                Référence :
+                🎫 Référence :
                 #YT-{{ commande.prestation_id }}
             </span>
 
         </div>
 
 
-        <!-- =========================
+        <!-- =================================================
              DÉTAILS
-        ========================== -->
+        ================================================= -->
 
         <div class="details-card">
+
 
             <div class="details-title">
                 🧾 Détails de votre commande
@@ -443,18 +1449,21 @@
 
                 {% endif %}
 
+
             </div>
 
         </div>
 
 
-        <!-- =========================
-             PRIX
-        ========================== -->
+        <!-- =================================================
+             TARIFICATION
+        ================================================== -->
 
         {% if not commande.sur_devis %}
 
+
         <div class="pricing">
+
 
             <div class="pricing-line">
 
@@ -502,10 +1511,16 @@
 
             </div>
 
+
         </div>
+
 
         {% else %}
 
+
+        <!-- =================================================
+             SUR DEVIS
+        ================================================== -->
 
         <div class="quote-box">
 
@@ -515,18 +1530,21 @@
 
             <p>
                 Cette demande nécessite une tarification
-                personnalisée. Notre équipe vous contactera
-                pour vous communiquer le montant exact.
+                personnalisée.
+                <br>
+                Notre équipe vous contactera pour vous
+                communiquer le montant exact.
             </p>
 
         </div>
 
+
         {% endif %}
 
 
-        <!-- =========================
+        <!-- =================================================
              LIVRAISON
-        ========================== -->
+        ================================================== -->
 
         <div class="delivery-box">
 
@@ -543,32 +1561,34 @@
         </div>
 
 
-        <!-- =========================
+        <!-- =================================================
              MESSAGE
-        ========================== -->
+        ================================================== -->
 
         <div class="confirmation-note">
 
-            Notre équipe YaTout vous contactera prochainement
-            par téléphone pour finaliser votre commande.
+            ✨ Notre équipe YaTout vous contactera
+            prochainement par téléphone pour finaliser
+            votre commande.
 
         </div>
 
 
-        <!-- =========================
+        <!-- =================================================
              BOUTON
-        ========================== -->
+        ================================================== -->
 
         <div class="confirmation-actions">
 
-            <a
-                href="/impression/prestations/"
-                class="btn-home"
-            >
-                Retour aux prestations
-            </a>
+    <a
+        href="{% url 'page_prestations' %}"
+        class="btn-home"
+    >
+        Retour aux prestations
+    </a>
 
-        </div>
+</div>
+
 
     </div>
 
