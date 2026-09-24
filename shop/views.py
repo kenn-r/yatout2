@@ -34,7 +34,7 @@ from django.http import HttpResponse
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
-from .models import Produit, Prestation, CommandeImpression, FormatFlyer, GrilleTarifaireSurface
+from .models import Produit, CommandeImpression
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import os
 from django.conf import settings
@@ -1081,10 +1081,9 @@ def page_conseiller(request):
     return render(request, 'shop/conseiller.html', {'lien_whatsapp': lien_whatsapp})
 
 from django.shortcuts import render, get_object_or_404
-from .models import Prestation, FormatFlyer
+
 from django.shortcuts import render, get_object_or_404
 from itertools import groupby
-from .models import Prestation, FormatFlyer
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
@@ -1751,11 +1750,15 @@ def page_public_prestations(request):
     # RÉALISATIONS
     # ==========================================
 
+    # ==========================================
+# RÉALISATIONS
+# ==========================================
+
     realisations = (
-        Realisation.objects
-        .select_related('prestation')
-        .order_by('-date_ajout')
-    )
+    Realisation.objects
+    .all()
+    .order_by('-date_ajout')
+)
 
     # ==========================================
     # AVIS CLIENTS VALIDÉS
@@ -2248,7 +2251,7 @@ import json
 import re
 import urllib.parse
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Prestation, CommandeImpression
+from .models import  CommandeImpression
 
 def confirmer_commande_client(request):
     """ ÉTAPE Final : Formulaire de coordonnées, insertion BDD et routage WhatsApp """
@@ -2776,7 +2779,7 @@ from django.http import FileResponse
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from reportlab.pdfgen import canvas
-from .models import Devis, Prestation  # Ajustez 'Prestation' selon votre modèle réel
+from .models import Devis # Ajustez 'Prestation' selon votre modèle réel
 
 # =====================================================================
 # 🔐 SÉCURITÉ ACCÈS ADMINISTRATEUR
@@ -2816,12 +2819,7 @@ def espace_devis_dashboard(request):
         'mois_actuel': aujourdhui.strftime("%B %Y")
     })
 
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
-from decimal import Decimal
-from django.conf import settings
-from .models import Devis, Prestation, DevisAuditLog
+
 
 @user_passes_test(est_administrateur, login_url='connexion')
 def creer_ou_modifier_devis(request, devis_id=None):

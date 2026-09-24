@@ -8,17 +8,17 @@
 <style>
 
 /* =========================================================
-   THÈME
+   THÈME DYNAMIQUE YATOUT
 ========================================================= */
 
 :root {
-    --theme-main: #111111;
-    --theme-secondary: #333333;
-    --theme-soft: #f5f5f5;
-    --theme-border: #dddddd;
+    --theme-main: #7c3aed;
+    --theme-secondary: #4f46e5;
+    --theme-soft: #f5f3ff;
+    --theme-border: #ddd6fe;
     --theme-text: #111111;
     --theme-muted: #777777;
-    --theme-glow: rgba(17,17,17,.18);
+    --theme-glow: rgba(124, 58, 237, .20);
 
     --theme-transition: 1s ease;
 }
@@ -40,11 +40,6 @@
 }
 
 
-/*
-   On ne force PAS le background du body ici.
-   Cela permet au thème du base.html de rester compatible.
-*/
-
 .atelier-container * {
     transition:
         border-color var(--theme-transition),
@@ -59,7 +54,6 @@
 ========================================================= */
 
 .atelier-categories {
-
     display: grid;
 
     grid-template-columns:
@@ -72,7 +66,6 @@
 
 
 .atelier-category {
-
     display: block;
 
     padding: 20px;
@@ -101,7 +94,6 @@
 
 .atelier-category:hover,
 .atelier-category.active {
-
     border-color: var(--theme-main);
 
     transform: translateY(-3px);
@@ -112,21 +104,16 @@
 
 
 .atelier-category h3 {
+    margin: 0 0 7px;
 
-    margin:
-        0 0 7px;
-
-    color:
-        var(--theme-text);
+    color: var(--theme-text);
 }
 
 
 .atelier-category p {
-
     margin: 0;
 
-    color:
-        var(--theme-muted);
+    color: var(--theme-muted);
 
     font-size: 14px;
 }
@@ -137,28 +124,21 @@
 ========================================================= */
 
 .atelier-title {
-
-    margin:
-        30px 0 20px;
+    margin: 30px 0 20px;
 }
 
 
 .atelier-title h2 {
+    margin: 0 0 7px;
 
-    margin:
-        0 0 7px;
-
-    color:
-        var(--theme-text);
+    color: var(--theme-text);
 }
 
 
 .atelier-title p {
-
     margin: 0;
 
-    color:
-        var(--theme-muted);
+    color: var(--theme-muted);
 }
 
 
@@ -167,7 +147,6 @@
 ========================================================= */
 
 .atelier-products {
-
     display: grid;
 
     grid-template-columns:
@@ -178,85 +157,66 @@
 
 
 .atelier-card {
-
-    background:
-        var(--theme-soft);
+    background: var(--theme-soft);
 
     border:
         1px solid var(--theme-border);
 
-    border-radius:
-        16px;
+    border-radius: 16px;
 
-    overflow:
-        hidden;
+    overflow: hidden;
 
     box-shadow:
         0 5px 20px rgba(0,0,0,.08);
 
-    display:
-        flex;
+    display: flex;
 
-    flex-direction:
-        column;
+    flex-direction: column;
 }
 
 
 .atelier-card:hover {
-
     box-shadow:
         0 10px 30px var(--theme-glow);
 }
 
 
 /* =========================================================
-   IMAGES PRODUITS
+   IMAGES
 ========================================================= */
 
 .atelier-image-box {
-
     width: 100%;
     height: 300px;
 
-    background:
-        #f6f6f6;
+    background: #f6f6f6;
 
-    display:
-        flex;
+    display: flex;
 
-    align-items:
-        center;
+    align-items: center;
 
-    justify-content:
-        center;
+    justify-content: center;
 
     padding: 12px;
 
-    box-sizing:
-        border-box;
+    box-sizing: border-box;
 }
 
 
 .atelier-image-box img {
-
     width: 100%;
     height: 100%;
 
-    object-fit:
-        contain;
+    object-fit: contain;
 
-    display:
-        block;
+    display: block;
 }
 
 
 .atelier-no-image {
+    color: #999;
 
-    color:
-        #999;
-
-    font-size:
-        14px;
+    font-size: 14px;
 }
 
 
@@ -265,41 +225,29 @@
 ========================================================= */
 
 .atelier-card-body {
+    padding: 20px;
 
-    padding:
-        20px;
-
-    flex:
-        1;
+    flex: 1;
 }
 
 
 .atelier-card-body h3 {
+    margin: 0 0 10px;
 
-    margin:
-        0 0 10px;
+    font-size: 20px;
 
-    font-size:
-        20px;
-
-    color:
-        var(--theme-text);
+    color: var(--theme-text);
 }
 
 
 .atelier-description {
+    color: var(--theme-muted);
 
-    color:
-        var(--theme-muted);
+    line-height: 1.5;
 
-    line-height:
-        1.5;
+    font-size: 14px;
 
-    font-size:
-        14px;
-
-    margin-bottom:
-        18px;
+    margin-bottom: 18px;
 }
 
 
@@ -308,31 +256,22 @@
 ========================================================= */
 
 .atelier-price {
+    font-size: 19px;
 
-    font-size:
-        19px;
+    font-weight: 700;
 
-    font-weight:
-        700;
+    margin: 15px 0;
 
-    margin:
-        15px 0;
-
-    color:
-        var(--theme-main);
+    color: var(--theme-main);
 }
 
 
 .atelier-price-highlight {
+    font-weight: 700;
 
-    font-weight:
-        700;
+    white-space: nowrap;
 
-    white-space:
-        nowrap;
-
-    color:
-        var(--theme-main);
+    color: var(--theme-main);
 }
 
 
@@ -341,47 +280,36 @@
 ========================================================= */
 
 .atelier-tarifs {
-
-    margin-top:
-        18px;
+    margin-top: 18px;
 
     border-top:
         1px solid var(--theme-border);
 
-    padding-top:
-        15px;
+    padding-top: 15px;
 }
 
 
 .atelier-tarifs h4 {
-
-    margin:
-        0 0 12px;
+    margin: 0 0 12px;
 }
 
 
 .atelier-tarif {
-
-    display:
-        grid;
+    display: grid;
 
     grid-template-columns:
         1fr 1fr auto;
 
-    gap:
-        10px;
+    gap: 10px;
 
-    align-items:
-        center;
+    align-items: center;
 
-    padding:
-        11px 0;
+    padding: 11px 0;
 
     border-bottom:
         1px solid var(--theme-border);
 
-    font-size:
-        14px;
+    font-size: 14px;
 }
 
 
@@ -390,39 +318,28 @@
 ========================================================= */
 
 .flyer-option {
+    display: flex;
 
-    display:
-        flex;
+    justify-content: space-between;
 
-    justify-content:
-        space-between;
+    align-items: center;
 
-    align-items:
-        center;
+    gap: 15px;
 
-    gap:
-        15px;
+    padding: 15px;
 
-    padding:
-        15px;
+    margin-bottom: 10px;
 
-    margin-bottom:
-        10px;
-
-    background:
-        var(--theme-soft);
+    background: var(--theme-soft);
 
     border:
         2px solid var(--theme-border);
 
-    border-radius:
-        12px;
+    border-radius: 12px;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
-    color:
-        var(--theme-text);
+    color: var(--theme-text);
 
     transition:
         transform .3s ease,
@@ -432,12 +349,9 @@
 
 
 .flyer-option:hover {
+    border-color: var(--theme-main);
 
-    border-color:
-        var(--theme-main);
-
-    transform:
-        translateY(-2px);
+    transform: translateY(-2px);
 
     box-shadow:
         0 5px 15px var(--theme-glow);
@@ -445,71 +359,50 @@
 
 
 .flyer-option-info {
+    display: flex;
 
-    display:
-        flex;
+    flex-direction: column;
 
-    flex-direction:
-        column;
-
-    gap:
-        5px;
+    gap: 5px;
 }
 
 
 .flyer-format {
-
-    font-size:
-        18px;
+    font-size: 18px;
 }
 
 
 .flyer-option-info span {
+    color: var(--theme-muted);
 
-    color:
-        var(--theme-muted);
-
-    font-size:
-        14px;
+    font-size: 14px;
 }
 
 
 .flyer-option-right {
+    display: flex;
 
-    display:
-        flex;
+    flex-direction: column;
 
-    flex-direction:
-        column;
+    align-items: flex-end;
 
-    align-items:
-        flex-end;
-
-    gap:
-        5px;
+    gap: 5px;
 }
 
 
 .flyer-option-right strong {
+    font-size: 17px;
 
-    font-size:
-        17px;
-
-    color:
-        var(--theme-main);
+    color: var(--theme-main);
 }
 
 
 .flyer-choisir {
+    font-size: 13px;
 
-    font-size:
-        13px;
+    font-weight: 600;
 
-    font-weight:
-        600;
-
-    color:
-        var(--theme-main);
+    color: var(--theme-main);
 }
 
 
@@ -518,43 +411,30 @@
 ========================================================= */
 
 .atelier-btn-container {
-
-    padding:
-        0 20px 20px;
+    padding: 0 20px 20px;
 }
 
 
 .atelier-btn {
+    display: block;
 
-    display:
-        block;
+    width: 100%;
 
-    width:
-        100%;
+    box-sizing: border-box;
 
-    box-sizing:
-        border-box;
+    padding: 12px 17px;
 
-    padding:
-        12px 17px;
+    border-radius: 9px;
 
-    border-radius:
-        9px;
+    background: var(--theme-main);
 
-    background:
-        var(--theme-main);
+    color: white;
 
-    color:
-        white;
+    text-decoration: none;
 
-    text-decoration:
-        none;
+    font-weight: 600;
 
-    font-weight:
-        600;
-
-    text-align:
-        center;
+    text-align: center;
 
     transition:
         transform .3s ease,
@@ -564,12 +444,9 @@
 
 
 .atelier-btn:hover {
+    background: var(--theme-secondary);
 
-    background:
-        var(--theme-secondary);
-
-    transform:
-        translateY(-1px);
+    transform: translateY(-1px);
 
     box-shadow:
         0 6px 20px var(--theme-glow);
@@ -581,18 +458,13 @@
 ========================================================= */
 
 .atelier-empty {
+    background: var(--theme-soft);
 
-    background:
-        var(--theme-soft);
+    padding: 25px;
 
-    padding:
-        25px;
+    border-radius: 12px;
 
-    border-radius:
-        12px;
-
-    color:
-        var(--theme-muted);
+    color: var(--theme-muted);
 
     border:
         1px solid var(--theme-border);
@@ -607,82 +479,58 @@
 ========================================================= */
 
 .atelier-realisations {
+    margin: 55px 0;
 
-    margin:
-        55px 0;
-
-    padding:
-        30px 0;
+    padding: 30px 0;
 }
 
 
 .realisations-slider {
+    display: flex;
 
-    display:
-        flex;
+    flex-wrap: nowrap;
 
-    flex-wrap:
-        nowrap;
+    gap: 20px;
 
-    gap:
-        20px;
+    overflow-x: auto;
 
-    overflow-x:
-        auto;
+    overflow-y: hidden;
 
-    overflow-y:
-        hidden;
+    padding: 10px 5px 25px;
 
-    padding:
-        10px 5px 25px;
+    scrollbar-width: none;
 
-    scrollbar-width:
-        none;
+    scroll-behavior: smooth;
 
-    scroll-behavior:
-        smooth;
+    -webkit-overflow-scrolling: touch;
 
-    -webkit-overflow-scrolling:
-        touch;
-
-    cursor:
-        grab;
+    cursor: grab;
 }
 
 
 .realisations-slider:active {
-
-    cursor:
-        grabbing;
+    cursor: grabbing;
 }
 
 
 .realisations-slider::-webkit-scrollbar {
-
-    display:
-        none;
+    display: none;
 }
 
 
 .realisation-card {
+    flex: 0 0 280px;
 
-    flex:
-        0 0 280px;
+    min-width: 280px;
 
-    min-width:
-        280px;
-
-    background:
-        var(--theme-soft);
+    background: var(--theme-soft);
 
     border:
         1px solid var(--theme-border);
 
-    border-radius:
-        16px;
+    border-radius: 16px;
 
-    overflow:
-        hidden;
+    overflow: hidden;
 
     box-shadow:
         0 5px 20px rgba(0,0,0,.08);
@@ -690,9 +538,7 @@
 
 
 .realisation-card:hover {
-
-    transform:
-        translateY(-5px);
+    transform: translateY(-5px);
 
     box-shadow:
         0 10px 30px var(--theme-glow);
@@ -700,97 +546,68 @@
 
 
 .realisation-image {
+    width: 100%;
 
-    width:
-        100%;
+    height: 220px;
 
-    height:
-        220px;
+    overflow: hidden;
 
-    overflow:
-        hidden;
+    background: #f2f2f2;
 
-    background:
-        #f2f2f2;
+    display: flex;
 
-    display:
-        flex;
+    align-items: center;
 
-    align-items:
-        center;
-
-    justify-content:
-        center;
+    justify-content: center;
 }
 
 
 .realisation-image img {
+    width: 100%;
 
-    width:
-        100%;
+    height: 100%;
 
-    height:
-        100%;
+    object-fit: cover;
 
-    object-fit:
-        cover;
-
-    display:
-        block;
+    display: block;
 }
 
 
 .realisation-card:hover
 .realisation-image img {
-
-    transform:
-        scale(1.05);
+    transform: scale(1.05);
 }
 
 
 .realisation-body {
-
-    padding:
-        18px;
+    padding: 18px;
 }
 
 
 .realisation-body h3 {
+    margin: 0 0 8px;
 
-    margin:
-        0 0 8px;
+    font-size: 18px;
 
-    font-size:
-        18px;
-
-    color:
-        var(--theme-text);
+    color: var(--theme-text);
 }
 
 
 .realisation-body p {
+    margin: 0 0 10px;
 
-    margin:
-        0 0 10px;
+    color: var(--theme-muted);
 
-    color:
-        var(--theme-muted);
+    font-size: 14px;
 
-    font-size:
-        14px;
-
-    line-height:
-        1.5;
+    line-height: 1.5;
 }
 
 
 .realisation-body small {
+    color: var(--theme-main);
 
-    color:
-        var(--theme-main);
-
-    font-weight:
-        600;
+    font-weight: 600;
 }
 
 
@@ -799,82 +616,58 @@
 ========================================================= */
 
 .atelier-temoignages {
+    margin: 60px 0;
 
-    margin:
-        60px 0;
-
-    padding:
-        35px 0;
+    padding: 35px 0;
 }
 
 
 .temoignages-slider {
+    display: flex;
 
-    display:
-        flex;
+    flex-wrap: nowrap;
 
-    flex-wrap:
-        nowrap;
+    gap: 20px;
 
-    gap:
-        20px;
+    overflow-x: auto;
 
-    overflow-x:
-        auto;
+    padding: 10px 5px 25px;
 
-    padding:
-        10px 5px 25px;
+    scroll-behavior: smooth;
 
-    scroll-behavior:
-        smooth;
+    scrollbar-width: none;
 
-    scrollbar-width:
-        none;
+    -webkit-overflow-scrolling: touch;
 
-    -webkit-overflow-scrolling:
-        touch;
-
-    cursor:
-        grab;
+    cursor: grab;
 }
 
 
 .temoignages-slider:active {
-
-    cursor:
-        grabbing;
+    cursor: grabbing;
 }
 
 
 .temoignages-slider::-webkit-scrollbar {
-
-    display:
-        none;
+    display: none;
 }
 
 
 .temoignage-card {
+    flex: 0 0 310px;
 
-    flex:
-        0 0 310px;
+    min-width: 310px;
 
-    min-width:
-        310px;
-
-    background:
-        var(--theme-soft);
+    background: var(--theme-soft);
 
     border:
         1px solid var(--theme-border);
 
-    border-radius:
-        18px;
+    border-radius: 18px;
 
-    padding:
-        25px;
+    padding: 25px;
 
-    box-sizing:
-        border-box;
+    box-sizing: border-box;
 
     box-shadow:
         0 6px 25px rgba(0,0,0,.08);
@@ -882,9 +675,7 @@
 
 
 .temoignage-card:hover {
-
-    transform:
-        translateY(-5px);
+    transform: translateY(-5px);
 
     box-shadow:
         0 12px 30px var(--theme-glow);
@@ -892,50 +683,35 @@
 
 
 .temoignage-stars {
+    font-size: 22px;
 
-    font-size:
-        22px;
+    letter-spacing: 3px;
 
-    letter-spacing:
-        3px;
+    margin-bottom: 15px;
 
-    margin-bottom:
-        15px;
-
-    color:
-        #f5b301;
+    color: #f5b301;
 }
 
 
 .temoignage-card p {
+    margin: 0 0 20px;
 
-    margin:
-        0 0 20px;
+    color: var(--theme-muted);
 
-    color:
-        var(--theme-muted);
+    font-size: 15px;
 
-    font-size:
-        15px;
+    line-height: 1.7;
 
-    line-height:
-        1.7;
-
-    font-style:
-        italic;
+    font-style: italic;
 }
 
 
 .temoignage-card strong {
+    display: block;
 
-    display:
-        block;
+    font-size: 16px;
 
-    font-size:
-        16px;
-
-    color:
-        var(--theme-main);
+    color: var(--theme-main);
 }
 
 
@@ -944,31 +720,23 @@
 ========================================================= */
 
 .temoignage-form-section {
-
-    margin:
-        40px 0 70px;
+    margin: 40px 0 70px;
 }
 
 
 .temoignage-form-card {
+    max-width: 700px;
 
-    max-width:
-        700px;
+    margin: 0 auto;
 
-    margin:
-        0 auto;
+    padding: 30px;
 
-    padding:
-        30px;
-
-    background:
-        var(--theme-soft);
+    background: var(--theme-soft);
 
     border:
         1px solid var(--theme-border);
 
-    border-radius:
-        20px;
+    border-radius: 20px;
 
     box-shadow:
         0 8px 30px rgba(0,0,0,.08);
@@ -976,48 +744,34 @@
 
 
 .temoignage-form-card h2 {
+    margin-top: 0;
 
-    margin-top:
-        0;
+    margin-bottom: 8px;
 
-    margin-bottom:
-        8px;
-
-    color:
-        var(--theme-text);
+    color: var(--theme-text);
 }
 
 
 .temoignage-form-card > p {
+    color: var(--theme-muted);
 
-    color:
-        var(--theme-muted);
-
-    margin-bottom:
-        25px;
+    margin-bottom: 25px;
 }
 
 
 .temoignage-field {
-
-    margin-bottom:
-        18px;
+    margin-bottom: 18px;
 }
 
 
 .temoignage-field label {
+    display: block;
 
-    display:
-        block;
+    font-weight: 600;
 
-    font-weight:
-        600;
+    margin-bottom: 7px;
 
-    margin-bottom:
-        7px;
-
-    color:
-        var(--theme-text);
+    color: var(--theme-text);
 }
 
 
@@ -1025,55 +779,40 @@
 .temoignage-field input,
 .temoignage-field textarea,
 .temoignage-field select {
+    width: 100%;
 
-    width:
-        100%;
+    box-sizing: border-box;
 
-    box-sizing:
-        border-box;
-
-    padding:
-        13px 14px;
+    padding: 13px 14px;
 
     border:
         1px solid var(--theme-border);
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    background:
-        white;
+    background: white;
 
-    color:
-        #111;
+    color: #111;
 
-    font-family:
-        inherit;
+    font-family: inherit;
 
-    font-size:
-        15px;
+    font-size: 15px;
 
-    outline:
-        none;
+    outline: none;
 }
 
 
 .temoignage-field textarea {
+    min-height: 120px;
 
-    min-height:
-        120px;
-
-    resize:
-        vertical;
+    resize: vertical;
 }
 
 
 .temoignage-field input:focus,
 .temoignage-field textarea:focus,
 .temoignage-field select:focus {
-
-    border-color:
-        var(--theme-main);
+    border-color: var(--theme-main);
 
     box-shadow:
         0 0 0 3px var(--theme-glow);
@@ -1081,43 +820,35 @@
 
 
 .temoignage-submit {
+    width: 100%;
 
-    width:
-        100%;
+    border: none;
 
-    border:
-        none;
+    padding: 14px 18px;
 
-    padding:
-        14px 18px;
+    border-radius: 10px;
 
-    border-radius:
-        10px;
+    background: var(--theme-main);
 
-    background:
-        var(--theme-main);
+    color: white;
 
-    color:
-        white;
+    font-size: 16px;
 
-    font-size:
-        16px;
+    font-weight: 700;
 
-    font-weight:
-        700;
+    cursor: pointer;
 
-    cursor:
-        pointer;
+    transition:
+        background-color var(--theme-transition),
+        transform .3s ease,
+        box-shadow .3s ease;
 }
 
 
 .temoignage-submit:hover {
+    background: var(--theme-secondary);
 
-    background:
-        var(--theme-secondary);
-
-    transform:
-        translateY(-1px);
+    transform: translateY(-1px);
 
     box-shadow:
         0 8px 25px var(--theme-glow);
@@ -1125,49 +856,35 @@
 
 
 .temoignage-success {
+    max-width: 700px;
 
-    max-width:
-        700px;
+    margin: 0 auto 25px;
 
-    margin:
-        0 auto 25px;
+    padding: 16px 20px;
 
-    padding:
-        16px 20px;
+    border-radius: 12px;
 
-    border-radius:
-        12px;
-
-    background:
-        #dcfce7;
+    background: #dcfce7;
 
     border:
         1px solid #86efac;
 
-    color:
-        #166534;
+    color: #166534;
 
-    font-weight:
-        600;
+    font-weight: 600;
 }
 
 
 .temoignage-errors {
+    background: #fef2f2;
 
-    background:
-        #fef2f2;
+    color: #991b1b;
 
-    color:
-        #991b1b;
+    padding: 12px;
 
-    padding:
-        12px;
+    border-radius: 10px;
 
-    border-radius:
-        10px;
-
-    margin-bottom:
-        20px;
+    margin-bottom: 20px;
 }
 
 
@@ -1178,121 +895,86 @@
 @media (max-width: 700px) {
 
     .atelier-container {
-        padding:
-            20px 14px;
+        padding: 20px 14px;
     }
-
 
     .atelier-products {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
-
 
     .atelier-image-box {
-        height:
-            280px;
+        height: 280px;
     }
-
 
     .atelier-tarif {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
 
-        gap:
-            4px;
+        gap: 4px;
     }
-
 
     .atelier-price-highlight {
-        margin-top:
-            4px;
+        margin-top: 4px;
     }
-
 
     .flyer-option {
-        align-items:
-            flex-start;
+        align-items: flex-start;
     }
-
 
     .realisation-card {
-        flex:
-            0 0 250px;
+        flex: 0 0 250px;
 
-        min-width:
-            250px;
+        min-width: 250px;
     }
-
 
     .realisation-image {
-        height:
-            200px;
+        height: 200px;
     }
-
 
     .temoignage-card {
-        flex:
-            0 0 280px;
+        flex: 0 0 280px;
 
-        min-width:
-            280px;
+        min-width: 280px;
 
-        padding:
-            20px;
+        padding: 20px;
     }
-
 
     .temoignage-stars {
-        font-size:
-            20px;
+        font-size: 20px;
     }
-
 
     .temoignage-form-card {
-        padding:
-            22px 18px;
+        padding: 22px 18px;
     }
-
 }
 
-
-/* =========================================================
-   PETIT MOBILE
-========================================================= */
 
 @media (max-width: 500px) {
 
     .flyer-option {
-        padding:
-            13px;
+        padding: 13px;
 
-        gap:
-            10px;
+        gap: 10px;
     }
-
 
     .flyer-format {
-        font-size:
-            16px;
+        font-size: 16px;
     }
-
 
     .flyer-option-right strong {
-        font-size:
-            15px;
+        font-size: 15px;
     }
-
 
     .flyer-option-info span {
-        font-size:
-            13px;
+        font-size: 13px;
     }
-
 }
 
 </style>
 
+
+<!-- =====================================================
+     CONTENU PRINCIPAL
+====================================================== -->
 
 <div class="atelier-container">
 
@@ -1371,7 +1053,9 @@
 </div>
 
 
-<!-- FLYERS -->
+<!-- =====================================================
+     FLYERS
+====================================================== -->
 
 {% if flyers %}
 
@@ -1486,7 +1170,9 @@
 {% endif %}
 
 
-<!-- GRAND FORMAT -->
+<!-- =====================================================
+     GRAND FORMAT
+====================================================== -->
 
 {% if grands_formats %}
 
@@ -1560,7 +1246,9 @@
 {% endif %}
 
 
-<!-- GOODIES -->
+<!-- =====================================================
+     GOODIES
+====================================================== -->
 
 {% if goodies %}
 
@@ -1665,7 +1353,9 @@
 {% endif %}
 
 
-<!-- FAÇONNAGE -->
+<!-- =====================================================
+     FAÇONNAGE
+====================================================== -->
 
 {% if faconnages %}
 
@@ -1722,12 +1412,10 @@
         {% if produit.remise_globale %}
 
         <p>
-
             Remise :
             <strong>
                 {{ produit.remise_globale }}%
             </strong>
-
         </p>
 
         {% endif %}
@@ -2167,12 +1855,10 @@
         {% if produit.remise_globale %}
 
         <p>
-
             Remise :
             <strong>
                 {{ produit.remise_globale }}%
             </strong>
-
         </p>
 
         {% endif %}
@@ -2401,16 +2087,12 @@
             {% csrf_token %}
 
 
-            <!-- NOM -->
-
             <div class="temoignage-field">
 
                 <label
                     for="{{ form_temoignage.nom_client.id_for_label }}"
                 >
-
                     Votre nom ou entreprise
-
                 </label>
 
 
@@ -2428,16 +2110,12 @@
             </div>
 
 
-            <!-- COMMENTAIRE -->
-
             <div class="temoignage-field">
 
                 <label
                     for="{{ form_temoignage.commentaire.id_for_label }}"
                 >
-
                     Votre commentaire
-
                 </label>
 
 
@@ -2455,16 +2133,12 @@
             </div>
 
 
-            <!-- NOTE -->
-
             <div class="temoignage-field">
 
                 <label
                     for="{{ form_temoignage.note.id_for_label }}"
                 >
-
                     Votre note
-
                 </label>
 
 
@@ -2486,9 +2160,7 @@
                 type="submit"
                 class="temoignage-submit"
             >
-
                 Envoyer mon avis
-
             </button>
 
         </form>
@@ -2498,104 +2170,327 @@
 </section>
 
 
-
+<!-- =====================================================
      JAVASCRIPT
+====================================================== -->
 
 <script>
+
 document.addEventListener("DOMContentLoaded", function () {
 
+
+    /* =====================================================
+       1. THÈME / CHANGEMENT DE COULEUR
+    ===================================================== */
+
+    const themes = [
+
+        {
+            main: "#7c3aed",
+            secondary: "#4f46e5",
+            soft: "#f5f3ff",
+            border: "#ddd6fe",
+            glow: "rgba(124, 58, 237, .20)"
+        },
+
+        {
+            main: "#2563eb",
+            secondary: "#1d4ed8",
+            soft: "#eff6ff",
+            border: "#bfdbfe",
+            glow: "rgba(37, 99, 235, .20)"
+        },
+
+        {
+            main: "#0891b2",
+            secondary: "#0e7490",
+            soft: "#ecfeff",
+            border: "#a5f3fc",
+            glow: "rgba(8, 145, 178, .20)"
+        },
+
+        {
+            main: "#059669",
+            secondary: "#047857",
+            soft: "#ecfdf5",
+            border: "#a7f3d0",
+            glow: "rgba(5, 150, 105, .20)"
+        },
+
+        {
+            main: "#ea580c",
+            secondary: "#c2410c",
+            soft: "#fff7ed",
+            border: "#fed7aa",
+            glow: "rgba(234, 88, 12, .20)"
+        },
+
+        {
+            main: "#db2777",
+            secondary: "#be185d",
+            soft: "#fdf2f8",
+            border: "#fbcfe8",
+            glow: "rgba(219, 39, 119, .20)"
+        }
+
+    ];
+
+
+    let currentTheme = 0;
+
+
+    function changeTheme() {
+
+        const theme = themes[currentTheme];
+
+        document.documentElement.style.setProperty(
+            "--theme-main",
+            theme.main
+        );
+
+        document.documentElement.style.setProperty(
+            "--theme-secondary",
+            theme.secondary
+        );
+
+        document.documentElement.style.setProperty(
+            "--theme-soft",
+            theme.soft
+        );
+
+        document.documentElement.style.setProperty(
+            "--theme-border",
+            theme.border
+        );
+
+        document.documentElement.style.setProperty(
+            "--theme-glow",
+            theme.glow
+        );
+
+
+        currentTheme++;
+
+        if (currentTheme >= themes.length) {
+            currentTheme = 0;
+        }
+
+    }
+
+
+    /*
+       Première couleur
+    */
+
+    changeTheme();
+
+
+    /*
+       Changement toutes les 5 secondes
+    */
+
+    setInterval(changeTheme, 5000);
+
+
+
+    /* =====================================================
+       2. SLIDER CONTINU
+    ===================================================== */
+
     function initContinuousSlider(selector, speed) {
-        const slider = document.querySelector(selector);
+
+        const slider =
+            document.querySelector(selector);
+
         if (!slider) return;
 
-        const cards = Array.from(slider.children);
+
+        const cards =
+            Array.from(slider.children);
+
 
         if (cards.length < 2) return;
 
-        // On duplique les cartes une seule fois
+
+        /*
+           On duplique les cartes une seule fois
+        */
+
         cards.forEach(card => {
-            const clone = card.cloneNode(true);
-            clone.setAttribute("aria-hidden", "true");
+
+            const clone =
+                card.cloneNode(true);
+
+            clone.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
             slider.appendChild(clone);
+
         });
 
-        let animationId;
+
         let paused = false;
+
         let loopWidth = 0;
 
+
         function calculateLoopWidth() {
-            const gap = parseFloat(
-                getComputedStyle(slider).gap
-            ) || 0;
+
+            const gap =
+                parseFloat(
+                    getComputedStyle(slider).gap
+                ) || 0;
+
 
             loopWidth = 0;
 
+
             cards.forEach((card, index) => {
-                loopWidth += card.getBoundingClientRect().width;
+
+                loopWidth +=
+                    card.getBoundingClientRect().width;
+
 
                 if (index < cards.length - 1) {
+
                     loopWidth += gap;
+
                 }
+
             });
+
         }
 
+
         calculateLoopWidth();
+
 
         function animate() {
 
             if (!paused) {
+
                 slider.scrollLeft += speed;
 
-                // Quand on arrive à la fin du premier groupe,
-                // on revient au début sans que l'utilisateur le remarque.
-                if (slider.scrollLeft >= loopWidth) {
+
+                if (
+                    slider.scrollLeft >= loopWidth
+                ) {
+
                     slider.scrollLeft -= loopWidth;
+
                 }
+
             }
 
-            animationId = requestAnimationFrame(animate);
+
+            requestAnimationFrame(animate);
+
         }
 
-        // Pause quand la souris passe dessus
-        slider.addEventListener("mouseenter", function () {
-            paused = true;
-        });
 
-        slider.addEventListener("mouseleave", function () {
-            paused = false;
-        });
+        /*
+           Pause souris
+        */
 
-        // Pause pendant le toucher sur téléphone
-        slider.addEventListener("touchstart", function () {
-            paused = true;
-        }, { passive: true });
+        slider.addEventListener(
+            "mouseenter",
+            function () {
 
-        slider.addEventListener("touchend", function () {
-            setTimeout(() => {
+                paused = true;
+
+            }
+        );
+
+
+        slider.addEventListener(
+            "mouseleave",
+            function () {
+
                 paused = false;
-            }, 1000);
-        }, { passive: true });
 
-        window.addEventListener("resize", function () {
-            calculateLoopWidth();
-        });
+            }
+        );
 
-        // Démarrage
-        animationId = requestAnimationFrame(animate);
+
+        /*
+           Pause tactile
+        */
+
+        slider.addEventListener(
+            "touchstart",
+            function () {
+
+                paused = true;
+
+            },
+            { passive: true }
+        );
+
+
+        slider.addEventListener(
+            "touchend",
+            function () {
+
+                setTimeout(
+                    function () {
+
+                        paused = false;
+
+                    },
+                    1000
+                );
+
+            },
+            { passive: true }
+        );
+
+
+        /*
+           Recalcul après redimensionnement
+        */
+
+        window.addEventListener(
+            "resize",
+            function () {
+
+                calculateLoopWidth();
+
+            }
+        );
+
+
+        /*
+           Démarrage
+        */
+
+        requestAnimationFrame(animate);
+
     }
 
 
-    // Vitesse des réalisations
-    // 0.5 = lent
-    // 1 = normal
-    // 1.5 = rapide
-    initContinuousSlider(".realisations-slider", 0.7);
+    /* =====================================================
+       RÉALISATIONS
+    ===================================================== */
+
+    initContinuousSlider(
+        ".realisations-slider",
+        0.7
+    );
 
 
-    // Témoignages
-    initContinuousSlider(".temoignages-slider", 0.5);
+    /* =====================================================
+       TÉMOIGNAGES
+    ===================================================== */
+
+    initContinuousSlider(
+        ".temoignages-slider",
+        0.5
+    );
 
 });
+
 </script>
 
 {% endblock %}
