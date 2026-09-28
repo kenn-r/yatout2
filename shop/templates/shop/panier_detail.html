@@ -3,279 +3,610 @@
 {% block title %}YaTout — Votre Panier{% endblock %}
 
 {% block content %}
+
 <style>
-    /* --- Styles Modernes du Panier --- */
-    .cart-wrapper {
-        max-width: 1100px;
-        margin: 2rem auto;
-        padding: 0 1.5rem;
-        font-family: 'Segoe UI', system-ui, sans-serif;
+/* =========================================================
+   🛒 PANIER YATOUT — DESIGN MODERNE
+   ========================================================= */
+
+.yt-cart-page {
+    max-width: 1150px;
+    margin: 0 auto;
+    padding: 35px 18px 60px;
+}
+
+/* ---------- En-tête ---------- */
+
+.yt-cart-header {
+    margin-bottom: 28px;
+}
+
+.yt-cart-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #17112b;
+}
+
+.yt-cart-header p {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* ---------- Carte principale ---------- */
+
+.yt-cart-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e9d5ff;
+    box-shadow: 0 12px 35px rgba(91, 33, 182, 0.10);
+    overflow: hidden;
+}
+
+/* ---------- Tableau ---------- */
+
+.yt-cart-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.yt-cart-table th {
+    background: linear-gradient(90deg, #faf5ff, #f5f3ff);
+    color: #6b21a8;
+    padding: 17px 18px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid #e9d5ff;
+}
+
+.yt-cart-table td {
+    padding: 20px 18px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.yt-cart-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.yt-cart-table tbody tr:hover {
+    background: #fcfaff;
+}
+
+/* ---------- Produit ---------- */
+
+.yt-cart-product {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.yt-cart-product-image {
+    width: 68px;
+    height: 68px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.yt-cart-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.yt-cart-product-name {
+    font-weight: 750;
+    color: #1e293b;
+    font-size: 0.98rem;
+}
+
+.yt-cart-product-price {
+    margin-top: 5px;
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.yt-cart-old-price {
+    text-decoration: line-through;
+    color: #94a3b8;
+    margin-left: 5px;
+}
+
+.yt-cart-promo {
+    display: inline-block;
+    margin-left: 7px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+/* ---------- Boutique ---------- */
+
+.yt-cart-shop {
+    color: #6b21a8;
+    font-weight: 650;
+    font-size: 0.9rem;
+}
+
+/* ---------- Quantité ---------- */
+
+.yt-cart-quantity {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 10px;
+    background: #f5f3ff;
+    color: #6b21a8;
+    font-weight: 800;
+}
+
+/* ---------- Prix total ---------- */
+
+.yt-cart-line-total {
+    color: #17112b;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+/* ---------- Supprimer ---------- */
+
+.yt-cart-remove {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #ef4444;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 650;
+    padding: 7px 9px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.yt-cart-remove:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+/* =========================================================
+   TOTAL
+   ========================================================= */
+
+.yt-cart-footer {
+    padding: 24px;
+    background: linear-gradient(135deg, #faf5ff, #f5f3ff);
+    border-top: 1px solid #e9d5ff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.yt-cart-total-label {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.yt-cart-total {
+    display: block;
+    margin-top: 4px;
+    color: #6b21a8;
+    font-size: 2rem;
+    font-weight: 900;
+}
+
+/* ---------- Boutons ---------- */
+
+.yt-cart-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.yt-cart-continue {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border-radius: 11px;
+    border: 1px solid #d8b4fe;
+    background: #ffffff;
+    color: #6b21a8;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.yt-cart-continue:hover {
+    background: #faf5ff;
+    transform: translateY(-1px);
+}
+
+.yt-cart-checkout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 21px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #7b24cc, #9333ea);
+    color: white;
+    text-decoration: none;
+    font-weight: 800;
+    box-shadow: 0 7px 18px rgba(123, 36, 204, 0.25);
+    transition: all 0.2s ease;
+}
+
+.yt-cart-checkout:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(123, 36, 204, 0.35);
+}
+
+/* =========================================================
+   PANIER VIDE
+   ========================================================= */
+
+.yt-empty-cart {
+    text-align: center;
+    padding: 70px 25px;
+}
+
+.yt-empty-icon {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3e8ff;
+    font-size: 42px;
+}
+
+.yt-empty-cart h2 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.yt-empty-cart p {
+    color: #64748b;
+    margin: 9px 0 25px;
+}
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .yt-cart-page {
+        padding: 25px 12px 45px;
     }
 
-    .cart-title {
-        font-size: 1.75rem;
-        color: #1a202c;
-        margin-bottom: 1.5rem;
-        font-weight: 700;
+    .yt-cart-header h1 {
+        font-size: 1.55rem;
     }
 
-    .cart-card {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-    }
-
-    .cart-table {
+    /* On transforme chaque ligne en carte */
+    .yt-cart-table,
+    .yt-cart-table tbody,
+    .yt-cart-table tr,
+    .yt-cart-table td {
+        display: block;
         width: 100%;
-        border-collapse: collapse;
-        text-align: left;
+        box-sizing: border-box;
     }
 
-    .cart-table th {
-        background-color: #f8fafc;
-        color: #64748b;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: 1rem 1.5rem;
-        border-bottom: 2px solid #e2e8f0;
+    .yt-cart-table thead {
+        display: none;
     }
 
-    .cart-table td {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #edf2f7;
-        vertical-align: middle;
-        color: #2d3748;
+    .yt-cart-table tr {
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
     }
 
-    .cart-item-name {
-        font-weight: 600;
-        color: #1a202c;
+    .yt-cart-table td {
+        padding: 7px 0;
+        border: none;
+        text-align: left !important;
     }
 
-    .price-details {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin-top: 6px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
+    .yt-cart-product {
+        align-items: flex-start;
     }
 
-    .old-price {
-        text-decoration: line-through;
-        color: #94a3b8;
+    .yt-cart-product-image {
+        width: 75px;
+        height: 75px;
     }
 
-    .promo-badge {
-        background-color: #fee2e2;
-        color: #dc2626;
-        font-weight: 700;
-        font-size: 0.75rem;
-        padding: 2px 6px;
-        border-radius: 4px;
+    .yt-cart-shop {
+        margin-left: 89px;
     }
 
-    .cart-shop-name {
-        color: #475569;
-        font-size: 0.95rem;
+    .yt-cart-quantity {
+        margin-top: 3px;
     }
 
-    .btn-remove-item {
-        color: #ef4444;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: color 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .btn-remove-item:hover {
-        color: #b91c1c;
-        text-decoration: underline;
-    }
-
-    /* --- Footer du Panier (Total & Boutons) --- */
-    .cart-footer-actions {
-        background-color: #f8fafc;
-        padding: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-top: 1px solid #e2e8f0;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-    }
-
-    .cart-total-box {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-    }
-
-    .cart-total-label {
+    .yt-cart-line-total {
         font-size: 1.1rem;
-        color: #475569;
-        font-weight: 500;
     }
 
-    .cart-total-amount {
-        font-size: 1.75rem;
-        font-weight: 800;
-        color: #1e293b;
+    .yt-cart-remove {
+        margin-top: 4px;
     }
 
-    .cart-buttons-group {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
+    .yt-cart-footer {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
     }
 
-    .btn-cart-continue {
-        color: #475569;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.95rem;
-        padding: 0.75rem 1.25rem;
-        border-radius: 8px;
-        transition: background-color 0.2s, color 0.2s;
+    .yt-cart-total {
+        font-size: 1.7rem;
     }
 
-    .btn-cart-continue:hover {
-        background-color: #f1f5f9;
-        color: #0f172a;
+    .yt-cart-buttons {
+        flex-direction: column;
+        width: 100%;
     }
 
-    .btn-cart-validate {
-        background-color: #6b21a8; /* Mauve YaTout */
-        color: #ffffff;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.95rem;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(107, 33, 168, 0.2);
-        transition: background-color 0.2s, transform 0.1s;
+    .yt-cart-continue,
+    .yt-cart-checkout {
+        width: 100%;
+        box-sizing: border-box;
     }
-
-    .btn-cart-validate:hover {
-        background-color: #581c87;
-        transform: translateY(-1px);
-    }
-
-    /* --- État Panier Vide --- */
-    .cart-empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: #ffffff;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-    }
-
-    .cart-empty-state h3 {
-        font-size: 1.5rem;
-        color: #1e293b;
-        margin: 1rem 0 0.5rem 0;
-    }
-
-    .cart-empty-state p {
-        color: #64748b;
-        margin-bottom: 1.5rem;
-    }
-
-    /* --- Responsive --- */
-    @media (max-width: 640px) {
-        .cart-footer-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .cart-buttons-group {
-            flex-direction: column-reverse;
-            width: 100%;
-        }
-        .btn-cart-continue, .btn-cart-validate {
-            text-align: center;
-            width: 100%;
-        }
-    }
+}
 </style>
 
-<div class="cart-wrapper">
-    <h2 class="cart-title">Votre Panier d'achat</h2>
+
+<div class="yt-cart-page">
+
+    <!-- =====================================================
+         EN-TÊTE
+         ===================================================== -->
+
+    <div class="yt-cart-header">
+        <h1>🛒 Votre panier</h1>
+        <p>Vérifiez vos articles avant de passer votre commande.</p>
+    </div>
+
 
     {% if cart %}
-        <div class="cart-card">
-            <table class="cart-table">
-                <thead>
-                    <tr class="cart-table-head">
-                        <th>Article</th>
-                        <th>Boutique</th>
-                        <th style="text-align: center;">Quantité</th>
-                        <th style="text-align: right;">Prix total</th>
-                        <th style="text-align: center;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in cart %}
-                    {% with produit=item.produit %}
-                    <tr>
-                        <td>
-                            <div class="cart-item-name">{{ produit.nom }}</div>
-                            <div class="price-details">
-                                <span>Prix unitaire : {{ item.price }} {{ produit.vendeur.devise }}</span>
-                                {% if produit.ancien_prix %}
-                                    <span class="old-price">{{ produit.ancien_prix }} {{ produit.vendeur.devise }}</span>
-                                    <span class="promo-badge">-{{ produit.reduction_pourcentage }}%</span>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td class="cart-shop-name">🏪 {{ produit.vendeur.nom_boutique }}</td>
-                        <td style="text-align: center; font-weight: 500;">{{ item.quantity }}</td>
-                        <td style="text-align: right; font-weight: 700; color: #1a202c;">
-                            {{ item.total_price }} {{ produit.vendeur.devise }}
-                        </td>
-                        <td style="text-align: center;">
-                            <a href="{% url 'panier_supprimer' produit.id %}" class="btn-remove-item">
-                                ✕ <span style="font-size: 0.85rem;">Retirer</span>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endwith %}
-                    {% endfor %}
-                </tbody>
-            </table>
 
-            <div class="cart-footer-actions">
-                <div class="cart-total-box">
-                    <span class="cart-total-label">Total estimé :</span>
-                    <span class="cart-total-amount">
-                        {{ cart.get_total_price }} 
-                        {% if item %}{{ item.produit.vendeur.devise }}{% endif %}
-                    </span>
-                </div>
-                
-                <div class="cart-buttons-group">
-                    <a href="{% url 'accueil' %}" class="btn-cart-continue">
-                        Continuer mes achats
-                    </a>
-                    <a href="{% url 'passer_commande_panier' %}" class="btn-cart-validate">
-                        🚀 Valider ma commande
-                    </a>
-                </div>
+    <div class="yt-cart-card">
+
+        <!-- =================================================
+             TABLEAU
+             ================================================= -->
+
+        <table class="yt-cart-table">
+
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Boutique</th>
+                    <th style="text-align:center;">Quantité</th>
+                    <th style="text-align:right;">Total</th>
+                    <th style="text-align:center;">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for item in cart %}
+
+                {% with produit=item.produit %}
+
+                <tr>
+
+                    <!-- PRODUIT -->
+                    <td>
+
+                        <div class="yt-cart-product">
+
+                            <div class="yt-cart-product-image">
+
+                                {% if produit.image %}
+                                    <img
+                                        src="{{ produit.image.url }}"
+                                        alt="{{ produit.nom }}"
+                                    >
+                                {% else %}
+                                    <span style="font-size:25px;">📦</span>
+                                {% endif %}
+
+                            </div>
+
+                            <div>
+
+                                <div class="yt-cart-product-name">
+                                    {{ produit.nom }}
+                                </div>
+
+                                <div class="yt-cart-product-price">
+
+                                    Prix unitaire :
+                                    <strong>
+                                        {{ item.price }}
+                                        {{ produit.vendeur.get_devise_display }}
+                                    </strong>
+
+                                    {% if produit.ancien_prix %}
+
+                                        <span class="yt-cart-old-price">
+                                            {{ produit.ancien_prix }}
+                                            {{ produit.vendeur.get_devise_display }}
+                                        </span>
+
+                                        {% if produit.reduction_pourcentage > 0 %}
+                                            <span class="yt-cart-promo">
+                                                -{{ produit.reduction_pourcentage }}%
+                                            </span>
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- BOUTIQUE -->
+                    <td>
+
+                        <span class="yt-cart-shop">
+                            🏪 {{ produit.vendeur.nom_boutique }}
+                        </span>
+
+                    </td>
+
+
+                    <!-- QUANTITÉ -->
+                    <td style="text-align:center;">
+
+                        <span class="yt-cart-quantity">
+                            {{ item.quantity }}
+                        </span>
+
+                    </td>
+
+
+                    <!-- TOTAL LIGNE -->
+                    <td style="text-align:right;">
+
+                        <span class="yt-cart-line-total">
+
+                            {{ item.total_price }}
+                            {{ produit.vendeur.get_devise_display }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- SUPPRIMER -->
+                    <td style="text-align:center;">
+
+                        <a
+                            href="{% url 'panier_supprimer' produit.id %}"
+                            class="yt-cart-remove"
+                        >
+                            ✕ Retirer
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endwith %}
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+
+        <!-- =================================================
+             TOTAL + ACTIONS
+             ================================================= -->
+
+        <div class="yt-cart-footer">
+
+            <div>
+
+                <span class="yt-cart-total-label">
+                    Total estimé
+                </span>
+
+                <span class="yt-cart-total">
+                    {{ cart.get_total_price }} FCFA
+                </span>
+
             </div>
+
+
+            <div class="yt-cart-buttons">
+
+                <a
+                    href="{% url 'accueil' %}"
+                    class="yt-cart-continue"
+                >
+                    ← Continuer mes achats
+                </a>
+
+                <a
+                    href="{% url 'passer_commande_panier' %}"
+                    class="yt-cart-checkout"
+                >
+                    🚀 Valider ma commande
+                </a>
+
+            </div>
+
         </div>
+
+    </div>
+
+
     {% else %}
-        <div class="cart-empty-state">
-            <span style="font-size: 4rem;">🛒</span>
-            <h3>Votre panier est actuellement vide.</h3>
-            <p>Découvrez nos articles exceptionnels en ligne pour commencer vos achats.</p>
-            <a href="{% url 'accueil' %}" class="btn-cart-validate" style="display: inline-block;">Retourner à l'accueil</a>
+
+    <!-- =====================================================
+         PANIER VIDE
+         ===================================================== -->
+
+    <div class="yt-cart-card">
+
+        <div class="yt-empty-cart">
+
+            <div class="yt-empty-icon">
+                🛒
+            </div>
+
+            <h2>
+                Votre panier est vide
+            </h2>
+
+            <p>
+                Vous n'avez encore ajouté aucun article.
+            </p>
+
+            <a
+                href="{% url 'accueil' %}"
+                class="yt-cart-checkout"
+                style="display:inline-flex;"
+            >
+                🛍️ Découvrir la boutique
+            </a>
+
         </div>
+
+    </div>
+
     {% endif %}
+
 </div>
+
 {% endblock %}

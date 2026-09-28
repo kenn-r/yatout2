@@ -1,118 +1,1689 @@
 {% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Boutique privée - YaTout Ci{% endblock %}
 
 {% block content %}
-<!-- CONTENEUR GLOBAL EN COLONNE : Force tous les blocs à s'empiler verticalement -->
-<div style="display: flex; flex-direction: column; width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; box-sizing: border-box;">
-    
-    <!-- 1. LA BANNIÈRE (TOUT EN HAUT) -->
-    <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 40px; border-radius: 24px; color: white; margin-bottom: 30px; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.2); width: 100%; box-sizing: border-box;">
-        <span style="background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Vitrine Exclusive</span>
-        <h1 style="margin: 10px 0 5px 0; font-weight: 800; font-size: 2.2rem;">
-            ✨ {{ vendeur_vitrine.nom_boutique|default:vendeur_vitrine.user.username }}
-        </h1>
-        <p style="margin: 0; opacity: 0.9; font-size: 1rem;">Découvrez tous mes articles certifiés disponibles sur la plateforme YaTout.</p>
-    </div>
 
-    <!-- 2. BLOC TITRE + BOUTON (JUSTE EN DESSOUS DE LA BANNIÈRE) -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; width: 100%; box-sizing: border-box;">
-        <h2 style="color: #0f172a; font-weight: 800; margin: 0; font-size: 1.5rem;">
-            Articles de ce vendeur ({{ produits|length }})
-        </h2>
-        <button onclick="copierLienBoutiqueMagique(window.location.href, this)" style="background: #10b981; color: white; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; white-space: nowrap;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
-            🔗 Partager la boutique
-        </button>
-    </div>
+<style>
 
-    <!-- 3. LA GRILLE DE PRODUITS (TOUT EN BAS) -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; width: 100%; box-sizing: border-box;">
-        {% for produit in produits %}
-            <div style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                
-                <!-- Image du produit -->
-                <div style="position: relative; background: #f8fafc; padding: 15px; text-align: center;">
-                    {% if produit.image %}
-                        <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" style="max-width: 100%; height: 180px; object-fit: contain;">
-                    {% else %}
-                        <div style="height: 180px; display: flex; align-items: center; justify-content: center; font-size: 3rem;">📦</div>
-                    {% endif %}
-                </div>
+/* =========================================================
+   YA TOUT CI — BOUTIQUE PRIVÉE
+   VERSION MODERNE / COLORÉE
+   ========================================================= */
 
-                <!-- Infos produit -->
-                <div style="padding: 15px; flex-grow: 1;">
-                    <h3 style="margin: 0 0 5px 0; font-size: 1.1rem; color: #0f172a; font-weight: 700;">{{ produit.nom }}</h3>
-                    
-                    <!-- Devise dynamique -->
-                    <div style="font-size: 1.3rem; font-weight: 800; color: #10b981; margin-top: 10px;">
-                        {{ produit.prix }} {{ vendeur_vitrine.devise|default:"F cfa" }}
-                    </div>
-                </div>
+html,
+body {
+    background: #090b18 !important;
+}
 
-                <!-- Actions client -->
-                <div style="padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; border-top: 1px solid #f1f5f9;">
-                    
-                    <!-- Formulaire d'ajout au panier -->
-<form method="POST" action="{% url 'panier_ajouter' produit.id %}{% if request.GET.shared %}?shared=true{% endif %}" style="margin: 0; width: 100%;">
-    {% csrf_token %}
-    <input type="hidden" name="quantity" value="1">
-    <input type="hidden" name="override_quantity" value="False">
-    
-    <button type="submit" style="width: 100%; text-align: center; background: #10b981; color: white; padding: 10px; border-radius: 8px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;">
-        🛒 Ajouter au panier
-    </button>
-</form>
+/* =========================================================
+   CONTENEUR PRINCIPAL
+   ========================================================= */
 
-<!-- Lien vers la fiche produit -->
-<a href="{% url 'detail_produit' pk=produit.pk %}{% if request.GET.shared %}?shared=true{% endif %}" style="text-align: center; background: #7c3aed; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">
-    Voir la description
-</a>
-                </div>
-            </div>
-        {% empty %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #e2e8f0;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🛍️</div>
-                <h3 style="color: #0f172a; font-weight: 700; margin-bottom: 10px;">Aucun article disponible</h3>
-                <p style="color: #64748b; margin: 0;">Ce vendeur n'a pas encore mis d'articles en vente dans sa vitrine.</p>
-            </div>
-        {% endfor %}
-    </div>
-</div>
+.yt-shop {
+    position: relative;
+    min-height: 100vh;
+    padding: 25px 0 80px;
 
-<script>
-function copierLienBoutiqueMagique(lien, bouton) {
-    // Crée l'URL et ajoute le paramètre partagé pour masquer la navbar chez l'invité
-    const urlPartage = new URL(lien);
-    urlPartage.searchParams.set('shared', 'true');
-    const lienFinal = urlPartage.toString();
+    font-family:
+        'Inter',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Arial,
+        sans-serif;
 
-    if (!navigator.clipboard) {
-        const inputTemp = document.createElement("input");
-        inputTemp.value = lienFinal;
-        document.body.appendChild(inputTemp);
-        inputTemp.select();
-        document.execCommand("copy");
-        document.body.removeChild(inputTemp);
-        
-        const initialText = bouton.innerHTML;
-        bouton.style.background = "#059669";
-        bouton.innerHTML = "✅ Copié !";
-        setTimeout(function() {
-            bouton.style.background = "#10b981";
-            bouton.innerHTML = initialText;
-        }, 2000);
-        return;
+    color: #fff;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 5% 5%,
+            rgba(124,58,237,.28),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 95% 10%,
+            rgba(6,182,212,.22),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 50% 100%,
+            rgba(236,72,153,.16),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #090b18 0%,
+            #11152b 45%,
+            #0b1225 100%
+        );
+}
+
+/* décorations globales */
+
+.yt-shop::before,
+.yt-shop::after {
+    content: "";
+    position: absolute;
+
+    border-radius: 50%;
+
+    filter: blur(2px);
+
+    pointer-events: none;
+}
+
+.yt-shop::before {
+    width: 280px;
+    height: 280px;
+
+    left: -150px;
+    top: 350px;
+
+    background:
+        rgba(124,58,237,.13);
+}
+
+.yt-shop::after {
+    width: 250px;
+    height: 250px;
+
+    right: -130px;
+    top: 800px;
+
+    background:
+        rgba(6,182,212,.12);
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.yt-shop-hero {
+    position: relative;
+
+    overflow: hidden;
+
+    max-width: 1200px;
+
+    margin: 10px auto 30px;
+
+    padding: 55px 38px;
+
+    border-radius: 30px;
+
+    border:
+        1px solid rgba(255,255,255,.14);
+
+    background:
+        linear-gradient(
+            135deg,
+            #4c1d95 0%,
+            #7c3aed 38%,
+            #2563eb 72%,
+            #0891b2 100%
+        );
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.30),
+        inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+/* cercles décoratifs */
+
+.yt-shop-hero::before {
+    content: "";
+
+    position: absolute;
+
+    width: 330px;
+    height: 330px;
+
+    right: -110px;
+    top: -150px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,.10);
+
+    border:
+        1px solid rgba(255,255,255,.08);
+}
+
+.yt-shop-hero::after {
+    content: "";
+
+    position: absolute;
+
+    width: 210px;
+    height: 210px;
+
+    right: 190px;
+    bottom: -135px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,.08);
+}
+
+.yt-shop-hero-content {
+    position: relative;
+
+    z-index: 5;
+
+    max-width: 750px;
+}
+
+.yt-hero-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 17px;
+
+    padding: 9px 15px;
+
+    border-radius: 50px;
+
+    color: #fff;
+
+    background:
+        rgba(255,255,255,.16);
+
+    border:
+        1px solid rgba(255,255,255,.20);
+
+    backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
+        blur(12px);
+
+    font-size: .76rem;
+
+    font-weight: 850;
+
+    letter-spacing: .04em;
+
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.10);
+}
+
+.yt-shop-hero h1 {
+    margin: 0 0 15px;
+
+    color: #fff;
+
+    font-size:
+        clamp(2.1rem, 5vw, 3.8rem);
+
+    font-weight: 900;
+
+    line-height: 1.02;
+
+    letter-spacing: -.04em;
+}
+
+.yt-shop-hero p {
+    max-width: 650px;
+
+    margin: 0;
+
+    color:
+        rgba(255,255,255,.90);
+
+    font-size:
+        clamp(.95rem, 2vw, 1.1rem);
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   RECHERCHE
+   ========================================================= */
+
+.yt-search-container {
+    position: relative;
+
+    z-index: 10;
+
+    max-width: 760px;
+
+    margin:
+        -5px auto 35px;
+
+    padding:
+        0 15px;
+}
+
+.yt-search-form {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 7px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,.98);
+
+    border:
+        1px solid rgba(255,255,255,.70);
+
+    box-shadow:
+        0 18px 45px rgba(0,0,0,.28);
+
+    transition:
+        .25s ease;
+}
+
+.yt-search-form:focus-within {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 22px 50px rgba(0,0,0,.35),
+        0 0 0 3px rgba(124,58,237,.18);
+}
+
+.yt-search-icon {
+    padding-left: 12px;
+
+    font-size: 1.2rem;
+}
+
+.yt-search-input {
+    flex: 1;
+
+    min-width: 0;
+
+    border: none;
+
+    outline: none;
+
+    padding:
+        13px 5px;
+
+    background: transparent;
+
+    color: #111827;
+
+    font-size: .94rem;
+}
+
+.yt-search-input::placeholder {
+    color: #94a3b8;
+}
+
+.yt-search-clear {
+    padding: 7px 9px;
+
+    color: #94a3b8;
+
+    text-decoration: none;
+
+    font-size: 1rem;
+
+    border-radius: 8px;
+
+    transition: .2s;
+}
+
+.yt-search-clear:hover {
+    color: #7c3aed;
+
+    background: #f1f5f9;
+}
+
+.yt-search-button {
+    border: none;
+
+    padding:
+        12px 20px;
+
+    border-radius: 13px;
+
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #2563eb
+        );
+
+    font-weight: 850;
+
+    cursor: pointer;
+
+    transition:
+        .2s ease;
+
+    box-shadow:
+        0 7px 17px rgba(37,99,235,.20);
+}
+
+.yt-search-button:hover {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 10px 24px rgba(37,99,235,.35);
+}
+
+
+/* =========================================================
+   TITRES
+   ========================================================= */
+
+.yt-section-title {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin:
+        35px 0 17px;
+}
+
+.yt-section-title h2 {
+    margin: 0;
+
+    color: #fff;
+
+    font-size: 1.35rem;
+
+    font-weight: 900;
+
+    letter-spacing: -.02em;
+}
+
+.yt-section-title span {
+    padding:
+        6px 10px;
+
+    border-radius: 30px;
+
+    color: #ddd6fe;
+
+    background:
+        rgba(124,58,237,.16);
+
+    border:
+        1px solid rgba(124,58,237,.25);
+
+    font-size: .74rem;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   CATÉGORIES
+   ========================================================= */
+
+.yt-categories {
+    display: flex;
+
+    gap: 10px;
+
+    overflow-x: auto;
+
+    padding:
+        5px 2px 13px;
+
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        #7c3aed
+        transparent;
+}
+
+.yt-categories::-webkit-scrollbar {
+    height: 5px;
+}
+
+.yt-categories::-webkit-scrollbar-thumb {
+    background: #7c3aed;
+
+    border-radius: 10px;
+}
+
+.yt-category {
+    flex:
+        0 0 auto;
+
+    padding:
+        11px 18px;
+
+    border-radius: 50px;
+
+    color: #cbd5e1;
+
+    background:
+        rgba(255,255,255,.07);
+
+    border:
+        1px solid rgba(255,255,255,.10);
+
+    text-decoration: none;
+
+    font-size: .79rem;
+
+    font-weight: 800;
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,.12);
+
+    transition:
+        .22s ease;
+}
+
+.yt-category:hover {
+    color: #fff;
+
+    transform:
+        translateY(-2px);
+
+    background:
+        rgba(124,58,237,.24);
+
+    border-color:
+        rgba(167,139,250,.40);
+}
+
+.yt-category.active {
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #2563eb
+        );
+
+    border-color:
+        transparent;
+
+    box-shadow:
+        0 8px 20px rgba(124,58,237,.30);
+}
+
+
+/* =========================================================
+   GRILLE PRODUITS
+   ========================================================= */
+
+.yt-products-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 20px;
+}
+
+
+/* =========================================================
+   CARTE PRODUIT
+   ========================================================= */
+
+.yt-product-card {
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+    min-width: 0;
+
+    border-radius: 22px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,.98),
+            rgba(248,250,252,.98)
+        );
+
+    border:
+        1px solid rgba(255,255,255,.14);
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.22);
+
+    transition:
+        transform .28s ease,
+        box-shadow .28s ease,
+        border-color .28s ease;
+}
+
+.yt-product-card:hover {
+    transform:
+        translateY(-8px);
+
+    border-color:
+        rgba(124,58,237,.45);
+
+    box-shadow:
+        0 22px 50px rgba(0,0,0,.32);
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.yt-card-img-wrapper {
+    position: relative;
+
+    width: 100%;
+
+    height: 275px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 50% 30%,
+            #ffffff 0%,
+            #f1f5f9 60%,
+            #e9d5ff 100%
+        );
+
+    border-bottom:
+        1px solid #e2e8f0;
+}
+
+.yt-card-img-wrapper::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124,58,237,.05),
+            transparent 45%,
+            rgba(37,99,235,.05)
+        );
+}
+
+.yt-card-img-wrapper img {
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    height: 100%;
+
+    padding: 12px;
+
+    box-sizing: border-box;
+
+    object-fit: contain;
+
+    object-position: center;
+
+    display: block;
+
+    transition:
+        transform .4s ease;
+}
+
+.yt-product-card:hover
+.yt-card-img-wrapper img {
+    transform:
+        scale(1.06);
+}
+
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.yt-product-badges {
+    position: absolute;
+
+    z-index: 20;
+
+    top: 12px;
+
+    left: 12px;
+
+    right: 12px;
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 8px;
+
+    pointer-events: none;
+}
+
+.yt-discount {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding:
+        7px 10px;
+
+    border-radius: 10px;
+
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #b91c1c
+        );
+
+    font-size: .7rem;
+
+    font-weight: 900;
+
+    box-shadow:
+        0 6px 16px rgba(239,68,68,.32);
+
+    animation:
+        ytDiscountPulse 1.8s infinite;
+}
+
+@keyframes ytDiscountPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
     }
 
-    navigator.clipboard.writeText(lienFinal).then(function() {
-        const initialText = bouton.innerHTML;
-        bouton.style.background = "#059669";
-        bouton.innerHTML = "✅ Copié !";
-        setTimeout(function() {
-            bouton.style.background = "#10b981";
-            bouton.innerHTML = initialText;
-        }, 2000);
-    }).catch(function(err) {
-        console.error("Erreur de copie : ", err);
-    });
+    50% {
+        transform: scale(1.06);
+    }
+
 }
-</script>
+
+.yt-stock {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding:
+        7px 10px;
+
+    border-radius: 10px;
+
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #16a34a,
+            #15803d
+        );
+
+    font-size: .68rem;
+
+    font-weight: 850;
+
+    box-shadow:
+        0 6px 15px rgba(22,163,74,.25);
+}
+
+
+/* =========================================================
+   CORPS CARTE
+   ========================================================= */
+
+.yt-card-body {
+    display: flex;
+
+    flex-direction: column;
+
+    flex: 1;
+
+    padding: 17px;
+}
+
+.yt-card-vendor {
+    margin-bottom: 7px;
+
+    color: #7c3aed;
+
+    font-size: .66rem;
+
+    font-weight: 900;
+
+    text-transform: uppercase;
+
+    letter-spacing: .07em;
+}
+
+.yt-card-title {
+    margin:
+        0 0 13px;
+
+    min-height: 44px;
+
+    color: #111827;
+
+    font-size: 1rem;
+
+    font-weight: 850;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   PRIX
+   ========================================================= */
+
+.yt-price-row {
+    display: flex;
+
+    align-items: baseline;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-bottom: 8px;
+}
+
+.yt-price {
+    color: #6d28d9;
+
+    font-size: 1.3rem;
+
+    font-weight: 950;
+}
+
+.yt-currency {
+    color: #64748b;
+
+    font-size: .7rem;
+
+    font-weight: 800;
+}
+
+.yt-old-price {
+    color: #94a3b8;
+
+    font-size: .78rem;
+
+    font-weight: 650;
+
+    text-decoration:
+        line-through;
+}
+
+
+/* =========================================================
+   STOCK STATUS
+   ========================================================= */
+
+.yt-stock-status {
+    min-height: 22px;
+
+    margin-bottom: 15px;
+
+    font-size: .73rem;
+
+    font-weight: 800;
+}
+
+.yt-stock-ok {
+    color: #16a34a;
+}
+
+.yt-stock-out {
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.yt-card-actions {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 8px;
+
+    margin-top: auto;
+}
+
+.yt-card-actions form {
+    margin: 0;
+
+    min-width: 0;
+}
+
+.yt-btn-cart,
+.yt-btn-view {
+    width: 100%;
+
+    min-height: 44px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border-radius: 12px;
+
+    font-size: .74rem;
+
+    font-weight: 850;
+
+    cursor: pointer;
+
+    transition:
+        .22s ease;
+}
+
+.yt-btn-cart {
+    color: #334155;
+
+    background:
+        #f1f5f9;
+
+    border:
+        1px solid #dbe3ec;
+}
+
+.yt-btn-cart:hover:not(:disabled) {
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #2563eb
+        );
+
+    border-color:
+        transparent;
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 8px 18px rgba(124,58,237,.25);
+}
+
+.yt-btn-view {
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c3aed,
+            #2563eb
+        );
+
+    border: none;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 7px 17px rgba(37,99,235,.18);
+}
+
+.yt-btn-view:hover {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 10px 23px rgba(37,99,235,.30);
+}
+
+.yt-btn-cart:disabled {
+    opacity: .42;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   AUCUN PRODUIT
+   ========================================================= */
+
+.yt-empty-products {
+    grid-column:
+        1 / -1;
+
+    text-align: center;
+
+    padding:
+        80px 25px;
+
+    border-radius: 24px;
+
+    background:
+        rgba(255,255,255,.06);
+
+    border:
+        1px solid rgba(255,255,255,.12);
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.20);
+
+    backdrop-filter:
+        blur(10px);
+}
+
+.yt-empty-products h3 {
+    margin:
+        0 0 10px;
+
+    color: #fff;
+
+    font-size: 1.2rem;
+}
+
+.yt-empty-products p {
+    margin-bottom: 18px;
+
+    color: #cbd5e1;
+}
+
+.yt-empty-products a {
+    color: #c4b5fd;
+
+    font-weight: 850;
+
+    text-decoration: none;
+}
+
+.yt-empty-products a:hover {
+    color: #fff;
+}
+
+
+/* =========================================================
+   TABLETTE
+   ========================================================= */
+
+@media(max-width:1100px) {
+
+    .yt-products-grid {
+        grid-template-columns:
+            repeat(3, minmax(0,1fr));
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:760px) {
+
+    .yt-shop {
+        padding:
+            12px 0 60px;
+    }
+
+    .yt-shop-hero {
+        margin:
+            7px 10px 25px;
+
+        padding:
+            35px 22px;
+
+        border-radius:
+            24px;
+    }
+
+    .yt-shop-hero h1 {
+        font-size:
+            2.15rem;
+    }
+
+    .yt-shop-hero p {
+        font-size:
+            .92rem;
+    }
+
+    .yt-search-container {
+        margin-top:
+            -2px;
+
+        padding:
+            0 10px;
+    }
+
+    .yt-search-form {
+        border-radius:
+            15px;
+    }
+
+    .yt-search-button {
+        padding:
+            11px 13px;
+
+        font-size:
+            .72rem;
+    }
+
+    .yt-products-grid {
+        grid-template-columns:
+            repeat(2, minmax(0,1fr));
+
+        gap:
+            12px;
+    }
+
+    .yt-card-img-wrapper {
+        height:
+            210px;
+    }
+
+    .yt-card-body {
+        padding:
+            12px;
+    }
+
+    .yt-card-title {
+        font-size:
+            .86rem;
+    }
+
+    .yt-price {
+        font-size:
+            1.04rem;
+    }
+
+    .yt-card-actions {
+        grid-template-columns:
+            1fr;
+    }
+
+    .yt-btn-cart,
+    .yt-btn-view {
+        min-height:
+            40px;
+    }
+
+}
+
+
+/* =========================================================
+   PETIT MOBILE
+   ========================================================= */
+
+@media(max-width:420px) {
+
+    .yt-products-grid {
+        gap:
+            9px;
+    }
+
+    .yt-card-img-wrapper {
+        height:
+            180px;
+    }
+
+    .yt-card-img-wrapper img {
+        padding:
+            7px;
+    }
+
+    .yt-card-body {
+        padding:
+            9px;
+    }
+
+    .yt-card-title {
+        font-size:
+            .79rem;
+
+        min-height:
+            36px;
+    }
+
+    .yt-card-vendor {
+        font-size:
+            .57rem;
+    }
+
+    .yt-price {
+        font-size:
+            .91rem;
+    }
+
+    .yt-currency {
+        font-size:
+            .61rem;
+    }
+
+    .yt-btn-cart,
+    .yt-btn-view {
+        font-size:
+            .67rem;
+    }
+
+    .yt-search-button {
+        padding:
+            10px 11px;
+    }
+
+}
+
+
+/* =========================================================
+   TRÈS PETIT ÉCRAN
+   ========================================================= */
+
+@media(max-width:350px) {
+
+    .yt-products-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+    .yt-card-img-wrapper {
+        height:
+            240px;
+    }
+
+}
+
+</style>
+
+
+<div class="yt-shop">
+
+    <!-- =====================================================
+         HERO
+         ===================================================== -->
+
+    <div class="container">
+
+        <section class="yt-shop-hero">
+
+            <div class="yt-shop-hero-content">
+
+                <div class="yt-hero-badge">
+                    🛍️ BOUTIQUE PRIVÉE — YA TOUT CI
+                </div>
+
+                <h1>
+                    Trouvez ce qu'il vous faut.
+                </h1>
+
+                <p>
+                    Découvrez nos articles, promotions et nouveautés
+                    sélectionnés pour vous.
+                </p>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- =====================================================
+         RECHERCHE
+         ===================================================== -->
+
+    <div class="yt-search-container">
+
+        <form
+            method="GET"
+            action="."
+            class="yt-search-form"
+        >
+
+            <span class="yt-search-icon">
+                🔍
+            </span>
+
+            <input
+                type="search"
+                name="q"
+                value="{{ query|default:'' }}"
+                placeholder="Rechercher un produit, une marque..."
+                class="yt-search-input"
+                aria-label="Rechercher un produit"
+            >
+
+            {% if query %}
+
+                <a
+                    href="."
+                    class="yt-search-clear"
+                    aria-label="Effacer la recherche"
+                >
+                    ✕
+                </a>
+
+            {% endif %}
+
+            <button
+                class="yt-search-button"
+                type="submit"
+            >
+                Rechercher
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="container">
+
+
+        <!-- =================================================
+             CATÉGORIES
+             ================================================= -->
+
+        <div class="yt-section-title">
+
+            <h2>
+                🗂️ Catégories
+            </h2>
+
+        </div>
+
+
+        <div class="yt-categories">
+
+            <a
+                href="."
+                class="yt-category active"
+            >
+                🛍️ Tous
+            </a>
+
+            <a
+                href="#"
+                class="yt-category"
+            >
+                👕 Mode
+            </a>
+
+            <a
+                href="#"
+                class="yt-category"
+            >
+                👟 Chaussures
+            </a>
+
+            <a
+                href="#"
+                class="yt-category"
+            >
+                ⌚ Accessoires
+            </a>
+
+            <a
+                href="#"
+                class="yt-category"
+            >
+                🏠 Maison
+            </a>
+
+            <a
+                href="#"
+                class="yt-category"
+            >
+                💄 Beauté
+            </a>
+
+            <a
+                href="#"
+                class="yt-category"
+            >
+                📦 Autres
+            </a>
+
+        </div>
+
+
+        <!-- =================================================
+             TITRE PRODUITS
+             ================================================= -->
+
+        <div class="yt-section-title">
+
+            <h2>
+                🛍️ Tous les articles
+            </h2>
+
+            <span>
+
+                {{ produits|length }}
+                article{{ produits|length|pluralize }}
+
+            </span>
+
+        </div>
+
+
+        <!-- =================================================
+             PRODUITS
+             ================================================= -->
+
+        <div class="yt-products-grid">
+
+
+            {% for produit in produits %}
+
+                <article class="yt-product-card">
+
+
+                    <!-- =====================================
+                         BADGES
+                         ===================================== -->
+
+                    <div class="yt-product-badges">
+
+                        <div>
+
+                            {% if produit.reduction_pourcentage > 0 %}
+
+                                <span class="yt-discount">
+
+                                    🔥
+                                    -{{ produit.reduction_pourcentage }}%
+
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        {% if produit.stock > 0 %}
+
+                            <span class="yt-stock">
+
+                                Stock :
+                                {{ produit.stock }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- =====================================
+                         IMAGE
+                         ===================================== -->
+
+                    <div class="yt-card-img-wrapper">
+
+                        {% if produit.image %}
+
+                            <img
+                                src="{{ produit.image.url }}"
+                                alt="{{ produit.nom }}"
+                                loading="lazy"
+                            >
+
+                        {% else %}
+
+                            <div
+                                style="
+                                    position:relative;
+                                    z-index:3;
+                                    text-align:center;
+                                    color:#94a3b8;
+                                    font-size:.8rem;
+                                    font-weight:700;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        font-size:2.7rem;
+                                        margin-bottom:6px;
+                                    "
+                                >
+                                    📷
+                                </div>
+
+                                Image indisponible
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- =====================================
+                         INFORMATIONS
+                         ===================================== -->
+
+                    <div class="yt-card-body">
+
+
+                        <div class="yt-card-vendor">
+
+                            {{ produit.vendeur.nom_boutique|default:"Boutique YaTout" }}
+
+                        </div>
+
+
+                        <h2 class="yt-card-title">
+
+                            {{ produit.nom }}
+
+                        </h2>
+
+
+                        <!-- PRIX -->
+
+                        <div class="yt-price-row">
+
+                            <span class="yt-price">
+
+                                {{ produit.prix }}
+
+                                <span class="yt-currency">
+
+                                    {{ produit.vendeur.get_devise_display }}
+
+                                </span>
+
+                            </span>
+
+
+                            {% if produit.ancien_prix %}
+
+                                <span class="yt-old-price">
+
+                                    {{ produit.ancien_prix }}
+
+                                    {{ produit.vendeur.get_devise_display }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- STOCK -->
+
+                        <div class="yt-stock-status">
+
+                            {% if produit.stock > 0 %}
+
+                                <span class="yt-stock-ok">
+
+                                    🟢 En stock
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="yt-stock-out">
+
+                                    🔴 Rupture de stock
+
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ACTIONS -->
+
+                        <div class="yt-card-actions">
+
+
+                            <form
+                                action="{% url 'panier_ajouter' produit.id %}"
+                                method="POST"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="yt-btn-cart"
+                                    {% if produit.stock == 0 %}
+                                        disabled
+                                    {% endif %}
+                                >
+
+                                    🛒 Ajouter
+
+                                </button>
+
+                            </form>
+
+
+                            <a
+                                href="{% url 'detail_produit' produit.pk %}"
+                                class="yt-btn-view"
+                            >
+
+                                👁️ Voir
+
+                            </a>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </article>
+
+
+            {% empty %}
+
+
+                <!-- =====================================
+                     AUCUN PRODUIT
+                     ===================================== -->
+
+                <div class="yt-empty-products">
+
+                    <div
+                        style="
+                            font-size:3.5rem;
+                            margin-bottom:12px;
+                        "
+                    >
+                        🛍️
+                    </div>
+
+
+                    <h3>
+                        Aucun produit disponible
+                    </h3>
+
+
+                    {% if query %}
+
+                        <p>
+
+                            Aucun résultat pour :
+
+                            <strong>
+                                "{{ query }}"
+                            </strong>
+
+                        </p>
+
+
+                        <a href=".">
+
+                            Voir tous les produits
+
+                        </a>
+
+                    {% else %}
+
+                        <p>
+                            Aucun article n'est disponible
+                            pour le moment.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
 {% endblock %}

@@ -1,228 +1,752 @@
 {% extends 'shop/base.html' %}
 
-{% block title %}YaTout — Finaliser votre panier{% endblock %}
+{% block title %}YaTout — Finaliser ma commande{% endblock %}
 
 {% block content %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* --- STRUCTURE DE LA PAGE --- */
-    .checkout-container {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-        max-width: 1200px !important;
-        margin: 40px auto !important;
-        padding: 0 20px !important;
-        color: #1e293b !important;
-        box-sizing: border-box !important;
+
+/* =========================================================
+   🚀 CHECKOUT YATOUT
+   ========================================================= */
+
+.yt-checkout-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 35px 18px 60px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #1e293b;
+}
+
+/* =========================================================
+   EN-TÊTE
+   ========================================================= */
+
+.yt-checkout-header {
+    margin-bottom: 30px;
+}
+
+.yt-checkout-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #17112b;
+}
+
+.yt-checkout-header p {
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.yt-checkout-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(350px, 0.85fr);
+    gap: 28px;
+    align-items: start;
+}
+
+/* =========================================================
+   CARTES
+   ========================================================= */
+
+.yt-checkout-card {
+    background: #ffffff;
+    border: 1px solid #eadcff;
+    border-radius: 20px;
+    box-shadow: 0 12px 35px rgba(91, 33, 182, 0.09);
+    overflow: hidden;
+}
+
+.yt-checkout-card-header {
+    padding: 22px 25px;
+    background: linear-gradient(135deg, #faf5ff, #f5f3ff);
+    border-bottom: 1px solid #eadcff;
+}
+
+.yt-checkout-card-header h2 {
+    margin: 0;
+    color: #4c1d95;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.yt-checkout-card-header p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 0.83rem;
+}
+
+.yt-checkout-card-body {
+    padding: 26px;
+}
+
+/* =========================================================
+   FORMULAIRE
+   ========================================================= */
+
+.yt-form-group {
+    margin-bottom: 20px;
+}
+
+.yt-form-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #334155;
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.yt-form-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 11px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 0.92rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.yt-form-input::placeholder {
+    color: #94a3b8;
+}
+
+.yt-form-input:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.10);
+}
+
+textarea.yt-form-input {
+    min-height: 105px;
+    resize: vertical;
+}
+
+/* =========================================================
+   INFO LIVRAISON
+   ========================================================= */
+
+.yt-delivery-info {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px;
+    margin: 5px 0 22px;
+    border-radius: 12px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+}
+
+.yt-delivery-icon {
+    font-size: 22px;
+}
+
+.yt-delivery-info strong {
+    display: block;
+    color: #9a3412;
+    font-size: 0.86rem;
+    margin-bottom: 3px;
+}
+
+.yt-delivery-info span {
+    color: #7c2d12;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   BOUTON COMMANDER
+   ========================================================= */
+
+.yt-submit-order {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 15px 18px;
+    background: linear-gradient(135deg, #7b24cc, #9333ea);
+    color: #ffffff;
+    font-size: 0.96rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(123, 36, 204, 0.25);
+    transition: all 0.2s ease;
+}
+
+.yt-submit-order:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(123, 36, 204, 0.32);
+}
+
+/* =========================================================
+   RÉSUMÉ PRODUITS
+   ========================================================= */
+
+.yt-product-summary {
+    padding: 12px;
+}
+
+.yt-mini-product {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #fafafa;
+    border: 1px solid #f1f5f9;
+    border-radius: 13px;
+    transition: all 0.2s ease;
+}
+
+.yt-mini-product:hover {
+    background: #faf5ff;
+    border-color: #e9d5ff;
+}
+
+.yt-mini-image {
+    width: 65px;
+    height: 65px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.yt-mini-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.yt-mini-product-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.yt-mini-product-name {
+    color: #1e293b;
+    font-size: 0.88rem;
+    font-weight: 750;
+    margin-bottom: 4px;
+}
+
+.yt-mini-shop {
+    color: #7b24cc;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.yt-mini-quantity {
+    color: #64748b;
+    font-size: 0.75rem;
+    margin-top: 5px;
+}
+
+.yt-mini-price {
+    color: #17112b;
+    font-size: 0.87rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   TOTAL
+   ========================================================= */
+
+.yt-summary-separator {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 20px 0;
+}
+
+.yt-summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    color: #64748b;
+    font-size: 0.88rem;
+}
+
+.yt-summary-line strong {
+    color: #334155;
+}
+
+.yt-delivery-pending {
+    color: #ea580c !important;
+    font-weight: 750;
+}
+
+/* =========================================================
+   NET À PAYER
+   ========================================================= */
+
+.yt-net-total {
+    margin-top: 18px;
+    padding: 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #4c1d95, #7b24cc);
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(76, 29, 149, 0.25);
+}
+
+.yt-net-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+
+.yt-net-amount {
+    display: block;
+    margin-top: 5px;
+    font-size: 1.85rem;
+    font-weight: 900;
+}
+
+.yt-net-note {
+    display: block;
+    margin-top: 7px;
+    font-size: 0.72rem;
+    opacity: 0.82;
+}
+
+/* =========================================================
+   PAIEMENT
+   ========================================================= */
+
+.yt-payment-box {
+    margin-top: 16px;
+    padding: 13px;
+    border-radius: 11px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+.yt-payment-box strong {
+    display: block;
+    margin-bottom: 3px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .yt-checkout-layout {
+        grid-template-columns: 1fr;
     }
 
-    .checkout-layout {
-        display: grid !important;
-        grid-template-columns: 1.6fr 1fr !important;
-        gap: 30px !important;
-        align-items: flex-start !important;
+}
+
+@media (max-width: 600px) {
+
+    .yt-checkout-page {
+        padding: 22px 12px 45px;
     }
 
-    /* Panneaux blancs épurés */
-    .checkout-form-section, .checkout-summary-section {
-        background: #ffffff !important;
-        border-radius: 16px !important;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03) !important;
-        padding: 35px !important;
-        border: 1px solid #e2e8f0 !important;
-        box-sizing: border-box !important;
+    .yt-checkout-header h1 {
+        font-size: 1.55rem;
     }
 
-    .section-title {
-        font-size: 20px !important;
-        font-weight: 700 !important;
-        color: #0f172a !important;
-        margin: 0 0 25px 0 !important;
-        letter-spacing: -0.3px !important;
-        border-bottom: 2px solid #f1f5f9 !important;
-        padding-bottom: 12px !important;
+    .yt-checkout-card-body {
+        padding: 18px;
     }
 
-    /* --- FORMULAIRE DE LIVRAISON --- */
-    .form-group {
-        margin-bottom: 20px !important;
-    }
-    .form-label {
-        display: block !important;
-        font-size: 13px !important;
-        font-weight: 600 !important;
-        color: #334155 !important;
-        margin-bottom: 6px !important;
-    }
-    .form-input {
-        width: 100% !important;
-        padding: 11px 14px !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
-        font-size: 14px !important;
-        color: #0f172a !important;
-        outline: none !important;
-        box-sizing: border-box !important;
-        transition: all 0.2s ease !important;
-    }
-    .form-input:focus {
-        border-color: #7b24cc !important;
-        box-shadow: 0 0 0 3px rgba(123, 36, 204, 0.1) !important;
-    }
-    textarea.form-input {
-        resize: vertical !important;
-        min-height: 90px !important;
+    .yt-mini-product {
+        padding: 10px;
     }
 
-    .btn-submit-order {
-        width: 100% !important;
-        background: #7b24cc !important; /* Mauve officiel YaTout */
-        color: #ffffff !important;
-        border: none !important;
-        padding: 15px !important;
-        border-radius: 10px !important;
-        font-size: 15px !important;
-        font-weight: 600 !important;
-        cursor: pointer !important;
-        box-shadow: 0 4px 12px rgba(123, 36, 204, 0.15) !important;
-        transition: background 0.2s !important;
-        margin-top: 15px !important;
-    }
-    .btn-submit-order:hover {
-        background: #2e0854 !important;
+    .yt-mini-image {
+        width: 58px;
+        height: 58px;
     }
 
-    /* --- PANNEAU RÉSUMÉ DES ARTICLES (COLONNE DROITE) --- */
-    /* Ligne produit réorganisée de façon rectiligne et alignée */
-    .prod-mini-card {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding: 12px 14px !important;
-        background: #f8fafc !important;
-        border-radius: 10px !important;
-        border: 1px solid #f1f5f9 !important;
-        margin-bottom: 12px !important;
-    }
-    .prod-mini-details {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 3px !important;
-    }
-    .prod-mini-details h4 {
-        margin: 0 !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        color: #0f172a !important;
-        text-transform: capitalize !important;
-    }
-    .prod-mini-shop {
-        font-size: 11px !important;
-        color: #7b24cc !important;
-        font-weight: 700 !important;
+    .yt-mini-price {
+        font-size: 0.8rem;
     }
 
-    /* --- ZONE DES TOTAUX FINANCIERS --- */
-    .summary-row {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        margin-top: 15px !important;
-        font-size: 14px !important;
-        color: #64748b !important;
-    }
-    
-    /* Boîte de total général de la marchandise sombre et haut de gamme */
-    .summary-total {
-        background: #1e293b !important;
-        color: #ffffff !important;
-        border-radius: 12px !important;
-        padding: 16px 20px !important;
-        margin-top: 20px !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-        box-shadow: 0 4px 15px rgba(30, 41, 59, 0.1) !important;
-        border: none !important;
-    }
-    .summary-total span:last-child {
-        color: #f59e0b !important; /* Jaune ambré ultra visible pour le prix total */
-        font-size: 18px !important;
+    .yt-net-amount {
+        font-size: 1.6rem;
     }
 
-    /* Responsive Mobile */
-    @media (max-width: 991px) {
-        .checkout-layout {
-            grid-template-columns: 1fr !important;
-        }
-    }
+}
+
 </style>
 
-<div class="checkout-container">
-    <div class="checkout-layout">
-        
-        <!-- Formulaire de livraison (Achat global du panier) -->
-        <div class="checkout-form-section">
-            <h2 class="section-title">Informations de livraison</h2>
-            <form method="POST" action="{% url 'passer_commande_panier' %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label class="form-label" for="nom">Nom complet</label>
-                    <input class="form-input" type="text" id="nom" name="nom" placeholder="Ex: Kouassi Koffi" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="email">Adresse e-mail</label>
-                    <input class="form-input" type="email" id="email" name="email" placeholder="Ex: kouassi@mail.com" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="telephone">Numéro de téléphone mobile (10 chiffres)</label>
-                    <input class="form-input" type="tel" id="telephone" name="telephone" placeholder="Ex: 0701020304" pattern="[0-9]{10}" maxlength="10" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="adresse">Adresse complète (Commune, Quartier, Repères)</label>
-                    <textarea class="form-input" id="adresse" name="adresse" placeholder="Ex: Cocody, Angré Django, non loin de la pharmacie..." required></textarea>
-                </div>
-                <button type="submit" class="btn-submit-order">🚀 Confirmer et payer à la livraison</button>
-            </form>
-        </div>
 
-        <!-- Liste complète des articles du panier sur la droite -->
-        <div class="checkout-summary-section">
-            <h3 class="section-title" style="font-size: 1.1rem; margin-bottom: 20px;">Résumé de la commande</h3>
-            
-            {% for item in cart %}
-            <div class="prod-mini-card">
-                <div class="prod-mini-details">
-                    <h4>{{ item.produit.nom }}</h4>
-                    <span class="prod-mini-shop">🏪 {{ item.produit.vendeur.nom_boutique }}</span>
-                    <div style="font-size: 0.85rem; margin-top: 4px; color: #64748b;">
-                        Quantité : <strong>{{ item.quantity }}</strong>
+<div class="yt-checkout-page">
+
+    <!-- =====================================================
+         EN-TÊTE
+         ===================================================== -->
+
+    <div class="yt-checkout-header">
+
+        <h1>🚀 Finaliser ma commande</h1>
+
+        <p>
+            Encore une étape : renseignez vos informations pour confirmer votre commande.
+        </p>
+
+    </div>
+
+
+    <div class="yt-checkout-layout">
+
+
+        <!-- =================================================
+             FORMULAIRE CLIENT
+             ================================================= -->
+
+        <div class="yt-checkout-card">
+
+            <div class="yt-checkout-card-header">
+
+                <h2>👤 Vos informations</h2>
+
+                <p>
+                    Ces informations nous permettront de vous contacter.
+                </p>
+
+            </div>
+
+
+            <div class="yt-checkout-card-body">
+
+                <form
+                    method="POST"
+                    action="{% url 'passer_commande_panier' %}"
+                >
+
+                    {% csrf_token %}
+
+
+                    <!-- NOM -->
+
+                    <div class="yt-form-group">
+
+                        <label
+                            class="yt-form-label"
+                            for="nom"
+                        >
+                            Nom complet
+                        </label>
+
+                        <input
+                            class="yt-form-input"
+                            type="text"
+                            id="nom"
+                            name="nom"
+                            placeholder="Ex : Kouassi Koffi"
+                            autocomplete="name"
+                            required
+                        >
+
                     </div>
-                </div>
-                <div style="margin-left: auto; font-weight: 700; color: #0f172a; font-size: 15px; white-space: nowrap;">
-                    {{ item.total_price }} {{ item.produit.vendeur.get_devise_display }}
-                </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="yt-form-group">
+
+                        <label
+                            class="yt-form-label"
+                            for="email"
+                        >
+                            Adresse e-mail
+                        </label>
+
+                        <input
+                            class="yt-form-input"
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Ex : kouassi@email.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- TELEPHONE -->
+
+                    <div class="yt-form-group">
+
+                        <label
+                            class="yt-form-label"
+                            for="telephone"
+                        >
+                            Numéro de téléphone
+                        </label>
+
+                        <input
+                            class="yt-form-input"
+                            type="tel"
+                            id="telephone"
+                            name="telephone"
+                            placeholder="Ex : 0701020304"
+                            pattern="[0-9]{10}"
+                            maxlength="10"
+                            inputmode="numeric"
+                            autocomplete="tel"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- ADRESSE -->
+
+                    <div class="yt-form-group">
+
+                        <label
+                            class="yt-form-label"
+                            for="adresse"
+                        >
+                            Adresse / lieu de livraison
+                        </label>
+
+                        <textarea
+                            class="yt-form-input"
+                            id="adresse"
+                            name="adresse"
+                            placeholder="Commune, quartier, repère, lieu facilement identifiable..."
+                            autocomplete="street-address"
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+                    <!-- INFO LIVRAISON -->
+
+                    <div class="yt-delivery-info">
+
+                        <div class="yt-delivery-icon">
+                            🚚
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Livraison à confirmer
+                            </strong>
+
+                            <span>
+                                Le montant et les modalités de livraison seront
+                                confirmés avec vous par téléphone avant la finalisation.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BOUTON -->
+
+                    <button
+                        type="submit"
+                        class="yt-submit-order"
+                    >
+                        🚀 Confirmer ma commande
+                    </button>
+
+                </form>
+
             </div>
-            {% endfor %}
-            
-            <div class="summary-row" style="margin-top: 25px;">
-                <span>Livraison</span>
-                <span style="color: #10b981; font-weight: 700;">Gratuite</span>
-            </div>
-            
-            <!-- Bloc du Total Général Sombre -->
-            <div class="summary-row summary-total">
-                <span>Prix Total: </span>
-                <span>
-                     {{ cart.get_total_price }} 
-                    {% for item in cart %}
-                        {% if forloop.first %}
-                            {{ item.produit.vendeur.get_devise_display }}
-                        {% endif %}
-                    {% endfor %}
-                </span>
-            </div>
+
         </div>
 
-    </div> 
+
+        <!-- =================================================
+             RÉSUMÉ DE COMMANDE
+             ================================================= -->
+
+        <div class="yt-checkout-card">
+
+            <div class="yt-checkout-card-header">
+
+                <h2>🛍️ Résumé de la commande</h2>
+
+                <p>
+                    Vérifiez vos articles avant de confirmer.
+                </p>
+
+            </div>
+
+
+            <div class="yt-product-summary">
+
+
+                {% for item in cart %}
+
+                <div class="yt-mini-product">
+
+
+                    <!-- IMAGE -->
+
+                    <div class="yt-mini-image">
+
+                        {% if item.produit.image %}
+
+                            <img
+                                src="{{ item.produit.image.url }}"
+                                alt="{{ item.produit.nom }}"
+                            >
+
+                        {% else %}
+
+                            <span style="font-size:24px;">
+                                📦
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- INFORMATIONS -->
+
+                    <div class="yt-mini-product-info">
+
+                        <div class="yt-mini-product-name">
+                            {{ item.produit.nom }}
+                        </div>
+
+                        <div class="yt-mini-shop">
+                            🏪 {{ item.produit.vendeur.nom_boutique }}
+                        </div>
+
+                        <div class="yt-mini-quantity">
+                            Quantité :
+                            <strong>{{ item.quantity }}</strong>
+                        </div>
+
+                    </div>
+
+
+                    <!-- PRIX -->
+
+                    <div class="yt-mini-price">
+
+                        {{ item.total_price }}
+                        {{ item.produit.vendeur.get_devise_display }}
+
+                    </div>
+
+
+                </div>
+
+                {% endfor %}
+
+
+                <!-- SÉPARATION -->
+
+                <div class="yt-summary-separator"></div>
+
+
+                <!-- SOUS-TOTAL -->
+
+                <div class="yt-summary-line">
+
+                    <span>
+                        Sous-total
+                    </span>
+
+                    <strong>
+                        {{ cart.get_total_price }}
+
+                        {% for item in cart %}
+                            {% if forloop.first %}
+                                {{ item.produit.vendeur.get_devise_display }}
+                            {% endif %}
+                        {% endfor %}
+                    </strong>
+
+                </div>
+
+
+                <!-- LIVRAISON -->
+
+                <div class="yt-summary-line">
+
+                    <span>
+                        Livraison
+                    </span>
+
+                    <strong class="yt-delivery-pending">
+                        À confirmer
+                    </strong>
+
+                </div>
+
+
+                <!-- NET À PAYER -->
+
+                <div class="yt-net-total">
+
+                    <span class="yt-net-label">
+                        Net à payer
+                    </span>
+
+                    <span class="yt-net-amount">
+
+                        {{ cart.get_total_price }}
+
+                        {% for item in cart %}
+                            {% if forloop.first %}
+                                {{ item.produit.vendeur.get_devise_display }}
+                            {% endif %}
+                        {% endfor %}
+
+                    </span>
+
+                    <span class="yt-net-note">
+                        Hors frais de livraison
+                    </span>
+
+                </div>
+
+
+                <!-- PAIEMENT -->
+
+                <div class="yt-payment-box">
+
+                    <strong>
+                        💵 Paiement à la livraison
+                    </strong>
+
+                    Vous serez contacté pour confirmer la commande
+                    et les modalités de livraison.
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
 {% endblock %}
