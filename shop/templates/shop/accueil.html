@@ -6,893 +6,295 @@
 {% block content %}
 
 <style>
+/* =====================================================
+   DESIGN COLORÉ — BOUTIQUE YATOUT CI
+   ===================================================== */
 
-/* =========================================================
-   YA TOUT CI — BOUTIQUE
-   ========================================================= */
-
-/* =========================================================
-   FOND GLOBAL
-   ========================================================= */
-
-html,
-body {
-    background: #eee7f8 !important;
+:root {
+    --yt-primary: #ff4757;
+    --yt-primary-hover: #e84118;
+    --yt-purple: #6c5ce7;
+    --yt-blue: #0984e3;
+    --yt-green: #00b894;
+    --yt-orange: #fd9644;
 }
 
-.yt-shop {
-    font-family: 'Inter', Arial, sans-serif;
-    min-height: 100vh;
-    padding: 25px 0 70px;
-
-    background:
-        radial-gradient(
-            circle at 0% 0%,
-            rgba(123, 36, 204, 0.18),
-            transparent 30%
-        ),
-        radial-gradient(
-            circle at 100% 10%,
-            rgba(2, 132, 199, 0.16),
-            transparent 30%
-        ),
-        radial-gradient(
-            circle at 50% 100%,
-            rgba(236, 72, 153, 0.10),
-            transparent 35%
-        ),
-        linear-gradient(
-            135deg,
-            #eee7f8 0%,
-            #f7f3fc 48%,
-            #eaf4f9 100%
-        ) !important;
-}
-
-
-/* =========================================================
-   HERO
-   ========================================================= */
-
-.yt-shop-hero {
-    position: relative;
-    overflow: hidden;
-
-    margin: 15px auto 30px;
-    max-width: 1200px;
-    padding: 45px 30px;
-
-    border-radius: 28px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #5b16a0 0%,
-            #7b24cc 45%,
-            #0284c7 100%
-        );
-
-    color: white;
-
-    box-shadow:
-        0 20px 45px rgba(91, 22, 160, .22);
-}
-
-.yt-shop-hero::before {
-    content: "";
-    position: absolute;
-
-    width: 220px;
-    height: 220px;
-
-    border-radius: 50%;
-
-    background: rgba(255,255,255,.08);
-
-    right: 100px;
-    bottom: -130px;
-}
-
-.yt-shop-hero::after {
-    content: "";
-
-    position: absolute;
-
-    width: 280px;
-    height: 280px;
-
-    border-radius: 50%;
-
-    background: rgba(255,255,255,.10);
-
-    right: -80px;
-    top: -100px;
-}
-
-.yt-shop-hero-content {
-    position: relative;
-    z-index: 2;
-
-    max-width: 720px;
-}
-
-.yt-shop-hero h1 {
-    margin: 0 0 10px;
-
-    font-size: clamp(2rem, 5vw, 3.3rem);
-    font-weight: 850;
-    line-height: 1.05;
-}
-
-.yt-shop-hero p {
-    margin: 0;
-
-    font-size: 1.05rem;
-
-    opacity: .92;
-}
-
-.yt-hero-badge {
-    display: inline-block;
-
-    margin-bottom: 14px;
-
-    padding: 7px 12px;
-
-    border-radius: 30px;
-
-    background: rgba(255,255,255,.18);
-
-    font-size: .75rem;
-    font-weight: 800;
-
-    backdrop-filter: blur(5px);
-}
-
-
-/* =========================================================
-   RECHERCHE
-   ========================================================= */
-
-.yt-search-container {
-    max-width: 720px;
-
-    margin: -10px auto 30px;
-
-    padding: 0 15px;
-
-    position: relative;
-    z-index: 5;
-}
-
-.yt-search-form {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    padding: 7px;
-
-    background: white;
-
-    border-radius: 17px;
-
-    border: 1px solid #e2e8f0;
-
-    box-shadow:
-        0 12px 30px rgba(15,23,42,.12);
-}
-
-.yt-search-icon {
-    padding-left: 12px;
-
-    font-size: 1.2rem;
-}
-
-.yt-search-input {
-    flex: 1;
-
-    min-width: 0;
-
-    border: none;
-    outline: none;
-
-    padding: 12px 5px;
-
-    font-size: .95rem;
-
-    background: transparent;
-}
-
-.yt-search-input::placeholder {
-    color: #94a3b8;
-}
-
-.yt-search-clear {
-    color: #94a3b8;
-
-    text-decoration: none;
-
-    font-size: 1rem;
-
-    padding: 5px 8px;
-}
-
-.yt-search-clear:hover {
-    color: #7b24cc;
-}
-
-.yt-search-button {
-    border: none;
-
-    padding: 12px 20px;
-
-    border-radius: 12px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #7b24cc,
-            #5b16a0
-        );
-
-    color: white;
-
-    font-weight: 750;
-
-    cursor: pointer;
-
-    transition: .2s;
-}
-
-.yt-search-button:hover {
-    transform: translateY(-1px);
-
-    box-shadow:
-        0 7px 15px rgba(123,36,204,.25);
-}
-
-
-/* =========================================================
-   TITRES DE SECTIONS
-   ========================================================= */
-
-.yt-section-title {
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    margin: 35px 0 17px;
-}
-
-.yt-section-title h2 {
-    margin: 0;
-
-    color: #211532;
-
-    font-size: 1.35rem;
-
-    font-weight: 850;
-}
-
-.yt-section-title span {
-    color: #7b24cc;
-
-    font-size: .8rem;
-
+/* ============================================
+   1. BOUTON AJOUTER AU PANIER
+   ============================================ */
+
+.yt-shop .yt-btn-cart {
+    background: linear-gradient(135deg, #ff4757, #ff6b81);
+    color: #ffffff;
+    border: 2px solid transparent;
+    border-radius: 10px;
     font-weight: 700;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+    transition: all 0.3s ease;
 }
 
-
-/* =========================================================
-   CATÉGORIES
-   ========================================================= */
-
-.yt-categories {
-    display: flex;
-
-    gap: 12px;
-
-    overflow-x: auto;
-
-    padding: 5px 2px 12px;
-
-    scrollbar-width: thin;
+.yt-shop .yt-btn-cart:hover:not([disabled]) {
+    background: linear-gradient(135deg, #e84118, #ff4757);
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 7px 18px rgba(255, 71, 87, 0.35);
 }
 
-.yt-category {
-    flex: 0 0 auto;
-
-    padding: 11px 19px;
-
-    border-radius: 30px;
-
-    background: rgba(255,255,255,.90);
-
-    border: 1px solid #e2e8f0;
-
-    color: #334155;
-
-    font-size: .82rem;
-
-    font-weight: 750;
-
-    text-decoration: none;
-
-    box-shadow:
-        0 4px 12px rgba(15,23,42,.06);
-
-    transition: .2s;
+.yt-shop .yt-btn-cart:active:not([disabled]) {
+    transform: scale(0.97);
 }
 
-.yt-category:hover,
-.yt-category.active {
-    color: white;
+/* Bouton désactivé */
+.yt-shop .yt-btn-cart[disabled] {
+    background: #dfe4ea;
+    color: #747d8c;
+    box-shadow: none;
+    border-color: #dfe4ea;
+}
 
-    background:
-        linear-gradient(
-            135deg,
-            #7b24cc,
-            #0284c7
-        );
+/* ============================================
+   2. BOUTON VOIR LE PRODUIT
+   ============================================ */
 
-    border-color: transparent;
+.yt-shop .yt-btn-view {
+    background: linear-gradient(135deg, #6c5ce7, #8e44ad);
+    color: #ffffff;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+    transition: all 0.3s ease;
+}
 
+.yt-shop .yt-btn-view:hover {
+    background: linear-gradient(135deg, #4834d4, #6c5ce7);
+    color: #ffffff;
     transform: translateY(-2px);
-
-    box-shadow:
-        0 7px 18px rgba(123,36,204,.20);
+    box-shadow: 0 7px 16px rgba(108, 92, 231, 0.3);
 }
 
+/* ============================================
+   3. BOUTON RECHERCHER
+   ============================================ */
 
-/* =========================================================
-   GRILLE DES PRODUITS
-   ========================================================= */
-
-.yt-products-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, minmax(0,1fr));
-
-    gap: 20px;
+.yt-shop .yt-search-button {
+    background: linear-gradient(135deg, #0984e3, #6c5ce7);
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(9, 132, 227, 0.25);
+    transition: all 0.3s ease;
 }
 
+.yt-shop .yt-search-button:hover {
+    background: linear-gradient(135deg, #0652dd, #4834d4);
+    transform: translateY(-2px);
+}
 
-/* =========================================================
-   CARTE PRODUIT
-   ========================================================= */
+/* ============================================
+   4. BOUTONS DES CATÉGORIES
+   ============================================ */
 
-.yt-product-card {
-    position: relative;
-
-    overflow: hidden;
-
-    display: flex;
-
-    flex-direction: column;
-
+.yt-shop .yt-category {
     background: #ffffff;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 20px;
-
-    box-shadow:
-        0 8px 24px rgba(15,23,42,.08);
-
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        border-color .25s ease;
+    color: #2f3542;
+    border: 1px solid #dfe4ea;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: all 0.25s ease;
 }
 
-.yt-product-card:hover {
-    transform: translateY(-6px);
-
-    border-color:
-        rgba(123,36,204,.35);
-
-    box-shadow:
-        0 18px 40px rgba(15,23,42,.15);
-}
-
-
-/* =========================================================
-   ZONE IMAGE
-   ========================================================= */
-
-.yt-card-img-wrapper {
-    position: relative;
-
-    width: 100%;
-
-    height: 270px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    overflow: hidden;
-
-    background:
-        linear-gradient(
-            135deg,
-            #f8fafc,
-            #f0ebff,
-            #edf7fb
-        );
-
-    border-bottom:
-        1px solid #edf0f4;
-}
-
-
-/*
-=========================================================
-IMPORTANT
-
-CONTAIN permet de voir L'IMAGE ENTIÈRE.
-
-NE PAS mettre "cover" ici.
-=========================================================
-*/
-
-.yt-card-img-wrapper img {
-    width: 100%;
-    height: 100%;
-
-    padding: 12px;
-
-    box-sizing: border-box;
-
-    object-fit: contain;
-
-    object-position: center;
-
-    display: block;
-
-    transition:
-        transform .35s ease;
-}
-
-.yt-product-card:hover
-.yt-card-img-wrapper img {
-    transform: scale(1.04);
-}
-
-
-/* =========================================================
-   BADGES
-   ========================================================= */
-
-.yt-product-badges {
-    position: absolute;
-
-    z-index: 10;
-
-    top: 12px;
-    left: 12px;
-    right: 12px;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    pointer-events: none;
-}
-
-.yt-discount {
-    display: inline-block;
-
-    background:
-        linear-gradient(
-            135deg,
-            #ef4444,
-            #dc2626
-        );
-
-    color: white;
-
-    padding: 6px 10px;
-
-    border-radius: 9px;
-
-    font-size: .72rem;
-
-    font-weight: 850;
-
-    box-shadow:
-        0 5px 12px rgba(239,68,68,.25);
-}
-
-.yt-stock {
-    display: inline-block;
-
-    background:
-        linear-gradient(
-            135deg,
-            #16a34a,
-            #15803d
-        );
-
-    color: white;
-
-    padding: 6px 10px;
-
-    border-radius: 9px;
-
-    font-size: .7rem;
-
-    font-weight: 800;
-
-    box-shadow:
-        0 5px 12px rgba(22,163,74,.20);
-}
-
-
-/* =========================================================
-   CORPS DE LA CARTE
-   ========================================================= */
-
-.yt-card-body {
-    display: flex;
-
-    flex-direction: column;
-
-    flex: 1;
-
-    padding: 17px;
-}
-
-.yt-card-vendor {
-    color: #7b24cc;
-
-    font-size: .68rem;
-
-    font-weight: 850;
-
-    text-transform: uppercase;
-
-    letter-spacing: .05em;
-
-    margin-bottom: 6px;
-}
-
-.yt-card-title {
-    margin: 0 0 12px;
-
-    min-height: 44px;
-
-    color: #111827;
-
-    font-size: 1rem;
-
-    font-weight: 800;
-
-    line-height: 1.35;
-}
-
-
-/* =========================================================
-   PRIX
-   ========================================================= */
-
-.yt-price-row {
-    display: flex;
-
-    align-items: center;
-
-    flex-wrap: wrap;
-
-    gap: 8px;
-
-    margin-bottom: 7px;
-}
-
-.yt-price {
-    color: #7b24cc;
-
-    font-size: 1.3rem;
-
-    font-weight: 850;
-}
-
-.yt-currency {
-    color: #64748b;
-
-    font-size: .72rem;
-
-    font-weight: 700;
-}
-
-.yt-old-price {
-    color: #94a3b8;
-
-    font-size: .78rem;
-
-    text-decoration: line-through;
-}
-
-
-/* =========================================================
-   STOCK
-   ========================================================= */
-
-.yt-stock-status {
-    margin-bottom: 15px;
-
-    font-size: .75rem;
-
-    font-weight: 700;
-}
-
-.yt-stock-ok {
-    color: #16a34a;
-}
-
-.yt-stock-out {
-    color: #dc2626;
-}
-
-
-/* =========================================================
-   BOUTONS
-   ========================================================= */
-
-.yt-card-actions {
-    display: grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap: 8px;
-
-    margin-top: auto;
-}
-
-.yt-card-actions form {
-    margin: 0;
-
-    min-width: 0;
-}
-
-.yt-btn-cart,
-.yt-btn-view {
-    width: 100%;
-
-    min-height: 43px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    box-sizing: border-box;
-
-    border-radius: 11px;
-
-    font-size: .76rem;
-
-    font-weight: 800;
-
-    cursor: pointer;
-
-    transition: .2s;
-}
-
-.yt-btn-cart {
-    background: #f1f5f9;
-
-    color: #334155;
-
-    border:
-        1px solid #dbe3ec;
-}
-
-.yt-btn-cart:hover:not(:disabled) {
-    background: #e2e8f0;
-
-    transform: translateY(-1px);
-}
-
-.yt-btn-view {
-    background:
-        linear-gradient(
-            135deg,
-            #7b24cc,
-            #5b16a0
-        );
-
-    color: white;
-
-    border: none;
-
-    text-decoration: none;
-}
-
-.yt-btn-view:hover {
+/* Survol des catégories */
+.yt-shop .yt-category:hover {
+    background: linear-gradient(135deg, #6c5ce7, #0984e3);
+    color: #ffffff;
+    border-color: transparent;
     transform: translateY(-2px);
-
-    box-shadow:
-        0 8px 18px rgba(123,36,204,.25);
+    box-shadow: 0 5px 12px rgba(108, 92, 231, 0.2);
 }
 
-.yt-btn-cart:disabled {
-    opacity: .45;
-
-    cursor: not-allowed;
+/* Catégorie sélectionnée :
+   fonctionne si le lien utilise la classe active */
+.yt-shop .yt-category.active,
+.yt-shop .yt-category[aria-current="page"] {
+    background: linear-gradient(135deg, #ff4757, #ff6b81);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
 }
 
+/* ============================================
+   5. PRIX DES PRODUITS
+   ============================================ */
 
-/* =========================================================
-   MESSAGE AUCUN PRODUIT
-   ========================================================= */
-
-.yt-empty-products {
-    grid-column: 1 / -1;
-
-    text-align: center;
-
-    padding: 70px 20px;
-
-    background: rgba(255,255,255,.92);
-
-    border:
-        1px solid #e5e7eb;
-
-    border-radius: 20px;
-
-    box-shadow:
-        0 10px 30px rgba(15,23,42,.06);
-}
-
-.yt-empty-products h3 {
-    margin: 0 0 10px;
-
-    color: #1e293b;
-}
-
-.yt-empty-products p {
-    color: #64748b;
-}
-
-.yt-empty-products a {
-    color: #7b24cc;
-
+.yt-shop .yt-price {
+    color: #e84362;
     font-weight: 800;
-
-    text-decoration: none;
 }
 
-
-/* =========================================================
-   TABLETTE
-   ========================================================= */
-
-@media(max-width:1100px) {
-
-    .yt-products-grid {
-        grid-template-columns:
-            repeat(3, minmax(0,1fr));
-    }
-
+/* Prix barré */
+.yt-shop .yt-old-price {
+    color: #a4b0be;
 }
 
+/* ============================================
+   6. BADGES PROMO ET NOUVEAUTÉ
+   ============================================ */
 
-/* =========================================================
-   MOBILE
-   ========================================================= */
+.yt-shop .yt-product-badges span:nth-child(1) {
+    background: linear-gradient(135deg, #ff4757, #ff6b81);
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(255, 71, 87, 0.2);
+}
 
-@media(max-width:760px) {
+.yt-shop .yt-product-badges span:nth-child(2) {
+    background: linear-gradient(135deg, #00b894, #55efc4);
+    color: #ffffff;
+}
 
-    .yt-shop {
-        padding-top: 10px;
+/* ============================================
+   7. INDICATEUR DE STOCK
+   ============================================ */
+
+.yt-shop .yt-stock-status {
+    color: #16834a;
+    font-weight: 600;
+}
+
+/* ============================================
+   8. CARTES PRODUITS
+   ============================================ */
+
+.yt-shop .yt-product-card {
+    border: 1px solid #edf0f5;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 5px 18px rgba(47, 53, 66, 0.07);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.yt-shop .yt-product-card:hover {
+    border-color: #d6ccff;
+    box-shadow: 0 10px 28px rgba(108, 92, 231, 0.14);
+}
+
+/* ============================================
+   9. TITRES DES SECTIONS
+   ============================================ */
+
+.yt-shop .yt-section-title h2 {
+    color: #2f3542;
+    font-weight: 800;
+}
+
+/* Petit effet de couleur sur les titres */
+.yt-shop .yt-section-title span {
+    background: linear-gradient(135deg, #e8e5ff, #e3f2ff);
+    color: #4834d4;
+    border: 1px solid #ded8ff;
+}
+
+/* ============================================
+   10. FOCUS POUR NAVIGATION
+   ============================================ */
+
+.yt-shop .yt-btn-cart:focus-visible,
+.yt-shop .yt-btn-view:focus-visible,
+.yt-shop .yt-search-button:focus-visible,
+.yt-shop .yt-category:focus-visible {
+    outline: 3px solid #74b9ff;
+    outline-offset: 3px;
+}
+
+/* Respecte les préférences de réduction des animations */
+@media (prefers-reduced-motion: reduce) {
+    .yt-shop .yt-btn-cart,
+    .yt-shop .yt-btn-view,
+    .yt-shop .yt-search-button,
+    .yt-shop .yt-category,
+    .yt-shop .yt-product-card {
+        transition: none;
+    }
+}
+/* ============================================
+   CORRECTION MOBILE : CATÉGORIES EN HAUT
+   ET TOUS LES ARTICLES EN DESSOUS
+   ============================================ */
+
+@media screen and (max-width: 768px) {
+
+    /* Le conteneur principal de la boutique */
+    .yt-shop .container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        padding-left: 10px;
+        padding-right: 10px;
     }
 
-    .yt-shop-hero {
-        margin: 8px 10px 25px;
-
-        padding: 32px 22px;
-
-        border-radius: 22px;
+    /* La section des catégories prend toute la largeur */
+    .yt-shop .yt-categories,
+    .yt-shop .yt-section-title {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        float: none;
+        margin-left: 0;
+        margin-right: 0;
     }
 
-    .yt-shop-hero h1 {
-        font-size: 2rem;
+    /* Le titre des catégories */
+    .yt-shop .yt-section-title {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
     }
 
-    .yt-products-grid {
-        grid-template-columns:
-            repeat(2, minmax(0,1fr));
+    /* Les catégories restent sur une ligne défilante */
+    .yt-shop .yt-categories {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 12px;
+    }
 
+    /* Le titre Tous les articles */
+    .yt-shop .yt-section-title h2 {
+        font-size: 1.15rem;
+        margin: 0;
+    }
+
+    /* Grille des produits sous les catégories */
+    .yt-shop .yt-products-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 15px;
     }
 
-    .yt-card-img-wrapper {
-        height: 210px;
+    /* Empêche les cartes de déborder */
+    .yt-shop .yt-product-card {
+        width: 100%;
+        min-width: 0;
+        margin: 0;
     }
 
-    .yt-card-body {
-        padding: 12px;
-    }
-
-    .yt-card-title {
-        font-size: .86rem;
-    }
-
-    .yt-price {
-        font-size: 1.05rem;
-    }
-
-    .yt-card-actions {
-        grid-template-columns: 1fr;
-    }
-
-    .yt-btn-cart,
-    .yt-btn-view {
-        min-height: 40px;
+    /* Empêche un ancien flottement de déplacer les éléments */
+    .yt-shop .yt-products-grid,
+    .yt-shop .yt-section-title,
+    .yt-shop .yt-categories {
+        clear: both;
     }
 
 }
-
-
-/* =========================================================
-   PETIT MOBILE
-   ========================================================= */
-
-@media(max-width:420px) {
-
-    .yt-products-grid {
-        gap: 9px;
-    }
-
-    .yt-card-img-wrapper {
-        height: 185px;
-    }
-
-    .yt-card-img-wrapper img {
-        padding: 7px;
-    }
-
-    .yt-card-body {
-        padding: 9px;
-    }
-
-    .yt-card-title {
-        font-size: .8rem;
-
-        min-height: 36px;
-    }
-
-    .yt-card-vendor {
-        font-size: .58rem;
-    }
-
-    .yt-price {
-        font-size: .92rem;
-    }
-
-    .yt-btn-cart,
-    .yt-btn-view {
-        font-size: .68rem;
-    }
-
-    .yt-search-form {
-        border-radius: 14px;
-    }
-
-    .yt-search-button {
-        padding: 11px 13px;
-
-        font-size: .75rem;
-    }
-
-}
-
 </style>
 
 
@@ -908,17 +310,13 @@ NE PAS mettre "cover" ici.
 
             <div class="yt-shop-hero-content">
 
-                <div class="yt-hero-badge">
-                    🛍️ BOUTIQUE YATOUT CI
-                </div>
-
                 <h1>
-                    Trouvez ce qu'il vous faut.
+                    🛍️ Boutique YaTout
                 </h1>
 
                 <p>
-                    Découvrez nos articles, promotions et nouveautés
-                    sélectionnés pour vous.
+                    Découvrez nos produits et articles disponibles
+                    dans la boutique YaTout.
                 </p>
 
             </div>
@@ -941,33 +339,30 @@ NE PAS mettre "cover" ici.
         >
 
             <span class="yt-search-icon">
-                🔍
+                🔎
             </span>
 
             <input
                 type="search"
                 name="q"
-                value="{{ query|default:'' }}"
-                placeholder="Rechercher un produit, une marque..."
-                class="yt-search-input"
-                aria-label="Rechercher un produit"
+                value="{{ request.GET.q|default:'' }}"
+                placeholder="Rechercher un produit..."
+                autocomplete="off"
             >
 
-            {% if query %}
-
+            {% if request.GET.q %}
                 <a
                     href="."
                     class="yt-search-clear"
-                    aria-label="Effacer la recherche"
+                    title="Effacer la recherche"
                 >
                     ✕
                 </a>
-
             {% endif %}
 
             <button
-                class="yt-search-button"
                 type="submit"
+                class="yt-search-button"
             >
                 Rechercher
             </button>
@@ -978,7 +373,6 @@ NE PAS mettre "cover" ici.
 
 
     <div class="container">
-
 
         <!-- =================================================
              CATÉGORIES
@@ -997,58 +391,27 @@ NE PAS mettre "cover" ici.
 
             <a
                 href="."
-                class="yt-category active"
-            >
-                Tous
-            </a>
-
-            <a
-                href="#"
                 class="yt-category"
             >
-                👕 Mode
+                🛍️ Tous
             </a>
 
-            <a
-                href="#"
-                class="yt-category"
-            >
-                👟 Chaussures
-            </a>
+            {% for categorie in categories %}
 
-            <a
-                href="#"
-                class="yt-category"
-            >
-                ⌚ Accessoires
-            </a>
+                <a
+                    href="?categorie={{ categorie.slug }}"
+                    class="yt-category"
+                >
+                    {{ categorie.nom }}
+                </a>
 
-            <a
-                href="#"
-                class="yt-category"
-            >
-                🏠 Maison
-            </a>
-
-            <a
-                href="#"
-                class="yt-category"
-            >
-                💄 Beauté
-            </a>
-
-            <a
-                href="#"
-                class="yt-category"
-            >
-                📦 Autres
-            </a>
+            {% endfor %}
 
         </div>
 
 
         <!-- =================================================
-             PRODUITS
+             TITRE PRODUITS
              ================================================= -->
 
         <div class="yt-section-title">
@@ -1058,66 +421,45 @@ NE PAS mettre "cover" ici.
             </h2>
 
             <span>
-
                 {{ produits|length }}
                 article{{ produits|length|pluralize }}
-
             </span>
 
         </div>
 
 
-        <div class="yt-products-grid">
+        <!-- =================================================
+             GRILLE PRODUITS
+             ================================================= -->
 
+        <div class="yt-products-grid">
 
             {% for produit in produits %}
 
-
                 <article class="yt-product-card">
 
-
-                    <!-- =====================================
-                         BADGES
-                         ===================================== -->
+                    <!-- BADGES -->
 
                     <div class="yt-product-badges">
 
-                        <div>
-
-                            {% if produit.reduction_pourcentage > 0 %}
-
-                                <span class="yt-discount">
-
-                                    🔥
-                                    -{{ produit.reduction_pourcentage }}%
-
-                                </span>
-
-                            {% endif %}
-
-                        </div>
-
+                        {% if produit.ancien_prix %}
+                            <span>
+                                🔥 Promo
+                            </span>
+                        {% endif %}
 
                         {% if produit.stock > 0 %}
-
-                            <span class="yt-stock">
-
-                                Stock :
-                                {{ produit.stock }}
-
+                            <span>
+                                Disponible
                             </span>
-
                         {% endif %}
 
                     </div>
 
 
-                    <!-- =====================================
-                         IMAGE
-                         ===================================== -->
+                    <!-- IMAGE -->
 
                     <div class="yt-card-img-wrapper">
-
 
                         {% if produit.image %}
 
@@ -1129,68 +471,39 @@ NE PAS mettre "cover" ici.
 
                         {% else %}
 
-                            <div
-                                style="
-                                    text-align:center;
-                                    color:#94a3b8;
-                                    font-size:.8rem;
-                                    font-weight:600;
-                                "
+                            <img
+                                src="{% static 'images/no-image.png' %}"
+                                alt="Image non disponible"
+                                loading="lazy"
                             >
 
-                                <div
-                                    style="
-                                        font-size:2.5rem;
-                                        margin-bottom:5px;
-                                    "
-                                >
-                                    📷
-                                </div>
-
-                                Image indisponible
-
-                            </div>
-
                         {% endif %}
-
 
                     </div>
 
 
-                    <!-- =====================================
-                         INFORMATIONS
-                         ===================================== -->
+                    <!-- INFORMATIONS -->
 
                     <div class="yt-card-body">
 
-
                         <div class="yt-card-vendor">
-
                             {{ produit.vendeur.nom_boutique|default:"Boutique YaTout" }}
-
                         </div>
 
 
                         <h2 class="yt-card-title">
-
                             {{ produit.nom }}
-
                         </h2>
 
 
-                        <!-- PRIX -->
-
                         <div class="yt-price-row">
-
 
                             <span class="yt-price">
 
                                 {{ produit.prix }}
 
                                 <span class="yt-currency">
-
                                     {{ produit.vendeur.get_devise_display }}
-
                                 </span>
 
                             </span>
@@ -1201,13 +514,11 @@ NE PAS mettre "cover" ici.
                                 <span class="yt-old-price">
 
                                     {{ produit.ancien_prix }}
-
                                     {{ produit.vendeur.get_devise_display }}
 
                                 </span>
 
                             {% endif %}
-
 
                         </div>
 
@@ -1216,35 +527,26 @@ NE PAS mettre "cover" ici.
 
                         <div class="yt-stock-status">
 
-
                             {% if produit.stock > 0 %}
 
                                 <span class="yt-stock-ok">
-
                                     🟢 En stock
-
                                 </span>
 
                             {% else %}
 
                                 <span class="yt-stock-out">
-
                                     🔴 Rupture de stock
-
                                 </span>
 
                             {% endif %}
 
-
                         </div>
 
 
-                        <!-- =================================
-                             ACTIONS
-                             ================================= -->
+                        <!-- ACTIONS -->
 
                         <div class="yt-card-actions">
-
 
                             <form
                                 action="{% url 'panier_ajouter' produit.id %}"
@@ -1256,13 +558,11 @@ NE PAS mettre "cover" ici.
                                 <button
                                     type="submit"
                                     class="yt-btn-cart"
-                                    {% if produit.stock == 0 %}
+                                    {% if produit.stock <= 0 %}
                                         disabled
                                     {% endif %}
                                 >
-
                                     🛒 Ajouter
-
                                 </button>
 
                             </form>
@@ -1272,82 +572,33 @@ NE PAS mettre "cover" ici.
                                 href="{% url 'detail_produit' produit.pk %}"
                                 class="yt-btn-view"
                             >
-
                                 👁️ Voir
-
                             </a>
-
 
                         </div>
 
-
                     </div>
-
 
                 </article>
 
-
             {% empty %}
-
-
-                <!-- =====================================
-                     AUCUN PRODUIT
-                     ===================================== -->
 
                 <div class="yt-empty-products">
 
-                    <div
-                        style="
-                            font-size:3rem;
-                            margin-bottom:10px;
-                        "
-                    >
-                        🛍️
-                    </div>
-
-
                     <h3>
-                        Aucun produit disponible
+                        😕 Aucun produit trouvé
                     </h3>
 
-
-                    {% if query %}
-
-                        <p>
-
-                            Aucun résultat pour :
-
-                            <strong>
-                                "{{ query }}"
-                            </strong>
-
-                        </p>
-
-
-                        <a href=".">
-
-                            Voir tous les produits
-
-                        </a>
-
-                    {% else %}
-
-                        <p>
-                            Aucun article n'est disponible
-                            pour le moment.
-                        </p>
-
-                    {% endif %}
-
+                    <p>
+                        Aucun article ne correspond à votre recherche
+                        pour le moment.
+                    </p>
 
                 </div>
 
-
             {% endfor %}
 
-
         </div>
-
 
     </div>
 

@@ -1,67 +1,367 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <title>{% block title %}YaTout Ci{% endblock %}</title>
 
-    <link rel="stylesheet" href="{% static 'shop/js/css/style.css' %}">
+    <link rel="stylesheet"
+          href="{% static 'shop/js/css/style.css' %}">
 
     <style>
 
-    /* =========================================================================
-       🌐 CONFIGURATION GLOBALE
-       ========================================================================= */
+    /* ============================================================
+       RESET GLOBAL — IMPORTANT POUR MOBILE
+       ============================================================ */
 
     *,
-    *:before,
-    *:after {
+    *::before,
+    *::after {
         box-sizing: border-box !important;
     }
 
-    html,
-    body {
-        max-width: 100% !important;
+    html {
         width: 100% !important;
+        max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        overflow-x: hidden !important;
+    }
 
+    body {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
         overflow-x: hidden !important;
 
         font-family:
-            'Inter',
+            Inter,
             system-ui,
             -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
             sans-serif !important;
 
         color: #0f172a;
+    }
+
+    img,
+    video,
+    iframe {
+        max-width: 100% !important;
+    }
+
+    input,
+    button,
+    select,
+    textarea {
+        max-width: 100%;
+        font: inherit;
+    }
+
+    a {
+        max-width: 100%;
     }
 
     h1,
     h2,
     h3,
     h4,
-    p,
-    span,
-    div {
+    h5,
+    h6,
+    p {
         max-width: 100%;
-        overflow-wrap: break-word;
-        word-wrap: break-word;
+        overflow-wrap: anywhere;
     }
 
 
-    /* =========================================================================
-       🖨️ ESPACE IMPRESSION
-       ========================================================================= */
+    /* ============================================================
+       STRUCTURE PRINCIPALE
+       ============================================================ */
+
+    .flex-grow {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /*
+       IMPORTANT :
+       PAS DE overflow-x:auto ICI.
+       C'était une des causes du mauvais comportement
+       sur écran réduit.
+    */
+
+    .main-page-wrapper {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        clear: both !important;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 1200px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+
+    /* ============================================================
+       NAVBAR
+       ============================================================ */
+
+    .navbar,
+    .navbar-impression {
+        position: relative !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+
+        min-height: 65px;
+
+        background: #0f172a !important;
+
+        z-index: 100000 !important;
+
+        box-shadow:
+            0 2px 8px rgba(15, 23, 42, .15) !important;
+    }
+
+    .navbar > .container,
+    .navbar-impression > .container {
+
+        width: 100% !important;
+        max-width: 1200px !important;
+
+        min-width: 0 !important;
+
+        margin: 0 auto !important;
+
+        padding:
+            0 24px !important;
+
+        min-height: 65px;
+
+        display: flex !important;
+
+        align-items: center !important;
+
+        justify-content: space-between !important;
+
+        gap: 15px;
+    }
+
+    .nav-logo {
+        display: block !important;
+
+        flex: 0 1 auto !important;
+
+        min-width: 0 !important;
+
+        color: #ffffff !important;
+
+        text-decoration: none !important;
+
+        font-size: 1.15rem !important;
+
+        font-weight: 800 !important;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+    }
+
+    .nav-actions {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 8px;
+
+        min-width: 0;
+
+        flex: 1 1 auto;
+    }
+
+    .nav-actions .link-nav,
+    .nav-actions .btn-nav {
+
+        display: inline-flex !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        min-width: 0;
+
+        color: #cbd5e1 !important;
+
+        text-decoration: none !important;
+
+        font-size: 13px !important;
+
+        font-weight: 600 !important;
+
+        padding: 9px 12px !important;
+
+        border-radius: 7px !important;
+
+        white-space: nowrap;
+
+        transition: .2s ease;
+    }
+
+    .nav-actions .link-nav:hover,
+    .nav-actions .btn-nav:hover {
+        color: #ffffff !important;
+        background: rgba(255,255,255,.08) !important;
+    }
+
+    .btn-conseiller-green {
+        background: #16a34a !important;
+        color: #ffffff !important;
+    }
+
+    .btn-conseiller-green:hover {
+        background: #15803d !important;
+    }
+
+    .btn-nav-purple {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+    }
+
+    .btn-nav-white {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    .nav-welcome {
+        color: #cbd5e1;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .nav-welcome strong {
+        color: #ffffff;
+    }
+
+    .form-inline-logout {
+        margin: 0 !important;
+        display: inline-flex !important;
+    }
+
+    .btn-logout-submit {
+        background: transparent !important;
+
+        color: #f87171 !important;
+
+        border:
+            1px solid rgba(248,113,113,.25) !important;
+
+        padding: 7px 11px !important;
+
+        border-radius: 7px !important;
+
+        cursor: pointer !important;
+
+        white-space: nowrap;
+    }
+
+
+    /* ============================================================
+       BURGER
+       ============================================================ */
+
+    .burger-menu {
+        display: none;
+
+        flex: 0 0 auto;
+
+        width: 42px !important;
+        height: 42px !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        flex-direction: column !important;
+
+        gap: 5px !important;
+
+        background: transparent !important;
+
+        border: 1px solid rgba(255,255,255,.15) !important;
+
+        border-radius: 8px !important;
+
+        padding: 8px !important;
+
+        cursor: pointer;
+
+        z-index: 100002;
+    }
+
+    .burger-menu span {
+        display: block !important;
+
+        width: 20px !important;
+        height: 2px !important;
+
+        background: #ffffff !important;
+
+        border-radius: 2px;
+    }
+
+
+    /* ============================================================
+       MENU MOBILE
+       ============================================================ */
+
+    .supports-mobile-only {
+        display: none;
+    }
+
+    .menu-section-title {
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .btn-support-item {
+        color: #cbd5e1 !important;
+        text-decoration: none !important;
+        padding: 10px 14px;
+        border-radius: 7px;
+    }
+
+    .btn-support-item:hover {
+        background: rgba(255,255,255,.06);
+        color: #ffffff !important;
+    }
+
+
+    /* ============================================================
+       ESPACE IMPRESSION
+       ============================================================ */
 
     {% if "impression" in request.path or prestation or "atelier" in request.path %}
-
-
-    /* =========================================================================
-       🌈 1. FOND TIE & DYE ANIMÉ
-       ========================================================================= */
 
     @keyframes tieDyeMovement {
 
@@ -78,14 +378,6 @@
         }
 
     }
-
-
-    /*
-       IMPORTANT :
-       On remet ici l'ancien fond animé.
-       Aucun "animation: none".
-       Aucun "background-image: none".
-    */
 
     html,
     body {
@@ -110,501 +402,322 @@
     }
 
 
-    /* =========================================================================
-       🧱 2. CONTENEURS GLASS
-       ========================================================================= */
-
     .print-container,
     .votre-conteneur-principal,
     .main-container {
 
-        background:
-            rgba(255, 255, 255, 0.78) !important;
+        width: 100% !important;
+        max-width: 1200px !important;
 
-        backdrop-filter:
-            blur(20px) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
 
-        -webkit-backdrop-filter:
-            blur(20px) !important;
+        background: rgba(255,255,255,.78) !important;
+
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
 
         border:
-            1px solid rgba(255, 255, 255, 0.6) !important;
+            1px solid rgba(255,255,255,.6) !important;
 
-        border-radius:
-            8px !important;
+        border-radius: 12px !important;
 
         box-shadow:
-            0 10px 40px rgba(15, 23, 42, 0.04) !important;
+            0 10px 40px rgba(15,23,42,.04) !important;
     }
 
 
-    /* =========================================================================
-       📦 3. CARTES
-       ========================================================================= */
+    /* CARTES */
 
     .card,
     .products-column a,
     .product-card-item {
 
-        background:
-            #ffffff !important;
+        max-width: 100% !important;
 
-        border:
-            1px solid #e2e8f0 !important;
+        background: #ffffff !important;
 
-        border-radius:
-            8px !important;
+        border: 1px solid #e2e8f0 !important;
+
+        border-radius: 10px !important;
 
         transition:
-            transform 0.25s ease,
-            box-shadow 0.25s ease,
-            border-color 0.25s ease !important;
+            transform .25s ease,
+            box-shadow .25s ease,
+            border-color .25s ease !important;
     }
 
     .card:hover,
     .products-column a:hover,
     .product-card-item:hover {
 
-        transform:
-            translateY(-4px) !important;
+        transform: translateY(-3px) !important;
 
-        border-color:
-            #0284c7 !important;
+        border-color: #0284c7 !important;
 
         box-shadow:
-            0 12px 20px rgba(15, 23, 42, 0.06) !important;
+            0 12px 25px rgba(15,23,42,.08) !important;
     }
 
 
-    /* =========================================================================
-       📋 4. LIGNES DE PRESTATIONS
-       ========================================================================= */
+    /* LISTE */
 
     .catalog-list {
 
-        display:
-            flex !important;
+        width: 100% !important;
 
-        flex-direction:
-            column !important;
+        display: flex !important;
 
-        gap:
-            12px !important;
+        flex-direction: column !important;
 
-        margin-top:
-            20px !important;
+        gap: 12px !important;
+
+        margin-top: 20px !important;
     }
 
     .item-list-row {
 
-        background:
-            #ffffff !important;
+        width: 100% !important;
+        max-width: 100% !important;
 
-        border:
-            1px solid #e2e8f0 !important;
+        background: #ffffff !important;
 
-        border-radius:
-            8px !important;
+        border: 1px solid #e2e8f0 !important;
 
-        padding:
-            16px 24px !important;
+        border-radius: 10px !important;
+
+        padding: 16px 24px !important;
 
         box-shadow:
-            0 1px 3px rgba(0, 0, 0, 0.02) !important;
+            0 1px 3px rgba(0,0,0,.03) !important;
 
-        transition:
-            transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-            box-shadow 0.25s ease,
-            border-color 0.25s ease !important;
+        transition: .25s ease !important;
     }
 
     .item-list-row:hover {
 
-        transform:
-            translateY(-3px) !important;
+        transform: translateY(-3px) !important;
 
-        border-color:
-            #0284c7 !important;
+        border-color: #0284c7 !important;
 
         box-shadow:
-            0 10px 25px rgba(15, 23, 42, 0.05) !important;
+            0 10px 25px rgba(15,23,42,.06) !important;
     }
 
 
-    /* =========================================================================
-       🔗 5. BOUTON PRINCIPAL PRESTATION
-       ========================================================================= */
+    /* BOUTONS */
 
     .btn-link-prestation {
 
-        display:
-            inline-flex !important;
+        display: inline-flex !important;
 
-        align-items:
-            center !important;
+        align-items: center !important;
+        justify-content: center !important;
 
-        justify-content:
-            center !important;
+        max-width: 100%;
 
-        background:
-            #0284c7 !important;
+        background: #0284c7 !important;
 
-        color:
-            #ffffff !important;
+        color: #ffffff !important;
 
-        text-decoration:
-            none !important;
+        text-decoration: none !important;
 
-        font-size:
-            0.875rem !important;
+        font-size: .875rem !important;
 
-        font-weight:
-            600 !important;
+        font-weight: 600 !important;
 
-        padding:
-            12px 24px !important;
+        padding: 12px 24px !important;
 
-        border:
-            1px solid transparent !important;
+        border: 0 !important;
 
-        border-radius:
-            6px !important;
-
-        box-shadow:
-            0 2px 4px rgba(2, 132, 199, 0.15) !important;
-
-        transition:
-            all 0.2s ease !important;
+        border-radius: 7px !important;
     }
 
     .btn-link-prestation:hover {
 
-        transform:
-            translateY(-2px) !important;
+        background: #0369a1 !important;
 
-        background:
-            #0369a1 !important;
-
-        box-shadow:
-            0 6px 16px rgba(2, 132, 199, 0.25) !important;
+        transform: translateY(-2px);
     }
 
-
-    /* =========================================================================
-       🔎 6. BOUTON VOIR LES TARIFS
-       ========================================================================= */
 
     .btn-tarifs-span,
     span[onmouseover*="this.style"] {
 
-        display:
-            inline-block !important;
+        display: inline-block !important;
 
-        padding:
-            10px 20px !important;
+        max-width: 100%;
 
-        background:
-            transparent !important;
+        padding: 10px 20px !important;
 
-        color:
-            #0284c7 !important;
+        background: transparent !important;
 
-        border:
-            2px solid #0284c7 !important;
+        color: #0284c7 !important;
 
-        border-radius:
-            6px !important;
+        border: 2px solid #0284c7 !important;
 
-        font-size:
-            0.875rem !important;
+        border-radius: 7px !important;
 
-        font-weight:
-            600 !important;
+        font-size: .875rem !important;
 
-        text-align:
-            center !important;
+        font-weight: 600 !important;
 
-        cursor:
-            pointer !important;
-
-        transition:
-            all 0.25s ease !important;
+        cursor: pointer !important;
     }
 
     .btn-tarifs-span:hover,
     span[onmouseover*="this.style"]:hover {
 
-        transform:
-            translateY(-2px) !important;
-
         background:
-            linear-gradient(
-                135deg,
-                #0284c7,
-                #4f46e5
-            ) !important;
+            linear-gradient(135deg,#0284c7,#4f46e5) !important;
 
-        color:
-            #ffffff !important;
+        color: #ffffff !important;
 
-        border-color:
-            transparent !important;
-
-        box-shadow:
-            0 6px 16px rgba(79, 70, 229, 0.2) !important;
-    }
-
-    .btn-tarifs-span:active,
-    span[onmouseover*="this.style"]:active {
-
-        transform:
-            translateY(0) scale(0.98) !important;
+        border-color: transparent !important;
     }
 
 
-    /* =========================================================================
-       📝 7. INPUTS ET SELECT
-       ========================================================================= */
+    /* INPUTS */
 
     select,
     input:not([type="submit"]):not([type="hidden"]) {
 
-        background:
-            #ffffff !important;
+        max-width: 100% !important;
 
-        border:
-            1px solid #cbd5e1 !important;
+        background: #ffffff !important;
 
-        color:
-            #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
 
-        border-radius:
-            6px !important;
+        color: #0f172a !important;
 
-        padding:
-            10px 14px !important;
+        border-radius: 7px !important;
 
-        font-size:
-            0.9rem !important;
-
-        font-weight:
-            500 !important;
-
-        transition:
-            all 0.2s ease !important;
+        padding: 10px 14px !important;
     }
 
     select:focus,
     input:focus {
 
-        background:
-            #ffffff !important;
-
-        border-color:
-            #0284c7 !important;
+        border-color: #0284c7 !important;
 
         box-shadow:
-            0 0 0 3px rgba(2, 132, 199, 0.12) !important;
+            0 0 0 3px rgba(2,132,199,.12) !important;
 
-        outline:
-            none !important;
+        outline: none !important;
     }
 
 
-    /* =========================================================================
-       🚀 8. BOUTONS DE VALIDATION
-       ========================================================================= */
+    /* SUBMIT */
 
     button[type="submit"],
     input[type="submit"],
     [class*="btn-valider"] {
 
-        background:
-            #0284c7 !important;
+        max-width: 100%;
 
-        color:
-            #ffffff !important;
+        background: #0284c7 !important;
 
-        font-size:
-            0.9rem !important;
+        color: #ffffff !important;
 
-        font-weight:
-            600 !important;
+        font-weight: 600 !important;
 
-        letter-spacing:
-            0.3px !important;
+        padding: 12px 28px !important;
 
-        padding:
-            12px 28px !important;
+        border: 0 !important;
 
-        border:
-            1px solid transparent !important;
+        border-radius: 7px !important;
 
-        border-radius:
-            6px !important;
-
-        cursor:
-            pointer !important;
-
-        box-shadow:
-            0 2px 4px rgba(2, 132, 199, 0.15) !important;
-
-        transition:
-            all 0.25s ease !important;
+        cursor: pointer;
     }
 
     button[type="submit"]:hover,
     input[type="submit"]:hover {
 
-        transform:
-            translateY(-2px) !important;
-
         background:
-            linear-gradient(
-                135deg,
-                #0284c7,
-                #4f46e5
-            ) !important;
+            linear-gradient(135deg,#0284c7,#4f46e5) !important;
 
-        box-shadow:
-            0 6px 16px rgba(79, 70, 229, 0.2) !important;
-    }
-
-    button[type="submit"]:active,
-    input[type="submit"]:active {
-
-        transform:
-            translateY(0) scale(0.98) !important;
+        transform: translateY(-2px);
     }
 
 
-    /* =========================================================================
-       🏷️ 9. PROMOTION
-       ========================================================================= */
+    /* PROMO */
 
     .promo-banner-container {
 
-        background:
-            #fff7ed !important;
+        width: 100% !important;
+        max-width: 100% !important;
 
-        border:
-            1px solid #ffedd5 !important;
+        background: #fff7ed !important;
 
-        border-radius:
-            8px !important;
+        border: 1px solid #ffedd5 !important;
 
-        transition:
-            all 0.2s ease !important;
-    }
-
-    .promo-banner-container:hover {
-
-        transform:
-            translateY(-2px) !important;
-
-        box-shadow:
-            0 8px 16px rgba(234, 88, 12, 0.06) !important;
+        border-radius: 9px !important;
     }
 
     .promo-badge {
 
-        background:
-            #ea580c !important;
+        background: #ea580c !important;
 
-        color:
-            #ffffff !important;
+        color: #ffffff !important;
 
-        border-radius:
-            4px !important;
+        border-radius: 5px !important;
 
-        padding:
-            6px 12px !important;
+        padding: 6px 12px !important;
 
-        font-weight:
-            600 !important;
-
-        text-transform:
-            uppercase !important;
-
-        letter-spacing:
-            0.5px !important;
+        font-weight: 700 !important;
     }
 
 
-    /* =========================================================================
-       🖼️ 10. GALERIE DÉFILANTE
-       ========================================================================= */
+    /* GALERIE */
 
     .cart-column {
 
-        width:
-            100% !important;
+        width: 100% !important;
 
-        margin-top:
-            32px !important;
+        max-width: 100% !important;
+
+        margin-top: 32px !important;
     }
 
     .cart-sticky {
 
-        background:
-            #ffffff !important;
+        width: 100% !important;
 
-        border:
-            1px solid #e2e8f0 !important;
+        max-width: 100% !important;
 
-        border-radius:
-            8px !important;
+        background: #ffffff !important;
 
-        padding:
-            24px !important;
-    }
+        border: 1px solid #e2e8f0 !important;
 
-    .gallery-title {
+        border-radius: 10px !important;
 
-        color:
-            #0f172a !important;
-
-        font-size:
-            1.15rem !important;
-
-        font-weight:
-            700 !important;
-
-        margin:
-            0 0 16px 0 !important;
+        padding: 24px !important;
     }
 
     .marquee-container {
 
-        width:
-            100% !important;
+        width: 100% !important;
 
-        overflow:
-            hidden !important;
+        max-width: 100% !important;
 
-        position:
-            relative !important;
+        overflow: hidden !important;
 
-        background:
-            #f8fafc !important;
+        background: #f8fafc !important;
 
-        border:
-            1px solid #e2e8f0 !important;
+        border: 1px solid #e2e8f0 !important;
 
-        border-radius:
-            6px !important;
+        border-radius: 8px !important;
 
-        padding:
-            16px 0 !important;
+        padding: 16px 0 !important;
     }
 
     @keyframes scrollMarquee {
 
-        0% {
+        from {
             transform: translateX(0);
         }
 
-        100% {
+        to {
             transform: translateX(-50%);
         }
 
@@ -612,14 +725,11 @@
 
     .marquee-track {
 
-        display:
-            flex !important;
+        display: flex !important;
 
-        width:
-            max-content !important;
+        width: max-content !important;
 
-        gap:
-            16px !important;
+        gap: 16px !important;
 
         animation:
             scrollMarquee 30s linear infinite !important;
@@ -627,1061 +737,599 @@
 
     .marquee-slide {
 
-        width:
-            160px !important;
+        width: 160px !important;
 
-        height:
-            160px !important;
+        height: 160px !important;
 
-        flex-shrink:
-            0 !important;
+        flex: 0 0 160px !important;
 
-        position:
-            relative !important;
+        position: relative !important;
 
-        overflow:
-            hidden !important;
+        overflow: hidden !important;
 
-        border:
-            1px solid #e2e8f0 !important;
-
-        border-radius:
-            6px !important;
+        border-radius: 8px !important;
     }
 
     .marquee-slide img {
 
-        width:
-            100% !important;
+        width: 100% !important;
+        height: 100% !important;
 
-        height:
-            100% !important;
-
-        object-fit:
-            cover !important;
-
-        transition:
-            transform 0.25s ease !important;
-    }
-
-    .marquee-slide:hover img {
-
-        transform:
-            scale(1.05) !important;
-    }
-
-    .marquee-caption {
-
-        position:
-            absolute !important;
-
-        left:
-            0 !important;
-
-        right:
-            0 !important;
-
-        bottom:
-            0 !important;
-
-        padding:
-            6px !important;
-
-        background:
-            rgba(15, 23, 42, 0.85) !important;
-
-        color:
-            #ffffff !important;
-
-        font-size:
-            0.75rem !important;
-
-        text-align:
-            center !important;
-
-        opacity:
-            0 !important;
-
-        transition:
-            opacity 0.2s ease !important;
-    }
-
-    .marquee-slide:hover .marquee-caption {
-
-        opacity:
-            1 !important;
+        object-fit: cover !important;
     }
 
 
-    /* =========================================================================
-       🤖 11. ASSISTANT IA
-       ========================================================================= */
+    /* CHECKOUT */
 
-    #btn-flottant-ia {
-
-        background:
-            #1e293b !important;
-
-        box-shadow:
-            0 4px 12px rgba(15, 23, 42, 0.15) !important;
-    }
-
-    #btn-flottant-ia:hover {
-
-        transform:
-            scale(1.05) translateY(-2px) !important;
-
-        background:
-            #0f172a !important;
-    }
-
-    #fenetre-chat-ia {
-
-        background:
-            #ffffff !important;
-
-        border:
-            1px solid #e2e8f0 !important;
-
-        border-radius:
-            12px !important;
-
-        box-shadow:
-            0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    #fenetre-chat-ia > div:first-child {
-
-        background:
-            #1e293b !important;
-    }
-
-    #fenetre-chat-ia button {
-
-        background:
-            #0284c7 !important;
-
-        border-radius:
-            4px !important;
-    }
-
-
-    /* =========================================================================
-       🛍️ 12. COMMANDE / CHECKOUT
-       ========================================================================= */
-
-    .container div[style*="background-color: white"],
-    .container div[style*="background: #ffffff"],
     main form,
     div[class*="checkout"],
     div[class*="commande"] {
 
-        background:
-            rgba(255, 255, 255, 0.85) !important;
+        max-width: 100% !important;
 
-        backdrop-filter:
-            blur(20px) !important;
+        background: rgba(255,255,255,.88) !important;
 
-        -webkit-backdrop-filter:
-            blur(20px) !important;
+        backdrop-filter: blur(20px) !important;
 
-        border:
-            1px solid rgba(255, 255, 255, 0.7) !important;
+        border-radius: 10px !important;
 
-        border-radius:
-            8px !important;
-
-        box-shadow:
-            0 10px 30px rgba(15, 23, 42, 0.04) !important;
+        border: 1px solid rgba(255,255,255,.7) !important;
     }
 
 
-    /* =========================================================================
-       💬 13. WHATSAPP
-       ========================================================================= */
+    /* WHATSAPP */
 
     .container a[href*="wa.me"],
     [class*="btn-whatsapp"] {
 
-        display:
-            inline-flex !important;
+        display: inline-flex !important;
 
-        align-items:
-            center !important;
+        align-items: center !important;
+        justify-content: center !important;
 
-        justify-content:
-            center !important;
+        max-width: 100%;
 
-        background:
-            #16a34a !important;
+        background: #16a34a !important;
 
-        color:
-            #ffffff !important;
+        color: #ffffff !important;
 
-        font-size:
-            0.875rem !important;
+        padding: 14px 28px !important;
 
-        font-weight:
-            600 !important;
+        border-radius: 7px !important;
 
-        padding:
-            14px 28px !important;
+        text-decoration: none !important;
 
-        border:
-            1px solid transparent !important;
-
-        border-radius:
-            6px !important;
-
-        text-decoration:
-            none !important;
-
-        transition:
-            all 0.2s ease !important;
-    }
-
-    .container a[href*="wa.me"]:hover,
-    [class*="btn-whatsapp"]:hover {
-
-        transform:
-            translateY(-2px) !important;
-
-        background:
-            #15803d !important;
-
-        box-shadow:
-            0 6px 16px rgba(22, 163, 74, 0.25) !important;
+        font-weight: 600 !important;
     }
 
 
-    /* =========================================================================
-       🏷️ 14. MACARON PROMO
-       ========================================================================= */
+    /* MACARON */
 
     .badge-promo-catalogue {
 
-        position:
-            absolute !important;
+        position: absolute !important;
 
-        top:
-            -15px !important;
+        top: -15px !important;
 
-        right:
-            40px !important;
+        right: 40px !important;
 
-        width:
-            85px !important;
+        width: 85px !important;
 
-        height:
-            85px !important;
+        height: 85px !important;
 
-        display:
-            flex !important;
+        display: flex !important;
 
-        flex-direction:
-            column !important;
+        align-items: center !important;
 
-        align-items:
-            center !important;
+        justify-content: center !important;
 
-        justify-content:
-            center !important;
+        flex-direction: column !important;
 
-        background:
-            #ea580c !important;
+        background: #ea580c !important;
 
-        color:
-            #ffffff !important;
+        color: #ffffff !important;
 
-        border:
-            2px solid #ffffff !important;
+        border: 2px solid #ffffff !important;
 
-        border-radius:
-            50% !important;
+        border-radius: 50% !important;
 
-        text-align:
-            center !important;
-
-        z-index:
-            999 !important;
-
-        animation:
-            pulse-opacite-subtile 2.5s infinite ease-in-out !important;
+        z-index: 999 !important;
     }
-
-    .badge-promo-catalogue-text {
-
-        font-size:
-            10px !important;
-
-        font-weight:
-            700 !important;
-
-        text-transform:
-            uppercase !important;
-
-        letter-spacing:
-            0.05em !important;
-
-        line-height:
-            1.2 !important;
-
-        padding:
-            0 6px !important;
-    }
-
-    @keyframes pulse-opacite-subtile {
-
-        0% {
-            box-shadow:
-                0 0 0 0 rgba(234, 88, 12, 0.3);
-        }
-
-        70% {
-            box-shadow:
-                0 0 0 10px rgba(234, 88, 12, 0);
-        }
-
-        100% {
-            box-shadow:
-                0 0 0 0 rgba(234, 88, 12, 0);
-        }
-
-    }
-
-
-    /* =========================================================================
-       🖥️ 15. NAVBAR IMPRESSION
-       ========================================================================= */
-
-    .navbar,
-    .navbar-impression {
-
-        position:
-            relative !important;
-
-        width:
-            100% !important;
-
-        height:
-            65px !important;
-
-        display:
-            flex !important;
-
-        align-items:
-            center !important;
-
-        background:
-            #0f172a !important;
-
-        z-index:
-            100000 !important;
-
-        box-shadow:
-            0 1px 3px rgba(15, 23, 42, 0.05) !important;
-    }
-
-    .navbar .container,
-    .navbar-impression .container {
-
-        width:
-            100% !important;
-
-        max-width:
-            1200px !important;
-
-        margin:
-            0 auto !important;
-
-        padding:
-            0 24px !important;
-
-        display:
-            flex !important;
-
-        flex-direction:
-            row !important;
-
-        align-items:
-            center !important;
-
-        justify-content:
-            space-between !important;
-    }
-
-    .nav-logo {
-
-        color:
-            #ffffff !important;
-
-        text-decoration:
-            none !important;
-
-        font-size:
-            1.15rem !important;
-
-        font-weight:
-            700 !important;
-
-        flex-shrink:
-            0 !important;
-    }
-
-    .nav-actions {
-
-        display:
-            flex !important;
-
-        align-items:
-            center !important;
-
-        gap:
-            12px !important;
-    }
-
-    .nav-actions .link-nav,
-    .nav-actions .btn-nav {
-
-        display:
-            inline-flex !important;
-
-        align-items:
-            center !important;
-
-        justify-content:
-            center !important;
-
-        color:
-            #cbd5e1 !important;
-
-        text-decoration:
-            none !important;
-
-        font-size:
-            13.5px !important;
-
-        font-weight:
-            500 !important;
-
-        padding:
-            8px 14px !important;
-
-        border-radius:
-            6px !important;
-
-        transition:
-            all 0.15s ease !important;
-    }
-
-    .nav-actions .link-nav:hover,
-    .nav-actions .btn-nav:hover {
-
-        color:
-            #ffffff !important;
-
-        background:
-            rgba(255, 255, 255, 0.08) !important;
-    }
-
-    .nav-actions .btn-conseiller-green {
-
-        background:
-            #16a34a !important;
-
-        color:
-            #ffffff !important;
-
-        font-weight:
-            600 !important;
-    }
-
-    .nav-actions .btn-conseiller-green:hover {
-
-        background:
-            #15803d !important;
-    }
-
-    .btn-logout-submit {
-
-        background:
-            transparent !important;
-
-        color:
-            #f87171 !important;
-
-        border:
-            1px solid rgba(248, 113, 113, 0.2) !important;
-
-        padding:
-            6px 12px !important;
-
-        border-radius:
-            6px !important;
-
-        cursor:
-            pointer !important;
-    }
-
-
-    /* =========================================================================
-       📱 16. MOBILE
-       ========================================================================= */
-
-    @media screen and (min-width: 1024px) {
-
-        .burger-menu,
-        .supports-mobile-only {
-            display:
-                none !important;
-        }
-
-    }
-
-
-    @media screen and (max-width: 992px) {
-
-        .navbar,
-        .navbar-impression {
-
-            height:
-                60px !important;
-        }
-
-        .burger-menu {
-
-            display:
-                flex !important;
-
-            flex-direction:
-                column !important;
-
-            justify-content:
-                space-between !important;
-
-            width:
-                22px !important;
-
-            height:
-                14px !important;
-
-            background:
-                transparent !important;
-
-            border:
-                none !important;
-
-            padding:
-                0 !important;
-
-            cursor:
-                pointer !important;
-
-            z-index:
-                100002 !important;
-        }
-
-        .burger-menu span {
-
-            display:
-                block !important;
-
-            width:
-                100% !important;
-
-            height:
-                2px !important;
-
-            background:
-                #ffffff !important;
-
-            border-radius:
-                1px !important;
-        }
-
-        .nav-actions {
-
-            display:
-                none !important;
-        }
-
-        .nav-actions.active {
-
-            display:
-                flex !important;
-
-            flex-direction:
-                column !important;
-
-            position:
-                absolute !important;
-
-            top:
-                100% !important;
-
-            left:
-                12px !important;
-
-            right:
-                12px !important;
-
-            width:
-                calc(100% - 24px) !important;
-
-            padding:
-                16px !important;
-
-            gap:
-                4px !important;
-
-            background:
-                #0f172a !important;
-
-            border:
-                1px solid rgba(255, 255, 255, 0.08) !important;
-
-            border-radius:
-                8px !important;
-
-            box-shadow:
-                0 20px 40px rgba(0, 0, 0, 0.4) !important;
-
-            z-index:
-                100001 !important;
-        }
-
-        .nav-actions.active .link-nav,
-        .nav-actions.active .btn-nav,
-        .nav-actions.active .btn-logout-submit {
-
-            width:
-                100% !important;
-
-            justify-content:
-                flex-start !important;
-
-            text-align:
-                left !important;
-
-            padding:
-                12px 16px !important;
-
-            color:
-                #cbd5e1 !important;
-
-            background:
-                transparent !important;
-
-            border:
-                none !important;
-
-            border-radius:
-                6px !important;
-        }
-
-        .nav-actions.active .btn-conseiller-green {
-
-            background:
-                #16a34a !important;
-
-            color:
-                #ffffff !important;
-
-            margin-top:
-                4px !important;
-        }
-
-        .supports-mobile-only {
-
-            display:
-                flex !important;
-
-            flex-direction:
-                column !important;
-
-            width:
-                100% !important;
-
-            margin-top:
-                8px !important;
-
-            padding-top:
-                8px !important;
-
-            border-top:
-                1px solid rgba(255, 255, 255, 0.08) !important;
-        }
-
-        .menu-section-title {
-
-            padding:
-                8px 16px 4px !important;
-
-            color:
-                #64748b !important;
-
-            font-size:
-                11px !important;
-
-            font-weight:
-                600 !important;
-
-            text-transform:
-                uppercase !important;
-        }
-
-        .btn-support-item {
-
-            padding:
-                10px 16px !important;
-
-            color:
-                #94a3b8 !important;
-
-            text-decoration:
-                none !important;
-
-            border-radius:
-                6px !important;
-        }
-
-        .btn-support-item:hover {
-
-            color:
-                #ffffff !important;
-
-            background:
-                rgba(255, 255, 255, 0.04) !important;
-        }
-
-        .item-list-row {
-
-            padding:
-                14px 16px !important;
-        }
-
-        .marquee-slide {
-
-            width:
-                130px !important;
-
-            height:
-                130px !important;
-        }
-
-    }
-
-
-    /* =========================================================================
-       🔗 17. LIENS
-       ========================================================================= */
-
-    .text-link-accent {
-
-        color:
-            #0284c7 !important;
-
-        font-weight:
-            600 !important;
-    }
-
-    .text-link-accent:hover {
-
-        color:
-            #0369a1 !important;
-
-        text-decoration:
-            underline !important;
-    }
-
 
     {% endif %}
 
 
-    /* =========================================================================
-       ⚓ STRUCTURE GLOBALE
-       ========================================================================= */
+    /* ============================================================
+       MOBILE / TABLETTE
+       ============================================================ */
 
-    .form-inline-logout {
+    @media (max-width: 992px) {
 
-        margin:
-            0;
+        .navbar,
+        .navbar-impression {
 
-        display:
-            inline-flex;
+            min-height: 60px !important;
+        }
 
-        align-items:
-            center;
+        .navbar > .container,
+        .navbar-impression > .container {
+
+            min-height: 60px !important;
+
+            padding:
+                0 14px !important;
+        }
+
+        .burger-menu {
+
+            display: flex !important;
+        }
+
+        .nav-actions {
+
+            display: none !important;
+
+            position: absolute !important;
+
+            top: 100% !important;
+
+            left: 10px !important;
+
+            right: 10px !important;
+
+            width: auto !important;
+
+            max-width: calc(100% - 20px) !important;
+
+            margin: 0 !important;
+
+            padding: 12px !important;
+
+            flex-direction: column !important;
+
+            align-items: stretch !important;
+
+            justify-content: flex-start !important;
+
+            gap: 5px !important;
+
+            background: #0f172a !important;
+
+            border: 1px solid rgba(255,255,255,.1) !important;
+
+            border-radius: 10px !important;
+
+            box-shadow:
+                0 20px 40px rgba(0,0,0,.35) !important;
+
+            z-index: 100001 !important;
+        }
+
+        .nav-actions.active {
+
+            display: flex !important;
+        }
+
+        .nav-actions .link-nav,
+        .nav-actions .btn-nav {
+
+            width: 100% !important;
+
+            min-width: 0 !important;
+
+            justify-content: flex-start !important;
+
+            text-align: left !important;
+
+            padding: 12px 14px !important;
+
+            white-space: normal !important;
+        }
+
+        .nav-welcome {
+
+            width: 100%;
+
+            padding: 10px 14px;
+
+            white-space: normal !important;
+        }
+
+        .form-inline-logout {
+
+            width: 100% !important;
+        }
+
+        .btn-logout-submit {
+
+            width: 100% !important;
+
+            text-align: left !important;
+
+            padding: 12px 14px !important;
+        }
+
+        .supports-mobile-only {
+
+            display: flex !important;
+
+            flex-direction: column !important;
+
+            width: 100% !important;
+
+            margin-top: 7px !important;
+
+            padding-top: 8px !important;
+
+            border-top:
+                1px solid rgba(255,255,255,.08) !important;
+        }
+
+        .item-list-row {
+
+            padding: 14px 16px !important;
+        }
+
+        .marquee-slide {
+
+            width: 130px !important;
+
+            height: 130px !important;
+
+            flex-basis: 130px !important;
+        }
+
+        .print-container,
+        .votre-conteneur-principal,
+        .main-container {
+
+            width: calc(100% - 20px) !important;
+
+            margin-left: 10px !important;
+            margin-right: 10px !important;
+        }
+
     }
 
-    .main-page-wrapper {
 
-        width:
-            100% !important;
+    /* ============================================================
+       PETIT MOBILE
+       ============================================================ */
 
-        overflow-x:
-            auto !important;
+    @media (max-width: 600px) {
 
-        display:
-            block !important;
+        .navbar > .container,
+        .navbar-impression > .container {
 
-        clear:
-            both !important;
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
 
-        -webkit-overflow-scrolling:
-            touch;
+        .nav-logo {
+
+            font-size: 1rem !important;
+
+            max-width:
+                calc(100% - 55px) !important;
+        }
+
+        .burger-menu {
+
+            width: 40px !important;
+            height: 40px !important;
+        }
+
+        .main-page-wrapper {
+
+            overflow-x: hidden !important;
+        }
+
+        .print-container,
+        .votre-conteneur-principal,
+        .main-container {
+
+            width: calc(100% - 16px) !important;
+
+            margin-left: 8px !important;
+            margin-right: 8px !important;
+
+            border-radius: 10px !important;
+        }
+
+        .item-list-row {
+
+            padding: 12px !important;
+        }
+
+        .btn-link-prestation,
+        .btn-tarifs-span {
+
+            max-width: 100% !important;
+        }
+
+        .cart-sticky {
+
+            padding: 15px !important;
+        }
+
+    }
+
+
+    /* ============================================================
+       TRÈS PETIT ÉCRAN
+       ============================================================ */
+
+    @media (max-width: 420px) {
+
+        .navbar,
+        .navbar-impression {
+
+            min-height: 56px !important;
+        }
+
+        .navbar > .container,
+        .navbar-impression > .container {
+
+            min-height: 56px !important;
+        }
+
+        .nav-logo {
+
+            font-size: .95rem !important;
+        }
+
+        .burger-menu {
+
+            width: 38px !important;
+            height: 38px !important;
+        }
+
+        .marquee-slide {
+
+            width: 115px !important;
+
+            height: 115px !important;
+
+            flex-basis: 115px !important;
+        }
+
+        .badge-promo-catalogue {
+
+            width: 68px !important;
+
+            height: 68px !important;
+
+            right: 15px !important;
+
+            top: -10px !important;
+        }
+
+    }
+
+
+    /* ============================================================
+       LIENS
+       ============================================================ */
+
+    .text-link-accent {
+
+        color: #0284c7 !important;
+
+        font-weight: 700 !important;
+    }
+
+    .text-link-accent:hover {
+
+        color: #0369a1 !important;
+
+        text-decoration: underline !important;
+    }
+
+
+    /* ============================================================
+       MESSAGES
+       ============================================================ */
+
+    .alert-container {
+
+        width: 100% !important;
+
+        max-width: 1200px !important;
+
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+
+    /* ============================================================
+       CHAT IA
+       ============================================================ */
+
+    #btn-flottant-ia {
+
+        position: fixed !important;
+
+        bottom: 20px !important;
+        right: 20px !important;
+
+        width: 58px !important;
+        height: 58px !important;
+
+        z-index: 999999 !important;
+    }
+
+    #fenetre-chat-ia {
+
+        max-width: calc(100vw - 20px) !important;
+
+        width: 380px !important;
+
+        right: 10px !important;
+
+        bottom: 90px !important;
+    }
+
+
+    @media (max-width: 600px) {
+
+        #fenetre-chat-ia {
+
+            width:
+                calc(100vw - 20px) !important;
+
+            max-width:
+                calc(100vw - 20px) !important;
+
+            height:
+                min(460px, calc(100vh - 120px)) !important;
+
+            right: 10px !important;
+
+            bottom: 85px !important;
+
+            border-radius: 14px !important;
+        }
+
+        #btn-flottant-ia {
+
+            width: 54px !important;
+
+            height: 54px !important;
+
+            right: 15px !important;
+
+            bottom: 15px !important;
+        }
+
     }
 
     </style>
 
+</head>
 
-    {% if "impression" in request.path or prestation or "atelier" in request.path %}
 
-        <!-- ================================================================
-             🖨️ NAVBAR ESPACE IMPRESSION
-             ================================================================ -->
+<body>
 
-        <nav class="navbar-impression">
 
-            <div class="container">
+{% if "impression" in request.path or prestation or "atelier" in request.path %}
 
-                <a href="{% url 'page_prestations' %}"
-                   class="nav-logo">
+    <!-- ========================================================
+         NAVBAR IMPRESSION
+         ======================================================== -->
 
-                    YaTout Imprim
+    <nav class="navbar-impression">
+
+        <div class="container">
+
+            <a href="{% url 'page_prestations' %}"
+               class="nav-logo">
+
+                YaTout Imprim
+
+            </a>
+
+
+            <button
+                type="button"
+                class="burger-menu"
+                onclick="
+                    this.nextElementSibling.classList.toggle('active');
+                "
+                aria-label="Menu">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+
+            <div class="nav-actions">
+
+                <a
+                    href="{% url 'page_prestations' %}"
+                    class="btn-nav">
+
+                    Nos Prestations
 
                 </a>
 
 
-                <button
-                    class="burger-menu"
-                    onclick="this.nextElementSibling.classList.toggle('active');">
+                <a
+                    href="{% url 'page_conseiller' %}"
+                    class="btn-nav btn-conseiller-green">
 
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                    Parler à un conseiller
 
-                </button>
-
-
-                <div class="nav-actions">
-
-                    <a
-                        href="{% url 'page_prestations' %}"
-                        class="btn-nav">
-
-                        Nos Prestations
-
-                    </a>
-
-
-                    <a
-                        href="{% url 'page_conseiller' %}"
-                        class="btn-nav btn-conseiller-green">
-
-                        Parler à un conseiller
-
-                    </a>
-
-
-                    {% if user.is_authenticated and user.is_staff %}
-
-                        <a
-                            href="{% url 'espace_devis_dashboard' %}"
-                            class="btn-nav btn-nav-purple">
-
-                            Faire Devis
-
-                        </a>
-
-
-                        <a
-                            href="/admin-atelier"
-                            class="btn-nav btn-nav-purple"
-                            style="
-                                background-color:#4f46e5 !important;
-                                color:white !important;
-                                font-weight:700;
-                            ">
-
-                            ⚙️ Gérer l'Atelier
-
-                        </a>
-
-                    {% endif %}
-
-
-                    <div class="supports-mobile-only">
-
-                        <span class="menu-section-title">
-                            Nos supports :
-                        </span>
-
-
-                        {% if prestations %}
-
-                            {% for p in prestations %}
-
-                                <a
-                                    href="{% url 'detail_prestation' prestation_id=p.id %}"
-                                    class="btn-support-item">
-
-                                    {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
-
-                                </a>
-
-                            {% endfor %}
-
-
-                        {% elif listes_prestations %}
-
-                            {% for p in listes_prestations %}
-
-                                <a
-                                    href="{% url 'detail_prestation' prestation_id=p.id %}"
-                                    class="btn-support-item">
-
-                                    {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
-
-                                </a>
-
-                            {% endfor %}
-
-
-                        {% else %}
-
-                            <a
-                                href="{% url 'page_prestations' %}"
-                                class="btn-support-item text-link-accent">
-
-                                Voir tous nos supports d'impression
-
-                            </a>
-
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </nav>
-
-
-    {% elif request.path != "/" and request.resolver_match.url_name != 'boutique_vendeur' and not request.GET.shared %}
-
-
-        <!-- ================================================================
-             🛍️ NAVBAR BOUTIQUE
-             ================================================================ -->
-
-        <nav class="navbar">
-
-            <div class="container">
-
-                <a href="/" class="nav-logo">
-                    YaTout Ci
                 </a>
 
 
-                <button
-                    class="burger-menu"
-                    onclick="this.nextElementSibling.classList.toggle('active');">
-
-                    <span></span>
-                    <span></span>
-                    <span></span>
-
-                </button>
-
-
-                <div class="nav-actions">
+                {% if user.is_authenticated and user.is_staff %}
 
                     <a
-                        href="{% url 'panier_detail' %}{% if request.GET.shared %}?shared=true{% endif %}"
-                        class="link-nav">
+                        href="{% url 'espace_devis_dashboard' %}"
+                        class="btn-nav btn-nav-purple">
 
-                        Mon Panier
+                        Faire Devis
 
                     </a>
 
 
-                    {% if user.is_authenticated %}
+                    <a
+                        href="/admin-atelier"
+                        class="btn-nav btn-nav-purple">
 
-                        <span class="nav-welcome">
+                        ⚙️ Gérer l'Atelier
 
-                            Bonjour,
-                            <strong>{{ user.username }}</strong>
+                    </a>
 
-                        </span>
+                {% endif %}
 
 
-                        {% if user.username == vendeur_vitrine.user.username or not vendeur_vitrine %}
+                <div class="supports-mobile-only">
+
+                    <span class="menu-section-title">
+                        Nos supports :
+                    </span>
+
+
+                    {% if prestations %}
+
+                        {% for p in prestations %}
 
                             <a
-                                href="{% url 'boutique_vendeur' username=user.username %}"
-                                class="btn-nav btn-nav-white">
+                                href="{% url 'detail_prestation' prestation_id=p.id %}"
+                                class="btn-support-item">
 
-                                Ma Vitrine
+                                {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
 
                             </a>
 
+                        {% endfor %}
+
+
+                    {% elif listes_prestations %}
+
+                        {% for p in listes_prestations %}
 
                             <a
-                                href="{% url 'dashboard_vendeur' %}"
-                                class="btn-nav btn-nav-purple">
+                                href="{% url 'detail_prestation' prestation_id=p.id %}"
+                                class="btn-support-item">
 
-                                Tableau de bord
+                                {% firstof p.titre p.nom p.libelle p.name "Support d'impression" %}
 
                             </a>
 
-
-                            <a
-                                href="{% url 'ajouter_produit' %}"
-                                class="btn-nav btn-nav-purple">
-
-                                Ajouter produit
-
-                            </a>
-
-                        {% endif %}
-
-
-                        <form
-                            method="POST"
-                            action="{% url 'deconnexion_vendeur' %}"
-                            class="form-inline-logout">
-
-                            {% csrf_token %}
-
-                            <button
-                                type="submit"
-                                class="btn-logout-submit">
-
-                                Déconnexion
-
-                            </button>
-
-                        </form>
+                        {% endfor %}
 
 
                     {% else %}
 
                         <a
-                            href="{% url 'connexion' %}"
-                            class="link-nav">
+                            href="{% url 'page_prestations' %}"
+                            class="btn-support-item text-link-accent">
 
-                            Connexion
-
-                        </a>
-
-
-                        <a
-                            href="{% url 'inscription_vendeur' %}"
-                            class="btn-nav btn-nav-white">
-
-                            Devenir Vendeur
+                            Voir tous nos supports d'impression
 
                         </a>
 
@@ -1691,462 +1339,625 @@
 
             </div>
 
-        </nav>
-
-    {% endif %}
-
-
-    <!-- ================================================================
-         💬 MESSAGES SYSTÈME
-         ================================================================ -->
-
-    {% if messages %}
-
-        <div class="container alert-container">
-
-            {% for message in messages %}
-
-                <div class="alert-box">
-                    {{ message }}
-                </div>
-
-            {% endfor %}
-
         </div>
 
-    {% endif %}
+    </nav>
 
 
-    <!-- ================================================================
-         📄 CONTENU DES PAGES
-         ================================================================ -->
+{% elif request.path != "/" and request.resolver_match.url_name != 'boutique_vendeur' and not request.GET.shared %}
 
-    <div class="flex-grow">
+    <!-- ========================================================
+         NAVBAR BOUTIQUE
+         ======================================================== -->
 
-        <div class="main-page-wrapper">
+    <nav class="navbar">
 
-            {% block content %}
-            {% endblock %}
+        <div class="container">
 
-        </div>
+            <a href="/"
+               class="nav-logo">
 
-    </div>
+                YaTout Ci
 
-
-    <!-- ================================================================
-         🤖 ASSISTANT CHATBOT IA
-         ================================================================ -->
-
-    <div
-        id="btn-flottant-ia"
-        onclick="basculerFenetreChat()"
-        style="
-            position:fixed;
-            bottom:25px;
-            right:25px;
-            width:60px;
-            height:60px;
-            background:#7c3aed;
-            color:white;
-            border-radius:50%;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:28px;
-            cursor:pointer;
-            box-shadow:0 4px 15px rgba(124,58,237,0.4);
-            z-index:999999;
-            transition:transform 0.2s;
-        ">
-
-        🤖
-
-    </div>
-
-
-    <div
-        id="fenetre-chat-ia"
-        style="
-            display:none;
-            position:fixed;
-            bottom:95px;
-            right:25px;
-            width:380px;
-            height:460px;
-            background:white;
-            border:1px solid #e8e3f0;
-            border-radius:16px;
-            box-shadow:0 8px 30px rgba(0,0,0,0.1);
-            overflow:hidden;
-            flex-direction:column;
-            z-index:999999;
-            font-family:system-ui,sans-serif;
-        ">
-
-
-        <div
-            style="
-                background:#1e293b;
-                color:white;
-                padding:12px 15px;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            ">
-
-            <div
-                style="
-                    display:flex;
-                    align-items:center;
-                    gap:8px;
-                ">
-
-                <span style="font-size:20px;">
-                    🤖
-                </span>
-
-                <div>
-
-                    <h4
-                        style="
-                            margin:0;
-                            font-size:0.9rem;
-                            font-weight:bold;
-                        ">
-
-                        Assistant IA YaTout
-
-                    </h4>
-
-                    <p
-                        style="
-                            margin:0;
-                            font-size:0.7rem;
-                            color:#22c55e;
-                        ">
-
-                        ● En ligne
-
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <span
-                onclick="basculerFenetreChat()"
-                style="
-                    cursor:pointer;
-                    font-weight:bold;
-                    font-size:16px;
-                    padding:0 5px;
-                ">
-
-                ✕
-
-            </span>
-
-        </div>
-
-
-        <div
-            id="chat-box-global"
-            style="
-                flex-grow:1;
-                padding:15px;
-                overflow-y:auto;
-                background:#f8fafc;
-                display:flex;
-                flex-direction:column;
-                gap:12px;
-            ">
-
-            <div
-                style="
-                    align-self:flex-start;
-                    background:white;
-                    border:1px solid #e2e8f0;
-                    color:#1e293b;
-                    padding:10px 14px;
-                    border-radius:12px 12px 12px 0;
-                    max-width:85%;
-                    font-size:0.85rem;
-                    line-height:1.4;
-                ">
-
-                Bonjour ! ✨ Je suis l'IA officielle de YaTout.
-                Je connais nos stocks, nos promos et nos supports
-                d'impression en temps réel. Posez-moi votre question !
-
-            </div>
-
-        </div>
-
-
-        <div
-            style="
-                background:white;
-                padding:10px 15px;
-                border-top:1px solid #e2e8f0;
-                display:flex;
-                gap:8px;
-            ">
-
-            <input
-                type="text"
-                id="global-message-input"
-                placeholder="Posez votre question..."
-                style="
-                    flex-grow:1;
-                    padding:8px 12px;
-                    border:1px solid #cbd5e1;
-                    border-radius:6px;
-                    outline:none;
-                    font-size:0.85rem;
-                "
-                onkeypress="
-                    if(event.key === 'Enter')
-                        envoyerMessageGlobalIA()
-                "
-            >
+            </a>
 
 
             <button
                 type="button"
-                onclick="envoyerMessageGlobalIA()"
-                style="
-                    background:#7b24cc;
-                    color:white;
-                    border:none;
-                    padding:8px 12px;
-                    font-weight:bold;
-                    border-radius:6px;
-                    cursor:pointer;
-                    font-size:0.85rem;
-                ">
+                class="burger-menu"
+                onclick="
+                    this.nextElementSibling.classList.toggle('active');
+                "
+                aria-label="Menu">
 
-                Envoyer
+                <span></span>
+                <span></span>
+                <span></span>
 
             </button>
+
+
+            <div class="nav-actions">
+
+                <a
+                    href="{% url 'panier_detail' %}"
+                    class="link-nav">
+
+                    🛒 Mon Panier
+
+                </a>
+
+
+                {% if user.is_authenticated %}
+
+                    <span class="nav-welcome">
+
+                        Bonjour,
+                        <strong>{{ user.username }}</strong>
+
+                    </span>
+
+
+                    {% if user.username == vendeur_vitrine.user.username or not vendeur_vitrine %}
+
+                        <a
+                            href="{% url 'boutique_vendeur' username=user.username %}"
+                            class="btn-nav btn-nav-white">
+
+                            Ma Vitrine
+
+                        </a>
+
+
+                        <a
+                            href="{% url 'dashboard_vendeur' %}"
+                            class="btn-nav btn-nav-purple">
+
+                            Tableau de bord
+
+                        </a>
+
+
+                        <a
+                            href="{% url 'ajouter_produit' %}"
+                            class="btn-nav btn-nav-purple">
+
+                            Ajouter produit
+
+                        </a>
+
+                    {% endif %}
+
+
+                    <form
+                        method="POST"
+                        action="{% url 'deconnexion_vendeur' %}"
+                        class="form-inline-logout">
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn-logout-submit">
+
+                            Déconnexion
+
+                        </button>
+
+                    </form>
+
+
+                {% else %}
+
+                    <a
+                        href="{% url 'connexion' %}"
+                        class="link-nav">
+
+                        Connexion
+
+                    </a>
+
+
+                    <a
+                        href="{% url 'inscription_vendeur' %}"
+                        class="btn-nav btn-nav-white">
+
+                        Devenir Vendeur
+
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </nav>
+
+{% endif %}
+
+
+
+<!-- ============================================================
+     MESSAGES
+     ============================================================ -->
+
+{% if messages %}
+
+    <div class="container alert-container">
+
+        {% for message in messages %}
+
+            <div class="alert-box">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% endif %}
+
+
+
+<!-- ============================================================
+     CONTENU
+     ============================================================ -->
+
+<div class="flex-grow">
+
+    <main class="main-page-wrapper">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+
+
+<!-- ============================================================
+     BOUTON IA
+     ============================================================ -->
+
+<div
+    id="btn-flottant-ia"
+    onclick="basculerFenetreChat()"
+    style="
+        background:#7c3aed;
+        color:white;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:28px;
+        cursor:pointer;
+        box-shadow:0 4px 15px rgba(124,58,237,.4);
+        transition:transform .2s;
+    ">
+
+    🤖
+
+</div>
+
+
+
+<!-- ============================================================
+     FENÊTRE CHAT
+     ============================================================ -->
+
+<div
+    id="fenetre-chat-ia"
+    style="
+        display:none;
+        position:fixed;
+        background:white;
+        border:1px solid #e8e3f0;
+        border-radius:16px;
+        box-shadow:0 8px 30px rgba(0,0,0,.1);
+        overflow:hidden;
+        flex-direction:column;
+        z-index:999999;
+        font-family:system-ui,sans-serif;
+    ">
+
+
+    <div
+        style="
+            background:#1e293b;
+            color:white;
+            padding:12px 15px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+        ">
+
+            <span style="font-size:20px;">
+                🤖
+            </span>
+
+            <div>
+
+                <h4 style="
+                    margin:0;
+                    font-size:.9rem;
+                    font-weight:bold;
+                ">
+
+                    Assistant IA YaTout
+
+                </h4>
+
+                <p style="
+                    margin:0;
+                    font-size:.7rem;
+                    color:#22c55e;
+                ">
+
+                    ● En ligne
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <span
+            onclick="basculerFenetreChat()"
+            style="
+                cursor:pointer;
+                font-weight:bold;
+                font-size:16px;
+                padding:0 5px;
+            ">
+
+            ✕
+
+        </span>
+
+    </div>
+
+
+    <div
+        id="chat-box-global"
+        style="
+            flex:1;
+            min-height:0;
+            padding:15px;
+            overflow-y:auto;
+            background:#f8fafc;
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        ">
+
+        <div style="
+            align-self:flex-start;
+            background:white;
+            border:1px solid #e2e8f0;
+            color:#1e293b;
+            padding:10px 14px;
+            border-radius:12px 12px 12px 0;
+            max-width:85%;
+            font-size:.85rem;
+            line-height:1.4;
+        ">
+
+            Bonjour ! ✨ Je suis l'IA officielle de YaTout.
+            Je connais nos stocks, nos promos et nos supports
+            d'impression en temps réel. Posez-moi votre question !
 
         </div>
 
     </div>
 
 
-    <!-- ================================================================
-         🟢 JAVASCRIPT
-         ================================================================ -->
+    <div style="
+        background:white;
+        padding:10px 15px;
+        border-top:1px solid #e2e8f0;
+        display:flex;
+        gap:8px;
+    ">
 
-    <script>
-
-    /* ================================================================
-       📱 MENU MOBILE
-       ================================================================ */
-
-    function basculerMenuMobile(bouton) {
-
-        const navActions =
-            bouton.parentElement.querySelector('.nav-actions');
-
-        if (navActions) {
-
-            navActions.classList.toggle('open');
-
-            bouton.classList.toggle('open');
-
-        }
-
-    }
-
-
-    /* ================================================================
-       🤖 FENÊTRE CHAT IA
-       ================================================================ */
-
-    function basculerFenetreChat() {
-
-        const tchat =
-            document.getElementById('fenetre-chat-ia');
-
-        const bouton =
-            document.getElementById('btn-flottant-ia');
-
-        if (!tchat || !bouton) return;
+        <input
+            type="text"
+            id="global-message-input"
+            placeholder="Posez votre question..."
+            style="
+                flex:1;
+                min-width:0;
+                padding:8px 12px;
+                border:1px solid #cbd5e1;
+                border-radius:6px;
+                outline:none;
+                font-size:.85rem;
+            "
+            onkeypress="
+                if(event.key === 'Enter')
+                    envoyerMessageGlobalIA()
+            "
+        >
 
 
-        if (
-            tchat.style.display === 'none' ||
-            tchat.style.display === ''
-        ) {
+        <button
+            type="button"
+            onclick="envoyerMessageGlobalIA()"
+            style="
+                flex:0 0 auto;
+                background:#7b24cc;
+                color:white;
+                border:none;
+                padding:8px 12px;
+                font-weight:bold;
+                border-radius:6px;
+                cursor:pointer;
+                font-size:.85rem;
+            ">
 
-            tchat.style.display = 'flex';
+            Envoyer
 
-            bouton.style.transform =
-                'scale(0.9)';
+        </button>
 
-            const box =
-                document.getElementById('chat-box-global');
+    </div>
 
-            if (box) {
-
-                box.scrollTop =
-                    box.scrollHeight;
-
-            }
-
-        } else {
-
-            tchat.style.display = 'none';
-
-            bouton.style.transform =
-                'scale(1)';
-
-        }
-
-    }
+</div>
 
 
-    /* ================================================================
-       ✉️ ENVOI MESSAGE IA
-       ================================================================ */
 
-    function envoyerMessageGlobalIA() {
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
 
-        const chatBox =
-            document.getElementById('chat-box-global');
+<script>
 
-        const inputField =
-            document.getElementById('global-message-input');
+function basculerMenuMobile(bouton) {
 
-        if (!chatBox || !inputField) return;
+    if (!bouton) return;
 
+    const navActions =
+        bouton.parentElement.querySelector('.nav-actions');
 
-        const messageText =
-            inputField.value.trim();
+    if (!navActions) return;
 
-        if (!messageText) return;
+    navActions.classList.toggle('active');
 
-
-        inputField.value = '';
+    bouton.classList.toggle('open');
+}
 
 
-        chatBox.innerHTML += `
+function basculerFenetreChat() {
 
-            <div
-                style="
-                    align-self:flex-end;
-                    background:#7c3aed;
-                    color:white;
-                    padding:10px 14px;
-                    border-radius:12px 12px 0 12px;
-                    max-width:85%;
-                    font-size:0.85rem;
-                ">
+    const tchat =
+        document.getElementById('fenetre-chat-ia');
 
-                ${messageText}
+    const bouton =
+        document.getElementById('btn-flottant-ia');
 
-            </div>
-
-        `;
+    if (!tchat || !bouton) return;
 
 
-        chatBox.scrollTop =
-            chatBox.scrollHeight;
-
-    }
-
-
-    /* ================================================================
-       🔗 COPIE LIEN BOUTIQUE
-       ================================================================ */
-
-    function copierLienBoutiqueMagique(
-        lienComplet,
-        boutonInstance
+    if (
+        tchat.style.display === 'none' ||
+        tchat.style.display === ''
     ) {
 
-        if (!navigator.clipboard) {
+        tchat.style.display = 'flex';
 
-            const inputTemp =
-                document.createElement("input");
+        bouton.style.transform =
+            'scale(.9)';
 
-            inputTemp.value =
-                lienComplet;
+        const box =
+            document.getElementById('chat-box-global');
 
-            document.body.appendChild(
-                inputTemp
-            );
+        if (box) {
 
-            inputTemp.select();
+            box.scrollTop =
+                box.scrollHeight;
 
-            document.execCommand("copy");
+        }
 
-            document.body.removeChild(
-                inputTemp
-            );
+    } else {
+
+        tchat.style.display = 'none';
+
+        bouton.style.transform =
+            'scale(1)';
+    }
+}
+
+
+function envoyerMessageGlobalIA() {
+
+    const chatBox =
+        document.getElementById('chat-box-global');
+
+    const inputField =
+        document.getElementById('global-message-input');
+
+    if (!chatBox || !inputField) return;
+
+
+    const messageText =
+        inputField.value.trim();
+
+    if (!messageText) return;
+
+
+    inputField.value = '';
+
+
+    /*
+       Évite d'injecter directement le texte utilisateur
+       dans innerHTML.
+    */
+
+    const message =
+        document.createElement('div');
+
+    message.style.cssText = `
+        align-self:flex-end;
+        background:#7c3aed;
+        color:white;
+        padding:10px 14px;
+        border-radius:12px 12px 0 12px;
+        max-width:85%;
+        font-size:.85rem;
+        overflow-wrap:anywhere;
+    `;
+
+    message.textContent =
+        messageText;
+
+    chatBox.appendChild(message);
+
+
+    chatBox.scrollTop =
+        chatBox.scrollHeight;
+}
+
+
+function copierLienBoutiqueMagique(
+    lienComplet,
+    boutonInstance
+) {
+
+    if (!navigator.clipboard) {
+
+        const inputTemp =
+            document.createElement("input");
+
+        inputTemp.value =
+            lienComplet;
+
+        document.body.appendChild(inputTemp);
+
+        inputTemp.select();
+
+        document.execCommand("copy");
+
+        document.body.removeChild(inputTemp);
+
+        appliquerFeedbackVisuelHeader(
+            boutonInstance
+        );
+
+        return;
+    }
+
+
+    navigator.clipboard
+        .writeText(lienComplet)
+        .then(() => {
 
             appliquerFeedbackVisuelHeader(
                 boutonInstance
             );
 
-            return;
-        }
+        })
+        .catch(err => {
+
+            console.error(
+                "Erreur de copie : ",
+                err
+            );
+
+        });
+}
 
 
-        navigator.clipboard
-            .writeText(lienComplet)
-            .then(() => {
+function appliquerFeedbackVisuelHeader(
+    bouton
+) {
 
-                appliquerFeedbackVisuelHeader(
-                    boutonInstance
-                );
+    if (!bouton) return;
 
-            })
-            .catch(err => {
+    const texteDOrigine =
+        bouton.innerHTML;
 
-                console.error(
-                    "Erreur de copie : ",
-                    err
-                );
+    bouton.style.background =
+        "#059669";
 
-            });
-
-    }
+    bouton.innerHTML =
+        "✅ Copié !";
 
 
-    /* ================================================================
-       ✨ FEEDBACK COPIE
-       ================================================================ */
-
-    function appliquerFeedbackVisuelHeader(
-        bouton
-    ) {
-
-        const texteDOrigine =
-            bouton.innerHTML;
+    setTimeout(() => {
 
         bouton.style.background =
-            "#059669";
+            "#10b981";
 
         bouton.innerHTML =
-            "✅ Copié !";
+            texteDOrigine;
+
+    }, 2000);
+}
 
 
-        setTimeout(() => {
+/* ============================================================
+   FERME LE MENU MOBILE APRÈS UN CLIC SUR UN LIEN
+   ============================================================ */
 
-            bouton.style.background =
-                "#10b981";
+document.addEventListener(
+    'click',
+    function(event) {
 
-            bouton.innerHTML =
-                texteDOrigine;
+        const lien =
+            event.target.closest(
+                '.nav-actions a'
+            );
 
-        }, 2000);
+        if (!lien) return;
+
+        const menu =
+            lien.closest('.nav-actions');
+
+        if (
+            menu &&
+            window.innerWidth <= 992
+        ) {
+
+            menu.classList.remove('active');
+
+        }
 
     }
+);
 
-    </script>
+
+/* ============================================================
+   SÉCURITÉ SUPPLÉMENTAIRE LARGEUR MOBILE
+   ============================================================ */
+
+window.addEventListener(
+    'resize',
+    function() {
+
+        if (window.innerWidth > 992) {
+
+            document
+                .querySelectorAll('.nav-actions')
+                .forEach(function(menu) {
+
+                    menu.classList.remove('active');
+
+                });
+
+        }
+
+    }
+);
+
+</script>
+
 
 </body>
 </html>
