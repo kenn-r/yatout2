@@ -143,15 +143,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 COMPTEUR_VISITES_BASE = 14320
 
 
-# Configuration de l'envoi d'e-mails via l'API HTTP de Brevo
-EMAIL_BACKEND = "anymail.backends.stmp.EmailBackend"
-DEFAULT_FROM_EMAIL = 'yatoutci2@gmail.com'
 
-ANYMAIL = {
-    "BREVO_API_KEY": os.environ.get('EMAIL_HOST_PASSWORD'),
-
-
-}
 # Dans votre fichier settings.py
 SECRET_ADMIN_DELETE_CODE = "1997"  # 👈 Remplacez "1234" par votre mot de passe secret admin unique
 
@@ -203,3 +195,11 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.yatoutci.com',
     'https://www.yatoutci.com'
 ]
+# Configuration de l'envoi d'e-mails avec Brevo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'b04a40001@smtp-brevo.com'
+EMAIL_HOST_PASSWORD = "xsmtpsib-7fefa25319694a87e6d8f2fb8780ae6723fec35333deb5ad9ab9c5e287768c36-amv7MHr55Kpg3NdN"
+DEFAULT_FROM_EMAIL = 'YaTout Imprim <aime.bosson@yatoutci.com>'

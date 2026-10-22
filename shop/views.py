@@ -475,7 +475,6 @@ def panier_supprimer(request, produit_id):
 
 
 
-
 def passer_commande_panier(request):
     cart = Cart(request)
     
@@ -544,8 +543,8 @@ def passer_commande_panier(request):
             send_mail(
                 sujet_client,
                 message_client,
-                'yatoutci2@gmail.com',  # Votre EMAIL_HOST_USER
-                [email],               # Email du client
+                'YaTout Imprim <aime.bosson@yatoutci.com>',  # 🛠️ CORRECTION : L'expéditeur validé sur Brevo
+                [email],               
                 fail_silently=False    
             )
 
@@ -558,8 +557,8 @@ def passer_commande_panier(request):
             send_mail(
                 sujet_vendeur,
                 message_vendeur,
-                'yatoutci2@gmail.com',
-                [email_vendeur],   # Email du vendeur concerné
+                'YaTout Imprim <aime.bosson@yatoutci.com>',  # 🛠️ CORRECTION : L'expéditeur validé sur Brevo
+                [email_vendeur],   
                 fail_silently=False
             )
         
@@ -568,6 +567,9 @@ def passer_commande_panier(request):
         return redirect('suivi_commande', pk=commande.id)
         
     return render(request, 'shop/passer_commande_panier.html', {'cart': cart})
+
+
+    
 
 import os  # Vérifiez que cet import est bien présent tout en haut du fichier
 
